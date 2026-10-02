@@ -7,7 +7,7 @@ struct StatusLabel: View {
     let model: AppModel
 
     var body: some View {
-        let text = Copy.status(model.status, now: model.now)
+        let text = Copy.status(model.status)
         // The status item draws the image and the text with no gap of its own and ignores the
         // stack's spacing, so an en space opens the room.
         HStack {
@@ -16,14 +16,19 @@ struct StatusLabel: View {
                 Text("\u{2002}" + text)
             }
         }
-        .accessibilityLabel(model.isPaused ? Copy.pausedUntil(model.preferences.pausedUntil ?? .now) : text)
+        .accessibilityLabel(accessibilityText(text))
+    }
+
+    /// The visible status first, then the pause, so the spoken label never hides what is shown.
+    private func accessibilityText(_ text: String) -> String {
+        guard model.isPaused, let until = model.preferences.pausedUntil else { return text }
+        return "\(text). \(Copy.pausedUntil(until))"
     }
 }
 
 /// The menu: what is happening, today's events, pause, then Settings and Quit (HIG order).
 struct MenuContent: View {
     let model: AppModel
-    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         // The events Section draws its own separators; a Divider beside it would double them.
@@ -35,12 +40,8 @@ struct MenuContent: View {
             debugMenu
             Divider()
         }
-        Button(Copy.settings) {
-            // An accessory app activates first, or Settings opens behind the frontmost app.
-            NSApp.activate()
-            openSettings()
-        }
-        .keyboardShortcut(",")
+        Button(Copy.settings) { model.openSettings() }
+            .keyboardShortcut(",")
         Button(Copy.quit) { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }
@@ -48,7 +49,10 @@ struct MenuContent: View {
     @ViewBuilder private var stateSection: some View {
         switch model.calendar.access {
         case .granted:
-            Text(Copy.status(model.status, now: model.now))
+            // "Nothing else today" would repeat the empty Today section just below.
+            if model.status != .clear {
+                Text(Copy.status(model.status))
+            }
         case .notDetermined:
             Text(Copy.calendarAccessNeeded)
             Button(Copy.allowCalendarAccess) {
@@ -56,11 +60,7 @@ struct MenuContent: View {
             }
         case .denied:
             Text(Copy.calendarAccessNeeded)
-            Button(Copy.openPrivacySettings) {
-                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars") {
-                    NSWorkspace.shared.open(url)
-                }
-            }
+            Button(Copy.openPrivacySettings) { SystemSettings.openCalendarPrivacy() }
         }
         if model.isPaused, let until = model.preferences.pausedUntil {
             Text(Copy.pausedUntil(until))
@@ -76,14 +76,16 @@ struct MenuContent: View {
             ForEach(events, id: \.event.id) { item in
                 eventMenu(item.event)
             }
-            if model.hiddenCount > 0 {
-                Button(Copy.showHidden(model.hiddenCount)) { model.overrides.unhideAll() }
+            let hidden = model.hiddenCount
+            if hidden > 0 {
+                Button(Copy.showHidden(hidden)) { model.overrides.unhideAll() }
             }
         }
     }
 
     private func eventMenu(_ event: CalendarEvent) -> some View {
-        let isSilenced = model.overrides.override(for: event.id) == .silenced
+        let override = model.overrides.override(for: event)
+        let rule = model.preferences.rule(for: event.calendarID)
         return Menu {
             Text(Copy.timeRange(event))
             Text(event.calendarTitle)
@@ -92,16 +94,20 @@ struct MenuContent: View {
                 Button(Copy.join(link.provider)) { model.join(event) }
             }
             Divider()
-            Button(isSilenced ? Copy.unsilenceEvent : Copy.silenceEvent) { model.toggleSilence(event) }
+            Button(override == .silenced ? Copy.alertsBackOn : Copy.alertsOffForEvent) {
+                model.toggleAlerts(event)
+            }
+            // Offered only where a full screen would come: a calendar with All alerts.
+            if rule == .everything && override != .silenced {
+                Button(override == .noFullScreen ? Copy.fullScreenBackOn : Copy.noFullScreenInMenu) {
+                    model.toggleFullScreen(event)
+                }
+            }
             Button(Copy.hideEvent) { model.hide(event) }
         } label: {
-            CalendarDot.image(color(for: event))
-            Text(Copy.eventRow(event, silenced: isSilenced))
+            CalendarDot.image(model.calendar.color(for: event.calendarID))
+            Text(Copy.eventRow(event, override: override))
         }
-    }
-
-    private func color(for event: CalendarEvent) -> NSColor {
-        event.calendarID == AppModel.debugCalendarID ? .systemGray : model.calendar.color(for: event.calendarID)
     }
 
     private var debugMenu: some View {

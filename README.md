@@ -32,7 +32,8 @@ make install
 
 Click the leaf in the menu bar:
 
-- **Today** lists the events that have not ended. Open one to join its call, silence it, or hide it.
+- **Today** lists the events that have not ended. Open one to join its call, turn off its alerts or
+  its full screen, or hide it.
 - **Pause Alerts** stops notifications, the full screen and the spoken time for 30 minutes, an hour,
   or until tomorrow.
 - **Settings…** (<kbd>⌘</kbd> <kbd>,</kbd>) and **Quit Leve** (<kbd>⌘</kbd> <kbd>Q</kbd>).
@@ -41,9 +42,10 @@ In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> cl
 
 ### Settings
 
-- **General:** open at login, when the notification and the full screen arrive, how early the
-  countdown starts, how often and in which voice Leve says the time.
-- **Calendars:** for each calendar, All alerts, No full screen, Menu only, or Ignore.
+- **General:** open at login; when the notification and the full screen arrive; how early the
+  countdown starts; how often, between which hours and in which voice Leve says the time; whether it
+  says upcoming events; the Calendar and Notifications permissions.
+- **Calendars:** for each calendar, All alerts, No full screen, No alerts, or Hidden.
 
 ## Privacy
 

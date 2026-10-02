@@ -12,18 +12,16 @@ struct LeveApp: App {
             StatusLabel(model: delegate.model)
         }
         .menuBarExtraStyle(.menu)
-
-        Settings {
-            SettingsView(model: delegate.model)
-        }
     }
 }
 
-/// Starts the model at launch, before anyone opens the menu.
+/// Starts the model at launch, before anyone opens the menu, and owns the Settings window.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
+    private lazy var settings = SettingsWindowController(model: model)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        model.openSettings = { [weak self] in self?.settings.show() }
         Task { await model.start() }
     }
 }

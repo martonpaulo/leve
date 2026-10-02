@@ -42,3 +42,24 @@ import Testing
         #expect(!attention.isListed && !attention.isAlerting)
     }
 }
+
+@Suite struct ChoiceKeyTests {
+    /// A choice made for an event must survive the organizer moving it to another time that day.
+    @Test func aMovedEventKeepsItsChoiceKey() {
+        let before = Fixture.event("Standup", from: Fixture.at(10))
+        let after = Fixture.event("Standup", from: Fixture.at(10, 15))
+        #expect(before.choiceKey(calendar: Fixture.calendar) == after.choiceKey(calendar: Fixture.calendar))
+    }
+
+    @Test func anotherDayIsAnotherChoice() {
+        let today = Fixture.event("Standup", from: Fixture.at(10))
+        let tomorrow = Fixture.event("Standup", from: Fixture.at(10).addingTimeInterval(24 * 60 * 60))
+        #expect(today.choiceKey(calendar: Fixture.calendar) != tomorrow.choiceKey(calendar: Fixture.calendar))
+    }
+
+    @Test func anOldOccurrenceIDMigratesToItsChoiceKey() {
+        let event = Fixture.event("Standup", from: Fixture.at(10))
+        let migrated = CalendarEvent.choiceKey(fromOccurrenceID: event.id, calendar: Fixture.calendar)
+        #expect(migrated == event.choiceKey(calendar: Fixture.calendar))
+    }
+}

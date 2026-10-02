@@ -47,10 +47,12 @@ public struct MeetingLink: Sendable, Hashable {
         return MeetingLink(url: chosen, provider: .detect(chosen.absoluteString))
     }
 
+    /// Built once: an NSDataDetector is costly to create, and it is Sendable.
+    private static let detector = try? NSDataDetector(
+        types: NSTextCheckingResult.CheckingType.link.rawValue)
+
     static func extractURLs(from text: String?) -> [URL] {
-        guard let text, !text.isEmpty,
-            let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
-        else { return [] }
+        guard let text, !text.isEmpty, let detector else { return [] }
         let range = NSRange(text.startIndex..., in: text)
         return detector.matches(in: text, range: range).compactMap(\.url).filter(isWebLink)
     }

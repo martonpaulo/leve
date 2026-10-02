@@ -70,6 +70,39 @@ public enum AlertPlanner {
         .sorted { $0.start < $1.start }
     }
 
+    /// Whether a full-screen alert on screen stays: its event still blocks, has not ended, and alerts
+    /// are not paused. An alert that outlived its event would also hold back the next one.
+    public static func keepsFullScreen(eventID: String, events: [AttendedEvent], now: Date, paused: Bool) -> Bool {
+        guard !paused, let item = events.first(where: { $0.event.id == eventID }) else { return false }
+        return item.attention.blocksScreen && !item.event.hasEnded(at: now)
+    }
+
+    /// The reminders that have fired: their time passed more than two seconds ago. A reminder is
+    /// scheduled at least a second ahead, so the margin keeps a replan from cancelling one that is
+    /// about to fire.
+    public static func delivered(fireDates: [String: Date], now: Date) -> Set<String> {
+        let firedBefore = now.addingTimeInterval(-2)
+        return Set(fireDates.filter { $0.value < firedBefore }.keys)
+    }
+
+    /// Whether to say the time now: on an interval boundary, inside the speech hours, not paused,
+    /// someone at the Mac, no alerting event happening, and not already said this minute.
+    public static func shouldSayTime(
+        now: Date,
+        interval: SpeechInterval,
+        hours: SpeechHours,
+        paused: Bool,
+        away: Bool,
+        events: [AttendedEvent],
+        lastSpokenMinute: Date?,
+        calendar: Calendar
+    ) -> Bool {
+        guard interval.isBoundary(now, calendar: calendar), hours.contains(now, calendar: calendar),
+            !paused, !away, !isInAlertingEvent(events: events, now: now)
+        else { return false }
+        return calendar.dateInterval(of: .minute, for: now)?.start != lastSpokenMinute
+    }
+
     /// The spoken time stays quiet while an alerting event is happening.
     public static func isInAlertingEvent(events: [AttendedEvent], now: Date) -> Bool {
         events.contains { $0.attention.isAlerting && !$0.event.isAllDay && $0.event.isOngoing(at: now) }

@@ -31,5 +31,12 @@ let package = Package(
             path: "Tests/LeveKitTests",
             swiftSettings: swiftSettings
         ),
+        // The settings owners in the app target, through `@testable import Leve`.
+        .testTarget(
+            name: "LeveTests",
+            dependencies: ["Leve", "LeveKit"],
+            path: "Tests/LeveTests",
+            swiftSettings: swiftSettings
+        ),
     ]
 )

@@ -17,6 +17,8 @@ final class AppModel {
     private(set) var simulatedEvents: [CalendarEvent] = []
 
     @ObservationIgnored let alert = FullScreenAlert()
+    /// Opens the Settings window; the app delegate, which owns it, sets this.
+    @ObservationIgnored var openSettings: () -> Void = {}
     @ObservationIgnored private let speaker = TimeSpeaker()
     @ObservationIgnored private let logger = Logger(subsystem: "com.martonpaulo.leve", category: "model")
     @ObservationIgnored private var tickTask: Task<Void, Never>?
@@ -50,8 +52,7 @@ final class AppModel {
     /// Today's calendar events plus any simulated ones, in start order.
     var events: [CalendarEvent] {
         guard !simulatedEvents.isEmpty else { return calendar.events }
-        return (calendar.events + simulatedEvents)
-            .sorted { ($0.isAllDay ? 0 : 1, $0.start) < ($1.isAllDay ? 0 : 1, $1.start) }
+        return (calendar.events + simulatedEvents).sorted(by: CalendarEvent.displayOrder)
     }
 
     var attendedEvents: [AttendedEvent] {
@@ -60,7 +61,7 @@ final class AppModel {
                 event: event,
                 attention: .resolve(
                     rule: preferences.rule(for: event.calendarID),
-                    override: overrides.override(for: event.id)
+                    override: overrides.override(for: event)
                 )
             )
         }
@@ -78,7 +79,7 @@ final class AppModel {
     }
 
     var hiddenCount: Int {
-        overrides.hiddenCount(among: Set(events.map(\.id)))
+        overrides.hiddenCount(among: events)
     }
 
     // MARK: Lifecycle
@@ -92,6 +93,7 @@ final class AppModel {
         await calendar.requestAccessIfNeeded()
         await reminders.requestAuthorization()
         calendar.reload()
+        replan()
         startTicking()
     }
 
@@ -100,7 +102,6 @@ final class AppModel {
         let refresh: [(NotificationCenter, Notification.Name)] = [
             (workspace, NSWorkspace.didWakeNotification),
             (NotificationCenter.default, .NSSystemTimeZoneDidChange),
-            (NotificationCenter.default, .NSCalendarDayChanged),
         ]
         for (center, name) in refresh {
             center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
@@ -143,8 +144,14 @@ final class AppModel {
     func tick() {
         let previous = now
         now = .now
+        // The one midnight trigger: a new day reloads today's events and forgets yesterday's.
         if !Calendar.current.isDate(previous, inSameDayAs: now) {
+            overrides.prune(now: now)
             calendar.reload(now: now)
+        }
+        // Access granted later in System Settings is picked up within a minute.
+        if calendar.access != .granted {
+            calendar.refreshAccess()
         }
         if wasPaused && !isPaused {
             preferences.resume()
@@ -175,10 +182,7 @@ final class AppModel {
     func replan() {
         now = .now
         wasPaused = isPaused
-        // A reminder fires a second after it is scheduled at the earliest, so a two-second margin
-        // keeps a replan from cancelling one that is just about to fire.
-        let firedBefore = now.addingTimeInterval(-2)
-        let delivered = Set(reminderFireDates.filter { $0.value < firedBefore }.keys)
+        let delivered = AlertPlanner.delivered(fireDates: reminderFireDates, now: now)
         let planned =
             isPaused
             ? []
@@ -186,6 +190,8 @@ final class AppModel {
                 events: attendedEvents, now: now, leadMinutes: preferences.reminderLeadMinutes, delivered: delivered)
         let todayIDs = Set(events.map(\.id))
         reminderFireDates = reminderFireDates.filter { delivered.contains($0.key) && todayIDs.contains($0.key) }
+        handledFullScreen.formIntersection(todayIDs)
+        spokenAlerts.formIntersection(todayIDs)
         for reminder in planned {
             reminderFireDates[reminder.event.id] = reminder.fireDate
         }
@@ -206,11 +212,11 @@ final class AppModel {
 
     private func checkFullScreen() {
         if let shown = alert.event {
-            let stillBlocks = attendedEvents.contains { $0.event.id == shown.id && $0.attention.blocksScreen }
-            if !stillBlocks || isPaused {
+            if !AlertPlanner.keepsFullScreen(eventID: shown.id, events: attendedEvents, now: now, paused: isPaused) {
                 alert.dismissSilently()
+            } else {
+                return
             }
-            return
         }
         guard !isPaused else { return }
         let due = AlertPlanner.dueFullScreen(
@@ -232,22 +238,19 @@ final class AppModel {
             events: attendedEvents, now: now, leadMinutes: minutes, alreadySpoken: spokenAlerts)
         for event in due {
             spokenAlerts.insert(event.id)
-            let left = max(1, Int((event.start.timeIntervalSince(now) / 60).rounded(.up)))
+            let left = max(1, event.minutesUntilStart(from: now))
             speaker.speakUpcoming(event, minutes: left, voiceIdentifier: preferences.voiceIdentifier)
         }
     }
 
     private func speakIfDue() {
         let calendar = Calendar.current
-        guard preferences.speechInterval.isBoundary(now, calendar: calendar),
-            preferences.speechHours.contains(now, calendar: calendar),
-            !isPaused,
-            !isAway,
-            !AlertPlanner.isInAlertingEvent(events: attendedEvents, now: now)
+        guard
+            AlertPlanner.shouldSayTime(
+                now: now, interval: preferences.speechInterval, hours: preferences.speechHours, paused: isPaused,
+                away: isAway, events: attendedEvents, lastSpokenMinute: lastSpokenMinute, calendar: calendar)
         else { return }
-        let minute = calendar.dateInterval(of: .minute, for: now)?.start
-        guard minute != lastSpokenMinute else { return }
-        lastSpokenMinute = minute
+        lastSpokenMinute = calendar.dateInterval(of: .minute, for: now)?.start
         speaker.speak(now, voiceIdentifier: preferences.voiceIdentifier)
     }
 
@@ -262,9 +265,16 @@ final class AppModel {
         NSWorkspace.shared.open(url)
     }
 
-    func toggleSilence(_ event: CalendarEvent) {
-        let isSilenced = overrides.override(for: event.id) == .silenced
-        overrides.set(isSilenced ? nil : .silenced, for: event)
+    /// Turns this event's alerts off, or back on.
+    func toggleAlerts(_ event: CalendarEvent) {
+        let isOff = overrides.override(for: event) == .silenced
+        overrides.set(isOff ? nil : .silenced, for: event)
+    }
+
+    /// Stops the full screen for this event, or brings it back.
+    func toggleFullScreen(_ event: CalendarEvent) {
+        let isOff = overrides.override(for: event) == .noFullScreen
+        overrides.set(isOff ? nil : .noFullScreen, for: event)
     }
 
     func hide(_ event: CalendarEvent) {
@@ -295,8 +305,12 @@ extension AppModel {
         simulatedEvents.append(makeSimulatedEvent(start: minute.addingTimeInterval(2 * 60), minutes: 5))
     }
 
+    /// The event joins the simulated ones, so the next tick finds it and keeps the alert up.
     func showFullScreenNow() {
-        alert.present(makeSimulatedEvent(start: Date.now.addingTimeInterval(60), minutes: 5))
+        let event = makeSimulatedEvent(start: Date.now.addingTimeInterval(60), minutes: 5)
+        simulatedEvents.append(event)
+        handledFullScreen.insert(event.id)
+        alert.present(event)
     }
 
     func sendTestNotification() {

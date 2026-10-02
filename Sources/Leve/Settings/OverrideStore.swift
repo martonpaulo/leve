@@ -2,8 +2,9 @@ import Foundation
 import LeveKit
 import Observation
 
-/// Per-occurrence choices made from the menu or the full-screen alert: silenced, hidden, or no
-/// full screen. Each entry remembers when its event ends, and entries for past events are dropped.
+/// Per-event choices made from the menu or the full-screen alert: alerts off, hidden, or no full
+/// screen. Each is keyed by the event and its day, so it survives the event moving to another time
+/// that day, and is dropped once its event has ended.
 @Observable
 final class OverrideStore {
     private struct Entry: Codable {
@@ -11,31 +12,40 @@ final class OverrideStore {
         let eventEnd: Date
     }
 
-    private static let key = "leve.eventOverrides.v1"
+    /// v1 keyed entries by the occurrence id, which changes when an event moves.
+    private static let legacyKey = "leve.eventOverrides.v1"
+    private static let key = "leve.eventOverrides.v2"
 
     @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let calendar: Calendar
     private var entries: [String: Entry]
+    /// Changes on every write, so an observer can replan without reading each entry.
+    private(set) var revision = 0
 
-    init(defaults: UserDefaults = .standard, now: Date = .now) {
+    init(defaults: UserDefaults = .standard, calendar: Calendar = .current, now: Date = .now) {
         self.defaults = defaults
-        let data = defaults.data(forKey: Self.key)
-        let decoded = data.flatMap { try? JSONDecoder().decode([String: Entry].self, from: $0) } ?? [:]
-        entries = decoded.filter { $0.value.eventEnd > now }
-        save()
+        self.calendar = calendar
+        var loaded = Self.decode(defaults.data(forKey: Self.key))
+        for (occurrenceID, entry) in Self.decode(defaults.data(forKey: Self.legacyKey)) {
+            loaded[CalendarEvent.choiceKey(fromOccurrenceID: occurrenceID, calendar: calendar)] = entry
+        }
+        defaults.removeObject(forKey: Self.legacyKey)
+        entries = loaded
+        prune(now: now)
     }
 
-    func override(for eventID: String) -> EventOverride? {
-        entries[eventID]?.override
+    func override(for event: CalendarEvent) -> EventOverride? {
+        entries[event.choiceKey(calendar: calendar)]?.override
     }
 
     func set(_ override: EventOverride?, for event: CalendarEvent) {
-        entries[event.id] = override.map { Entry(override: $0, eventEnd: event.end) }
+        entries[event.choiceKey(calendar: calendar)] = override.map { Entry(override: $0, eventEnd: event.end) }
         save()
     }
 
-    /// Hidden events of today, newest choice not tracked: the menu offers to show them all again.
-    func hiddenCount(among eventIDs: Set<String>) -> Int {
-        entries.filter { eventIDs.contains($0.key) && $0.value.override == .hidden }.count
+    /// How many of `events` are hidden: the menu offers to show them again.
+    func hiddenCount(among events: [CalendarEvent]) -> Int {
+        events.filter { override(for: $0) == .hidden }.count
     }
 
     func unhideAll() {
@@ -43,13 +53,20 @@ final class OverrideStore {
         save()
     }
 
-    /// Changes on every write, so an observer can replan without reading each entry.
-    private(set) var revision = 0
+    /// Drops the choices of events that have ended; a long-running Leve calls it at each new day.
+    func prune(now: Date) {
+        entries = entries.filter { $0.value.eventEnd > now }
+        save()
+    }
 
     private func save() {
         revision += 1
         if let data = try? JSONEncoder().encode(entries) {
             defaults.set(data, forKey: Self.key)
         }
+    }
+
+    private static func decode(_ data: Data?) -> [String: Entry] {
+        data.flatMap { try? JSONDecoder().decode([String: Entry].self, from: $0) } ?? [:]
     }
 }

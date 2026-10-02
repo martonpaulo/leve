@@ -19,20 +19,16 @@ public enum MenuBarStatus: Sendable, Equatable {
         let timed = events.filter { $0.attention.isAlerting && !$0.event.isAllDay }.map(\.event)
 
         if let current = timed.filter({ $0.isOngoing(at: now) }).min(by: { $0.end < $1.end }) {
-            return .ongoing(title: current.title, minutesLeft: wholeMinutes(from: now, to: current.end))
+            return .ongoing(
+                title: current.title, minutesLeft: max(1, Int((current.end.timeIntervalSince(now) / 60).rounded(.up))))
         }
         guard let next = timed.filter({ $0.start > now }).min(by: { $0.start < $1.start }) else {
             return .clear
         }
-        let minutes = wholeMinutes(from: now, to: next.start)
+        let minutes = max(1, next.minutesUntilStart(from: now))
         if minutes <= countdownMinutes {
             return .upcoming(title: next.title, minutes: minutes)
         }
         return .freeUntil(next.start)
-    }
-
-    /// Minutes rounded up, so "in 1 min" shows until the event starts, never "in 0 min".
-    static func wholeMinutes(from start: Date, to end: Date) -> Int {
-        max(1, Int((end.timeIntervalSince(start) / 60).rounded(.up)))
     }
 }

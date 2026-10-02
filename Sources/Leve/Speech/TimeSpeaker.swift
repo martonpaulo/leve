@@ -11,9 +11,11 @@ final class TimeSpeaker {
     }
 
     static let defaultLanguage = "en-US"
+    /// Listing every installed voice is costly, so it happens once per launch.
+    static let englishVoices = availableVoices()
     static var defaultVoiceName: String {
         let name = AVSpeechSynthesisVoice(language: defaultLanguage)?.name ?? defaultLanguage
-        return String(localized: "\(name) (default)")
+        return Copy.defaultVoice(name)
     }
     private static let offeredLanguage = "en"
 

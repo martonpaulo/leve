@@ -48,13 +48,6 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
         )
     }
 
-    func openSystemSettings() {
-        let id = Bundle.main.bundleIdentifier ?? ""
-        if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=\(id)") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
     func replace(with reminders: [PlannedReminder], urgent: Bool, now: Date) async {
         let pending = await center.pendingNotificationRequests()
         let ours = pending.map(\.identifier).filter { $0.hasPrefix(Self.prefix) }
@@ -63,15 +56,7 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
         let delivered = Set(await center.deliveredNotifications().map(\.request.identifier))
 
         for reminder in reminders where !delivered.contains(Self.prefix + reminder.event.id) {
-            let content = UNMutableNotificationContent()
-            content.title = reminder.event.title
-            content.body = Copy.startsIn(reminder.event, now: reminder.fireDate)
-            content.sound = .default
-            content.interruptionLevel = urgent ? .timeSensitive : .active
-            if let link = reminder.event.link {
-                content.categoryIdentifier = Self.category
-                content.userInfo = [Self.linkKey: link.url.absoluteString]
-            }
+            let content = Self.content(for: reminder.event, at: reminder.fireDate, urgent: urgent)
             let delay = max(1, reminder.fireDate.timeIntervalSince(now))
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
             let request = UNNotificationRequest(
@@ -89,16 +74,27 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
 
     /// Delivers one notification for `event` now, outside the plan; the Debug menu uses it.
     func sendNow(_ event: CalendarEvent) async {
-        let content = UNMutableNotificationContent()
-        content.title = event.title
-        content.body = Copy.startsIn(event, now: .now)
-        content.sound = .default
+        let content = Self.content(for: event, at: .now, urgent: false)
         let request = UNNotificationRequest(identifier: "leve.debug." + event.id, content: content, trigger: nil)
         do {
             try await center.add(request)
         } catch {
             logger.error("Could not send a test notification: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// One notification's content: the title, when it starts, and a Join button for a call link.
+    private static func content(for event: CalendarEvent, at date: Date, urgent: Bool) -> UNNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = event.title
+        content.body = Copy.startsIn(event, now: date)
+        content.sound = .default
+        content.interruptionLevel = urgent ? .timeSensitive : .active
+        if let link = event.link {
+            content.categoryIdentifier = category
+            content.userInfo = [linkKey: link.url.absoluteString]
+        }
+        return content
     }
 
     nonisolated func userNotificationCenter(

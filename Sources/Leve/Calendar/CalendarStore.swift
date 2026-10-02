@@ -57,12 +57,22 @@ final class CalendarStore {
         reload()
     }
 
+    /// Reads the permission again; a change, such as access granted in System Settings, reloads.
+    func refreshAccess() {
+        if Self.currentAccess() != access {
+            reload()
+        }
+    }
+
+    /// Reloads today's events, and tells the scheduler only when something changed, so a burst
+    /// of store notifications does not replan the same day again and again.
     func reload(now: Date = .now) {
+        let previous = (access, events, calendars)
         access = Self.currentAccess()
         guard access == .granted else {
             events = []
             calendars = []
-            onChange?()
+            if previous != (access, events, calendars) { onChange?() }
             return
         }
         let eventCalendars = store.calendars(for: .event)
@@ -82,8 +92,10 @@ final class CalendarStore {
         events = store.events(matching: predicate)
             .filter { $0.status != .canceled && !Self.declinedByMe($0) }
             .map(Self.makeEvent)
-            .sorted { ($0.isAllDay ? 0 : 1, $0.start) < ($1.isAllDay ? 0 : 1, $1.start) }
-        onChange?()
+            .sorted(by: CalendarEvent.displayOrder)
+        if previous != (access, events, calendars) {
+            onChange?()
+        }
     }
 
     private static func currentAccess() -> Access {

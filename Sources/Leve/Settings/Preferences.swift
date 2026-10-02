@@ -11,6 +11,17 @@ final class Preferences {
     static let countdownOptions = [15, 30, 60]
     static let spokenAlertOptions = [1, 2, 5]
 
+    /// The values a fresh install starts with, and Restore Defaults returns to.
+    enum Default {
+        static let reminderLead: Int? = 5
+        static let fullScreenLead: Int? = 1
+        static let countdown = 30
+        static let speechInterval = SpeechInterval.halfHour
+        static let spokenAlert: Int? = 2
+        static let speechStart = 8
+        static let speechEnd = 20
+    }
+
     private enum Key {
         static let reminderLead = "leve.reminderLeadMinutes.v1"
         static let fullScreenLead = "leve.fullScreenLeadMinutes.v1"
@@ -80,23 +91,39 @@ final class Preferences {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        reminderLeadMinutes = Self.read(defaults, Key.reminderLead, fallback: 5)
-        fullScreenLeadMinutes = Self.read(defaults, Key.fullScreenLead, fallback: 1)
-        let countdown = defaults.object(forKey: Key.countdown) as? Int ?? 30
-        countdownMinutes = Self.countdownOptions.contains(countdown) ? countdown : 30
-        speechInterval = SpeechInterval(rawValue: defaults.integer(forKey: Key.speechInterval)) ?? .halfHour
-        if defaults.object(forKey: Key.speechInterval) == nil {
-            speechInterval = .halfHour
-        }
+        reminderLeadMinutes = Self.read(
+            defaults, Key.reminderLead, options: Self.reminderLeadOptions, fallback: Default.reminderLead)
+        fullScreenLeadMinutes = Self.read(
+            defaults, Key.fullScreenLead, options: Self.fullScreenLeadOptions, fallback: Default.fullScreenLead)
+        let countdown = defaults.object(forKey: Key.countdown) as? Int ?? Default.countdown
+        countdownMinutes = Self.countdownOptions.contains(countdown) ? countdown : Default.countdown
+        let interval = defaults.object(forKey: Key.speechInterval) as? Int
+        speechInterval = interval.flatMap(SpeechInterval.init(rawValue:)) ?? Default.speechInterval
         voiceIdentifier = defaults.string(forKey: Key.voice)
         urgentDelivery = defaults.bool(forKey: Key.urgent)
         let rawRules = defaults.dictionary(forKey: Key.calendarRules) as? [String: String] ?? [:]
         calendarRules = rawRules.compactMapValues(CalendarRule.init(rawValue:))
         pausedUntil = defaults.object(forKey: Key.pausedUntil) as? Date
         debugMenu = defaults.bool(forKey: Key.debugMenu)
-        spokenAlertMinutes = Self.read(defaults, Key.spokenAlert, fallback: 2)
-        speechStartHour = Self.hour(defaults, Key.speechStart, fallback: 8)
-        speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: 20)
+        spokenAlertMinutes = Self.read(
+            defaults, Key.spokenAlert, options: Self.spokenAlertOptions, fallback: Default.spokenAlert)
+        speechStartHour = Self.hour(defaults, Key.speechStart, fallback: Default.speechStart)
+        speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: Default.speechEnd)
+    }
+
+    /// Returns every setting to its default. The pause, the debug menu, macOS permissions and launch
+    /// at login stay as they are.
+    func restoreDefaults() {
+        reminderLeadMinutes = Default.reminderLead
+        fullScreenLeadMinutes = Default.fullScreenLead
+        countdownMinutes = Default.countdown
+        speechInterval = Default.speechInterval
+        spokenAlertMinutes = Default.spokenAlert
+        speechStartHour = Default.speechStart
+        speechEndHour = Default.speechEnd
+        voiceIdentifier = nil
+        urgentDelivery = false
+        calendarRules = [:]
     }
 
     func rule(for calendarID: String) -> CalendarRule {
@@ -129,8 +156,10 @@ final class Preferences {
         return value
     }
 
-    private static func read(_ defaults: UserDefaults, _ key: String, fallback: Int) -> Int? {
+    /// A stored value outside the offered options falls back, so no picker is left without a choice.
+    private static func read(_ defaults: UserDefaults, _ key: String, options: [Int], fallback: Int?) -> Int? {
         guard let value = defaults.object(forKey: key) as? Int else { return fallback }
-        return value == offValue ? nil : value
+        if value == offValue { return nil }
+        return options.contains(value) ? value : fallback
     }
 }

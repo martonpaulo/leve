@@ -79,10 +79,12 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | Leve replaces Smart Desk's macOS event features in a new, small app (owner, 2026-10-02) | [What it is](#what-it-is) |
 | English-only interface for now (owner, 2026-10-02) | `AGENTS.md`, Product copy |
 | One "Pause Alerts" for notifications, full screen and speech, always with an end time (owner, 2026-10-02) | [What it does](#what-it-does) |
-| One attention choice per calendar: All alerts, No full screen, Menu only, Ignore (owner, 2026-10-02) | [What it does](#what-it-does) |
+| One attention choice per calendar (owner, 2026-10-02), named All alerts, No full screen, No alerts, Hidden since 2026-10-03 | [What it does](#what-it-does) |
 | The menu bar shows "Free until …" when nothing is close (owner, 2026-10-02) | [What it does](#what-it-does) |
 | Everything, including the voice, is in English (owner, 2026-10-03) | `Sources/Leve/Speech/TimeSpeaker.swift` |
 | Spoken warning before events, and hours for the spoken time (owner, 2026-10-03) | [What it does](#what-it-does) |
 | No snooze in the full screen and no second time zone, to keep Leve light (owner, 2026-10-03) | [Feel](#feel) |
 | A debug menu, off by default, simulates events without touching Calendar (owner, 2026-10-03) | `Sources/Leve/App/AppModel.swift` |
 | A dot in each calendar's color marks events and calendars (owner, 2026-10-03) | `Sources/Leve/Menu/CalendarDot.swift` |
+| Settings follow WindowHop's pattern (owner, 2026-10-03) | `AGENTS.md`, Architecture and patterns |
+| One word per attention level: All alerts, No full screen, No alerts, Hidden; "Don't Show Full Screen" stays in the alert and joins the event's menu (owner, 2026-10-03) | `Sources/Leve/App/Copy.swift` |

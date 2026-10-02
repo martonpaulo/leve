@@ -10,7 +10,7 @@ enum Copy {
     static let untitledEvent = String(localized: "Untitled event")
     static let appName = String(localized: "Leve")
 
-    static func status(_ status: MenuBarStatus, now: Date) -> String {
+    static func status(_ status: MenuBarStatus) -> String {
         switch status {
         case .clear:
             String(localized: "Nothing else today")
@@ -33,12 +33,14 @@ enum Copy {
     static let today = String(localized: "Today")
     static let noMoreEvents = String(localized: "No more events today")
     static let allDay = String(localized: "All day")
-    static let silencedSuffix = String(localized: "(silenced)")
-
-    static func eventRow(_ event: CalendarEvent, silenced: Bool) -> String {
+    static func eventRow(_ event: CalendarEvent, override: EventOverride?) -> String {
         let start = event.isAllDay ? allDay : time(event.start)
         let row = "\(start)  \(event.title)"
-        return silenced ? "\(row) \(silencedSuffix)" : row
+        switch override {
+        case .silenced: return String(localized: "\(row) (alerts off)")
+        case .noFullScreen: return String(localized: "\(row) (no full screen)")
+        case .hidden, nil: return row
+        }
     }
 
     static func timeRange(_ event: CalendarEvent) -> String {
@@ -55,8 +57,11 @@ enum Copy {
         }
     }
 
-    static let silenceEvent = String(localized: "Silence This Event")
-    static let unsilenceEvent = String(localized: "Turn Alerts Back On")
+    // One word per attention level everywhere: alerts on or off, full screen or not, hidden.
+    static let alertsOffForEvent = String(localized: "Turn Off Alerts for This Event")
+    static let alertsBackOn = String(localized: "Turn Alerts Back On")
+    static let noFullScreenInMenu = String(localized: "Don’t Show Full Screen")
+    static let fullScreenBackOn = String(localized: "Show Full Screen Again")
     static let hideEvent = String(localized: "Hide This Event")
 
     static func showHidden(_ count: Int) -> String {
@@ -86,7 +91,7 @@ enum Copy {
     // MARK: Notifications and full screen
 
     static func startsIn(_ event: CalendarEvent, now: Date) -> String {
-        let minutes = max(0, Int((event.start.timeIntervalSince(now) / 60).rounded(.up)))
+        let minutes = event.minutesUntilStart(from: now)
         if minutes == 0 {
             return String(localized: "Starting now · \(timeRange(event))")
         }
@@ -113,9 +118,7 @@ enum Copy {
     static let notification = String(localized: "Notification")
     static let fullScreen = String(localized: "Full screen")
     static let urgentDelivery = String(localized: "Show notifications during Focus")
-    static let alertsFooter = String(
-        localized:
-            "Full screen covers your screen until you join or close it. Press Esc to close it.")
+    static let alertsFooter = String(localized: "Full screen covers every display until you join or close it (Esc).")
     static let off = String(localized: "Off")
     static let atStart = String(localized: "When it starts")
 
@@ -124,7 +127,7 @@ enum Copy {
     }
 
     static let menuBarSection = String(localized: "Menu bar")
-    static let countdown = String(localized: "Count down from")
+    static let countdown = String(localized: "Show countdown")
 
     static func minutes(_ minutes: Int) -> String {
         String(localized: "\(minutes) min")
@@ -135,6 +138,12 @@ enum Copy {
     static let voice = String(localized: "Voice")
     static let speechHours = String(localized: "Between")
     static let speechHoursTo = String(localized: "and")
+    static let speechHoursFrom = String(localized: "From")
+    static let speechHoursUntil = String(localized: "To")
+
+    static func defaultVoice(_ name: String) -> String {
+        String(localized: "\(name) (default)")
+    }
     static let sayUpcoming = String(localized: "Say upcoming events")
 
     static func hour(_ hour: Int) -> String {
@@ -154,18 +163,43 @@ enum Copy {
         }
     }
 
-    static let notificationsOff = String(localized: "Notifications for Leve are off in System Settings.")
-    static let openNotificationSettings = String(localized: "Open Notification Settings…")
-    static let calendarsFooter = String(localized: "Choose how much attention each calendar gets.")
+    static let calendarsHeader = String(
+        localized:
+            "All alerts: countdown, notification and full screen. No full screen: countdown and notification. No alerts: listed only. Hidden: not shown."
+    )
 
     static func rule(_ rule: CalendarRule) -> String {
         switch rule {
         case .everything: String(localized: "All alerts")
         case .noFullScreen: String(localized: "No full screen")
-        case .menuOnly: String(localized: "Menu only")
-        case .ignore: String(localized: "Ignore")
+        case .menuOnly: String(localized: "No alerts")
+        case .ignore: String(localized: "Hidden")
         }
     }
+
+    // MARK: Settings: permissions, restore and quit
+
+    static let permissions = String(localized: "Permissions")
+    static let calendarPermission = String(localized: "Calendar")
+    static let calendarPermissionNote = String(localized: "Needed to read today’s events.")
+    static let notificationPermission = String(localized: "Notifications")
+    static let notificationPermissionNote = String(localized: "Needed to warn you before events.")
+    static let allowed = String(localized: "Allowed")
+    static let notAllowed = String(localized: "Not allowed")
+    static let openSystemSettings = String(localized: "Open System Settings…")
+    static let restoreDefaultsButton = String(localized: "Restore Defaults…")
+    static let restoreDefaultsQuestion = String(localized: "Restore all Leve settings?")
+    static let restoreDefaultsMessage = String(
+        localized:
+            "Alerts, the countdown, spoken time and calendar choices return to their original values. Permissions, launch at login and per-event choices are unchanged."
+    )
+    static let restoreDefaults = String(localized: "Restore Defaults")
+    static let cancel = String(localized: "Cancel")
+    static let quitButton = String(localized: "Quit Leve…")
+    static let quitQuestion = String(localized: "Quit Leve?")
+    static let quitMessage = String(localized: "Leve stops showing your events and alerts until you open it again.")
+    static let debugFooter = String(localized: "Adds a Debug menu to try the alerts without real events.")
+    static let developer = String(localized: "Developer")
 
     static let noCalendars = String(localized: "No calendars found on this Mac.")
     static let aboutDescription = String(
@@ -180,8 +214,10 @@ enum Copy {
         String(localized: "Version \(version) (\(build))")
     }
 
-    static func released(_ date: String) -> String {
-        String(localized: "Released \(date)")
+    /// "Version 0.1.0 (100) · 3 October 2026".
+    static func versionLine(_ version: String, released: String?) -> String {
+        guard let released else { return version }
+        return String(localized: "\(version) · \(released)")
     }
 
     static let copyright = String(localized: "© 2026 Marton Paulo. MIT License.")

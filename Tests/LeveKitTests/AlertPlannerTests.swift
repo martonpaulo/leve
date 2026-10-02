@@ -77,3 +77,76 @@ import Testing
         #expect(!AlertPlanner.isInAlertingEvent(events: silenced, now: Fixture.at(10, 15)))
     }
 }
+
+@Suite struct FullScreenLifecycleTests {
+    private let standup = Fixture.event("Standup", from: Fixture.at(10))
+
+    /// An alert left on screen must not outlive its event: it would also block the next event's alert.
+    @Test func theAlertClosesWhenItsEventEnds() {
+        let keep = AlertPlanner.keepsFullScreen(
+            eventID: standup.id, events: [Fixture.attended(standup)], now: Fixture.at(10, 30), paused: false)
+        #expect(!keep)
+    }
+
+    @Test func theAlertStaysWhileItsEventStillBlocks() {
+        let keep = AlertPlanner.keepsFullScreen(
+            eventID: standup.id, events: [Fixture.attended(standup)], now: Fixture.at(10, 5), paused: false)
+        #expect(keep)
+    }
+
+    @Test func theAlertClosesWhenPausedOrNoLongerBlocking() {
+        #expect(
+            !AlertPlanner.keepsFullScreen(
+                eventID: standup.id, events: [Fixture.attended(standup)], now: Fixture.at(9, 59), paused: true))
+        #expect(
+            !AlertPlanner.keepsFullScreen(
+                eventID: standup.id, events: [Fixture.attended(standup, override: .noFullScreen)],
+                now: Fixture.at(9, 59), paused: false))
+    }
+}
+
+@Suite struct SharedRuleTests {
+    private let standup = Fixture.event("Standup", from: Fixture.at(10))
+
+    @Test(arguments: [(9, 58, 30, 2), (9, 59, 59, 1), (10, 0, 0, 0), (10, 5, 0, 0)])
+    func minutesUntilStart(hour: Int, minute: Int, second: Int, expected: Int) {
+        let now = Fixture.at(hour, minute).addingTimeInterval(Double(second))
+        #expect(standup.minutesUntilStart(from: now) == expected)
+    }
+
+    @Test func allDayEventsComeFirst() {
+        let holiday = Fixture.event("Holiday", from: Fixture.at(0), minutes: 24 * 60, allDay: true)
+        let early = Fixture.event("Early", from: Fixture.at(8))
+        #expect(
+            [standup, holiday, early].sorted(by: CalendarEvent.displayOrder).map(\.title) == [
+                "Holiday", "Early", "Standup",
+            ])
+    }
+
+    @Test func deliveredKeepsATwoSecondMargin() {
+        let now = Fixture.at(9, 55)
+        let fireDates = [
+            "fired": now.addingTimeInterval(-3), "firing": now.addingTimeInterval(-1),
+            "later": now.addingTimeInterval(60),
+        ]
+        #expect(AlertPlanner.delivered(fireDates: fireDates, now: now) == ["fired"])
+    }
+
+    private func sayTime(
+        _ now: Date, paused: Bool = false, away: Bool = false, last: Date? = nil, events: [AttendedEvent] = []
+    ) -> Bool {
+        AlertPlanner.shouldSayTime(
+            now: now, interval: .halfHour, hours: SpeechHours(startHour: 8, endHour: 20), paused: paused, away: away,
+            events: events, lastSpokenMinute: last, calendar: Fixture.calendar)
+    }
+
+    @Test func saysTheTimeOnlyWhenEveryConditionHolds() {
+        #expect(sayTime(Fixture.at(10, 30)))
+        #expect(!sayTime(Fixture.at(10, 15)))
+        #expect(!sayTime(Fixture.at(21, 0)))
+        #expect(!sayTime(Fixture.at(10, 30), paused: true))
+        #expect(!sayTime(Fixture.at(10, 30), away: true))
+        #expect(!sayTime(Fixture.at(10, 30), last: Fixture.at(10, 30)))
+        #expect(!sayTime(Fixture.at(10, 0), events: [Fixture.attended(standup)]))
+    }
+}
