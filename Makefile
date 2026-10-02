@@ -60,8 +60,11 @@ clean: ## Remove the SwiftPM build and build/
 # -- Leve targets --------------------------------------------------------------
 
 # Notifications, calendar access and launch at login reach only a real bundle.
+# `quit` returns before Leve exits; opening the new copy while the old one is still closing fails
+# with LaunchServices error -600, so wait for the process to end (at most 5 seconds).
 install: app ## Quit a running Leve, copy build/Leve.app into /Applications and open it
 	@-osascript -e 'quit app "Leve"' >/dev/null 2>&1
+	@for i in $$(seq 1 25); do pgrep -x Leve >/dev/null || break; sleep 0.2; done
 	@rm -rf $(APP_BUNDLE)
 	@ditto build/Leve.app $(APP_BUNDLE)
 	@-$(LSREGISTER) -f $(APP_BUNDLE) >/dev/null 2>&1
