@@ -225,7 +225,7 @@ final class AppModel {
         alert.present(event)
     }
 
-    /// Says "Daily en dos minutos" before an alerting event, at any hour, unless alerts are paused.
+    /// Says "Standup in 2 minutes" before an alerting event, at any hour, unless alerts are paused.
     private func speakUpcomingIfDue() {
         guard !isPaused, let minutes = preferences.spokenAlertMinutes else { return }
         let due = AlertPlanner.dueSpokenAlerts(

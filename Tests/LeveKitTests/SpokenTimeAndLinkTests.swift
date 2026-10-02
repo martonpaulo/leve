@@ -3,17 +3,11 @@ import LeveKit
 import Testing
 
 @Suite struct SpokenTimeTests {
-    @Test(arguments: [
-        (10, 0, "Son las diez de la mañana"),
-        (10, 30, "Son las diez y media de la mañana"),
-        (13, 15, "Es la una y cuarto de la tarde"),
-        (12, 45, "Es la una menos cuarto de la tarde"),
-        (21, 0, "Son las nueve de la noche"),
-        (0, 0, "Son las doce de la noche"),
-    ])
-    func spanishPhrase(hour: Int, minute: Int, expected: String) {
-        let phrase = SpokenTime.phrase(for: Fixture.at(hour, minute), languageCode: "es-ES", calendar: Fixture.calendar)
-        #expect(phrase == expected)
+    @Test(arguments: [(10, 0, "It's 10 AM"), (10, 30, "It's 10:30 AM"), (13, 15, "It's 1:15 PM"), (0, 0, "It's 12 AM")])
+    func englishPhrase(hour: Int, minute: Int, expected: String) {
+        let phrase = SpokenTime.phrase(for: Fixture.at(hour, minute), calendar: Fixture.calendar)
+        // The formatter puts a narrow no-break space before AM and PM.
+        #expect(phrase.replacingOccurrences(of: "\u{202F}", with: " ") == expected)
     }
 
     @Test func halfHourBoundaries() {
@@ -50,12 +44,9 @@ import Testing
 @Suite struct SpokenAlertTests {
     private let standup = Fixture.event("Standup", from: Fixture.at(10))
 
-    @Test(arguments: [
-        ("es-ES", 2, "Daily en dos minutos"), ("es-ES", 1, "Daily en un minuto"),
-        ("pt-BR", 2, "Daily em 2 minutos"), ("en-US", 1, "Daily in one minute"),
-    ])
-    func eventPhrase(language: String, minutes: Int, expected: String) {
-        #expect(SpokenTime.eventPhrase(title: "Daily", minutes: minutes, languageCode: language) == expected)
+    @Test(arguments: [(2, "Daily in 2 minutes"), (1, "Daily in one minute")])
+    func eventPhrase(minutes: Int, expected: String) {
+        #expect(SpokenTime.eventPhrase(title: "Daily", minutes: minutes) == expected)
     }
 
     @Test(arguments: [(9, 57, false), (9, 58, true), (9, 59, true), (10, 0, false)])

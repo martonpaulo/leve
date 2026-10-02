@@ -2,34 +2,30 @@ import AVFAudio
 import Foundation
 import LeveKit
 
-/// Says the time with a system voice. The default voice is Spanish (Spain), the language Smart
-/// Desk spoke; any installed Spanish, Portuguese or English voice can replace it.
+/// Says the time and upcoming events in English with a system voice; any installed English voice
+/// can replace the default one.
 final class TimeSpeaker {
     struct Voice: Identifiable, Hashable {
         let id: String
         let name: String
     }
 
-    static let defaultLanguage = "es-ES"
+    static let defaultLanguage = "en-US"
     static var defaultVoiceName: String {
         let name = AVSpeechSynthesisVoice(language: defaultLanguage)?.name ?? defaultLanguage
         return String(localized: "\(name) (default)")
     }
-    private static let offeredLanguages = ["es", "pt", "en"]
+    private static let offeredLanguage = "en"
 
     private let synthesizer = AVSpeechSynthesizer()
 
     func speak(_ date: Date, voiceIdentifier: String?) {
-        let voice = Self.voice(voiceIdentifier)
-        let language = voice?.language ?? Self.defaultLanguage
-        say(SpokenTime.phrase(for: date, languageCode: language, calendar: .current), voice: voice)
+        say(SpokenTime.phrase(for: date, calendar: .current), voice: Self.voice(voiceIdentifier))
     }
 
-    /// "Daily en dos minutos". The synthesizer queues it behind any sentence already playing.
+    /// "Standup in 2 minutes". The synthesizer queues it behind any sentence already playing.
     func speakUpcoming(_ event: CalendarEvent, minutes: Int, voiceIdentifier: String?) {
-        let voice = Self.voice(voiceIdentifier)
-        let language = voice?.language ?? Self.defaultLanguage
-        say(SpokenTime.eventPhrase(title: event.title, minutes: minutes, languageCode: language), voice: voice)
+        say(SpokenTime.eventPhrase(title: event.title, minutes: minutes), voice: Self.voice(voiceIdentifier))
     }
 
     private func say(_ text: String, voice: AVSpeechSynthesisVoice?) {
@@ -47,7 +43,7 @@ final class TimeSpeaker {
     static func availableVoices() -> [Voice] {
         let locale = Locale.current
         return AVSpeechSynthesisVoice.speechVoices()
-            .filter { voice in offeredLanguages.contains { voice.language.hasPrefix($0) } }
+            .filter { $0.language.hasPrefix(offeredLanguage) }
             .map { voice in
                 let language = locale.localizedString(forIdentifier: voice.language) ?? voice.language
                 return Voice(id: voice.identifier, name: "\(voice.name) (\(language))")

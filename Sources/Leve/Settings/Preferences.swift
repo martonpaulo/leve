@@ -60,7 +60,7 @@ final class Preferences {
     var speechHours: SpeechHours {
         SpeechHours(startHour: speechStartHour, endHour: speechEndHour)
     }
-    /// nil means the default Spanish voice, the behavior carried over from Smart Desk.
+    /// nil means the default English voice.
     var voiceIdentifier: String? {
         didSet { defaults.set(voiceIdentifier, forKey: Key.voice) }
     }
