@@ -25,6 +25,7 @@
 - Skills baseline revision: `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`
 - Skills baseline applied: `2026-10-03`
 - Skills baseline divergence `continuous-integration` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: no Validate workflow. macOS runners spend the private repository's minutes on every push for one author; `make check` runs locally before each commit instead (owner, 2026-10-02).
+- Skills baseline divergence `dependabot` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: no `.github/dependabot.yml`. Leve has no package dependency and no workflow, so there is nothing to update; add it with the first dependency.
 - Skills baseline divergence `canonical-scripts` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: `scripts/build-app.sh` replaces the canonical `package-app.sh`, which requires Sparkle and has no entitlements option; Leve has neither updates nor distribution and needs the calendar entitlement.
 
 Change an established identifier, license, visibility, branch, versioning, localization, landing-page or release policy only through an explicit task describing the migration and its effects.
@@ -59,6 +60,12 @@ For any command, process, browser action, integration, or delegated task likely 
   or other infrastructure merely to satisfy this rule.
 - Keep termination thresholds task-specific. Workflow-specific wait tools and user-input
   boundaries remain authoritative.
+
+## Agent skill paths
+
+- Product definition: `docs/product.md`
+- Research notes: `docs/research/`; handoffs: `.scratch/handoffs/`; prototypes: `.scratch/prototypes/`.
+  A path exists only once a workflow writes a real artifact there.
 
 ## Build and validate
 
