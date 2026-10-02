@@ -1,0 +1,110 @@
+import Foundation
+import LeveKit
+import Observation
+
+/// The one owner of Leve's settings. Every key is constant and versioned (`leve.<name>.v1`);
+/// changing a value's shape means a new key and a tested migration.
+@Observable
+final class Preferences {
+    static let reminderLeadOptions = [1, 2, 5, 10, 15]
+    static let fullScreenLeadOptions = [0, 1, 2, 5]
+    static let countdownOptions = [15, 30, 60]
+
+    private enum Key {
+        static let reminderLead = "leve.reminderLeadMinutes.v1"
+        static let fullScreenLead = "leve.fullScreenLeadMinutes.v1"
+        static let countdown = "leve.countdownMinutes.v1"
+        static let speechInterval = "leve.speechIntervalMinutes.v1"
+        static let voice = "leve.voiceIdentifier.v1"
+        static let urgent = "leve.urgentDelivery.v1"
+        static let calendarRules = "leve.calendarRules.v1"
+        static let pausedUntil = "leve.pausedUntil.v1"
+        static let debugMenu = "leve.debugMenu.v1"
+    }
+
+    /// `-1` is stored for "off", so a missing key can still mean the default.
+    private static let offValue = -1
+
+    @ObservationIgnored private let defaults: UserDefaults
+
+    /// Minutes before an event for its notification; nil means no notification.
+    var reminderLeadMinutes: Int? {
+        didSet { store(reminderLeadMinutes, Key.reminderLead) }
+    }
+    /// Minutes before an event for the full-screen alert; 0 means at the start, nil means never.
+    var fullScreenLeadMinutes: Int? {
+        didSet { store(fullScreenLeadMinutes, Key.fullScreenLead) }
+    }
+    /// How close an event must be before the menu bar counts down to it.
+    var countdownMinutes: Int {
+        didSet { defaults.set(countdownMinutes, forKey: Key.countdown) }
+    }
+    var speechInterval: SpeechInterval {
+        didSet { defaults.set(speechInterval.rawValue, forKey: Key.speechInterval) }
+    }
+    /// nil means the default Spanish voice, the behavior carried over from Smart Desk.
+    var voiceIdentifier: String? {
+        didSet { defaults.set(voiceIdentifier, forKey: Key.voice) }
+    }
+    var urgentDelivery: Bool {
+        didSet { defaults.set(urgentDelivery, forKey: Key.urgent) }
+    }
+    private(set) var calendarRules: [String: CalendarRule] {
+        didSet { defaults.set(calendarRules.mapValues(\.rawValue), forKey: Key.calendarRules) }
+    }
+    /// Shows the Debug submenu, for trying the alerts without real events.
+    var debugMenu: Bool {
+        didSet { defaults.set(debugMenu, forKey: Key.debugMenu) }
+    }
+    private(set) var pausedUntil: Date? {
+        didSet { defaults.set(pausedUntil, forKey: Key.pausedUntil) }
+    }
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        reminderLeadMinutes = Self.read(defaults, Key.reminderLead, fallback: 5)
+        fullScreenLeadMinutes = Self.read(defaults, Key.fullScreenLead, fallback: 1)
+        let countdown = defaults.object(forKey: Key.countdown) as? Int ?? 30
+        countdownMinutes = Self.countdownOptions.contains(countdown) ? countdown : 30
+        speechInterval = SpeechInterval(rawValue: defaults.integer(forKey: Key.speechInterval)) ?? .halfHour
+        if defaults.object(forKey: Key.speechInterval) == nil {
+            speechInterval = .halfHour
+        }
+        voiceIdentifier = defaults.string(forKey: Key.voice)
+        urgentDelivery = defaults.bool(forKey: Key.urgent)
+        let rawRules = defaults.dictionary(forKey: Key.calendarRules) as? [String: String] ?? [:]
+        calendarRules = rawRules.compactMapValues(CalendarRule.init(rawValue:))
+        pausedUntil = defaults.object(forKey: Key.pausedUntil) as? Date
+        debugMenu = defaults.bool(forKey: Key.debugMenu)
+    }
+
+    func rule(for calendarID: String) -> CalendarRule {
+        calendarRules[calendarID] ?? .defaultRule
+    }
+
+    func setRule(_ rule: CalendarRule, for calendarID: String) {
+        calendarRules[calendarID] = rule == .defaultRule ? nil : rule
+    }
+
+    func isPaused(at now: Date) -> Bool {
+        guard let pausedUntil else { return false }
+        return now < pausedUntil
+    }
+
+    func pause(until date: Date) {
+        pausedUntil = date
+    }
+
+    func resume() {
+        pausedUntil = nil
+    }
+
+    private func store(_ minutes: Int?, _ key: String) {
+        defaults.set(minutes ?? Self.offValue, forKey: key)
+    }
+
+    private static func read(_ defaults: UserDefaults, _ key: String, fallback: Int) -> Int? {
+        guard let value = defaults.object(forKey: key) as? Int else { return fallback }
+        return value == offValue ? nil : value
+    }
+}

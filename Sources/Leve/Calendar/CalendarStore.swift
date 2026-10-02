@@ -1,0 +1,115 @@
+import AppKit
+import EventKit
+import LeveKit
+import OSLog
+import Observation
+
+/// Reads today's events from the calendars on this Mac. Events stay owned by Calendar; Leve keeps
+/// a copy for the current day only and never writes to EventKit.
+@Observable
+final class CalendarStore {
+    enum Access: Equatable {
+        case notDetermined
+        case granted
+        case denied
+    }
+
+    struct CalendarInfo: Identifiable, Hashable {
+        let id: String
+        let title: String
+        let source: String
+        let color: NSColor
+    }
+
+    private(set) var access: Access = .notDetermined
+    private(set) var events: [CalendarEvent] = []
+    private(set) var calendars: [CalendarInfo] = []
+
+    func color(for calendarID: String) -> NSColor {
+        calendars.first { $0.id == calendarID }?.color ?? .secondaryLabelColor
+    }
+    /// Called after every reload, so the scheduler can replan alerts.
+    @ObservationIgnored var onChange: (() -> Void)?
+
+    @ObservationIgnored private let store = EKEventStore()
+    @ObservationIgnored private let logger = Logger(subsystem: "com.martonpaulo.leve", category: "calendar")
+    @ObservationIgnored private var observer: NSObjectProtocol?
+
+    init() {
+        access = Self.currentAccess()
+        observer = NotificationCenter.default.addObserver(
+            forName: .EKEventStoreChanged,
+            object: store,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.reload() }
+        }
+    }
+
+    func requestAccessIfNeeded() async {
+        guard access == .notDetermined else { return }
+        do {
+            _ = try await store.requestFullAccessToEvents()
+        } catch {
+            logger.error("Calendar access request failed: \(error.localizedDescription, privacy: .public)")
+        }
+        access = Self.currentAccess()
+        reload()
+    }
+
+    func reload(now: Date = .now) {
+        access = Self.currentAccess()
+        guard access == .granted else {
+            events = []
+            calendars = []
+            onChange?()
+            return
+        }
+        let eventCalendars = store.calendars(for: .event)
+        calendars =
+            eventCalendars
+            .map {
+                CalendarInfo(
+                    id: $0.calendarIdentifier, title: $0.title, source: $0.source.title,
+                    color: NSColor(cgColor: $0.cgColor) ?? .secondaryLabelColor)
+            }
+            .sorted { ($0.source, $0.title) < ($1.source, $1.title) }
+
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: now)
+        guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return }
+        let predicate = store.predicateForEvents(withStart: dayStart, end: dayEnd, calendars: eventCalendars)
+        events = store.events(matching: predicate)
+            .filter { $0.status != .canceled && !Self.declinedByMe($0) }
+            .map(Self.makeEvent)
+            .sorted { ($0.isAllDay ? 0 : 1, $0.start) < ($1.isAllDay ? 0 : 1, $1.start) }
+        onChange?()
+    }
+
+    private static func currentAccess() -> Access {
+        switch EKEventStore.authorizationStatus(for: .event) {
+        case .fullAccess: .granted
+        case .notDetermined: .notDetermined
+        default: .denied
+        }
+    }
+
+    private static func declinedByMe(_ event: EKEvent) -> Bool {
+        event.attendees?.contains { $0.isCurrentUser && $0.participantStatus == .declined } ?? false
+    }
+
+    private static func makeEvent(_ event: EKEvent) -> CalendarEvent {
+        let identifier = event.eventIdentifier ?? event.calendarItemIdentifier
+        let title = event.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return CalendarEvent(
+            id: CalendarEvent.occurrenceID(eventIdentifier: identifier, start: event.startDate),
+            title: (title?.isEmpty == false ? title : nil) ?? Copy.untitledEvent,
+            start: event.startDate,
+            end: event.endDate,
+            isAllDay: event.isAllDay,
+            calendarID: event.calendar.calendarIdentifier,
+            calendarTitle: event.calendar.title,
+            link: MeetingLink.resolve(url: event.url, location: event.location, notes: event.notes)
+        )
+    }
+}

@@ -1,0 +1,31 @@
+# SwiftPM
+.build/
+.swiftpm/
+
+# Packaging output
+build/
+*.app
+artifacts/
+
+# Xcode (if opened in Xcode)
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Local signing identity and credentials
+.env
+*.p12
+*.pem
+
+# Agent-local settings, disposable experiments and handoff notes
+.claude/settings.local.json
+.scratch/
