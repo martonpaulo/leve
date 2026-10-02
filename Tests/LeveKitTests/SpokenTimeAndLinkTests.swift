@@ -46,3 +46,47 @@ import Testing
         #expect(MeetingLink.resolve(url: nil, location: "Room 4", notes: "Bring coffee") == nil)
     }
 }
+
+@Suite struct SpokenAlertTests {
+    private let standup = Fixture.event("Standup", from: Fixture.at(10))
+
+    @Test(arguments: [
+        ("es-ES", 2, "Daily en dos minutos"), ("es-ES", 1, "Daily en un minuto"),
+        ("pt-BR", 2, "Daily em 2 minutos"), ("en-US", 1, "Daily in one minute"),
+    ])
+    func eventPhrase(language: String, minutes: Int, expected: String) {
+        #expect(SpokenTime.eventPhrase(title: "Daily", minutes: minutes, languageCode: language) == expected)
+    }
+
+    @Test(arguments: [(9, 57, false), (9, 58, true), (9, 59, true), (10, 0, false)])
+    func spokenAlertWindow(hour: Int, minute: Int, due: Bool) {
+        let result = AlertPlanner.dueSpokenAlerts(
+            events: [Fixture.attended(standup)], now: Fixture.at(hour, minute), leadMinutes: 2, alreadySpoken: [])
+        #expect(result.isEmpty == !due)
+    }
+
+    @Test func spokenOnceAndNeverForQuietEvents() {
+        let spoken = AlertPlanner.dueSpokenAlerts(
+            events: [Fixture.attended(standup)], now: Fixture.at(9, 59), leadMinutes: 2, alreadySpoken: [standup.id])
+        #expect(spoken.isEmpty)
+        let silenced = AlertPlanner.dueSpokenAlerts(
+            events: [Fixture.attended(standup, override: .silenced)], now: Fixture.at(9, 59), leadMinutes: 2,
+            alreadySpoken: [])
+        #expect(silenced.isEmpty)
+    }
+}
+
+@Suite struct SpeechHoursTests {
+    @Test(arguments: [(7, 59, false), (8, 0, true), (20, 0, true), (20, 30, false)])
+    func daytimeHours(hour: Int, minute: Int, inside: Bool) {
+        let hours = SpeechHours(startHour: 8, endHour: 20)
+        #expect(hours.contains(Fixture.at(hour, minute), calendar: Fixture.calendar) == inside)
+    }
+
+    @Test func hoursAcrossMidnight() {
+        let hours = SpeechHours(startHour: 22, endHour: 2)
+        #expect(hours.contains(Fixture.at(23, 30), calendar: Fixture.calendar))
+        #expect(hours.contains(Fixture.at(1, 0), calendar: Fixture.calendar))
+        #expect(!hours.contains(Fixture.at(12, 0), calendar: Fixture.calendar))
+    }
+}

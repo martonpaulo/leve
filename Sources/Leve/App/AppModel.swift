@@ -22,6 +22,7 @@ final class AppModel {
     @ObservationIgnored private var tickTask: Task<Void, Never>?
     @ObservationIgnored private var handledFullScreen: Set<String> = []
     @ObservationIgnored private var lastSpokenMinute: Date?
+    @ObservationIgnored private var spokenAlerts: Set<String> = []
     @ObservationIgnored private var wasPaused = false
     /// When each planned reminder fires; one whose time passed counts as delivered.
     @ObservationIgnored private var reminderFireDates: [String: Date] = [:]
@@ -149,6 +150,7 @@ final class AppModel {
             preferences.resume()
         }
         checkFullScreen()
+        speakUpcomingIfDue()
         speakIfDue()
     }
 
@@ -223,9 +225,22 @@ final class AppModel {
         alert.present(event)
     }
 
+    /// Says "Daily en dos minutos" before an alerting event, at any hour, unless alerts are paused.
+    private func speakUpcomingIfDue() {
+        guard !isPaused, let minutes = preferences.spokenAlertMinutes else { return }
+        let due = AlertPlanner.dueSpokenAlerts(
+            events: attendedEvents, now: now, leadMinutes: minutes, alreadySpoken: spokenAlerts)
+        for event in due {
+            spokenAlerts.insert(event.id)
+            let left = max(1, Int((event.start.timeIntervalSince(now) / 60).rounded(.up)))
+            speaker.speakUpcoming(event, minutes: left, voiceIdentifier: preferences.voiceIdentifier)
+        }
+    }
+
     private func speakIfDue() {
         let calendar = Calendar.current
         guard preferences.speechInterval.isBoundary(now, calendar: calendar),
+            preferences.speechHours.contains(now, calendar: calendar),
             !isPaused,
             !isAway,
             !AlertPlanner.isInAlertingEvent(events: attendedEvents, now: now)

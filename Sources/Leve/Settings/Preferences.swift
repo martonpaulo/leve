@@ -9,6 +9,7 @@ final class Preferences {
     static let reminderLeadOptions = [1, 2, 5, 10, 15]
     static let fullScreenLeadOptions = [0, 1, 2, 5]
     static let countdownOptions = [15, 30, 60]
+    static let spokenAlertOptions = [1, 2, 5]
 
     private enum Key {
         static let reminderLead = "leve.reminderLeadMinutes.v1"
@@ -20,6 +21,9 @@ final class Preferences {
         static let calendarRules = "leve.calendarRules.v1"
         static let pausedUntil = "leve.pausedUntil.v1"
         static let debugMenu = "leve.debugMenu.v1"
+        static let spokenAlert = "leve.spokenAlertMinutes.v1"
+        static let speechStart = "leve.speechStartHour.v1"
+        static let speechEnd = "leve.speechEndHour.v1"
     }
 
     /// `-1` is stored for "off", so a missing key can still mean the default.
@@ -41,6 +45,20 @@ final class Preferences {
     }
     var speechInterval: SpeechInterval {
         didSet { defaults.set(speechInterval.rawValue, forKey: Key.speechInterval) }
+    }
+    /// Minutes before an event for its spoken warning; nil means none.
+    var spokenAlertMinutes: Int? {
+        didSet { store(spokenAlertMinutes, Key.spokenAlert) }
+    }
+    /// The spoken time is said only from this hour to `speechEndHour`, both included.
+    var speechStartHour: Int {
+        didSet { defaults.set(speechStartHour, forKey: Key.speechStart) }
+    }
+    var speechEndHour: Int {
+        didSet { defaults.set(speechEndHour, forKey: Key.speechEnd) }
+    }
+    var speechHours: SpeechHours {
+        SpeechHours(startHour: speechStartHour, endHour: speechEndHour)
     }
     /// nil means the default Spanish voice, the behavior carried over from Smart Desk.
     var voiceIdentifier: String? {
@@ -76,6 +94,9 @@ final class Preferences {
         calendarRules = rawRules.compactMapValues(CalendarRule.init(rawValue:))
         pausedUntil = defaults.object(forKey: Key.pausedUntil) as? Date
         debugMenu = defaults.bool(forKey: Key.debugMenu)
+        spokenAlertMinutes = Self.read(defaults, Key.spokenAlert, fallback: 2)
+        speechStartHour = Self.hour(defaults, Key.speechStart, fallback: 8)
+        speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: 20)
     }
 
     func rule(for calendarID: String) -> CalendarRule {
@@ -101,6 +122,11 @@ final class Preferences {
 
     private func store(_ minutes: Int?, _ key: String) {
         defaults.set(minutes ?? Self.offValue, forKey: key)
+    }
+
+    private static func hour(_ defaults: UserDefaults, _ key: String, fallback: Int) -> Int {
+        guard let value = defaults.object(forKey: key) as? Int, (0...23).contains(value) else { return fallback }
+        return value
     }
 
     private static func read(_ defaults: UserDefaults, _ key: String, fallback: Int) -> Int? {

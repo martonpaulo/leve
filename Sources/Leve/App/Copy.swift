@@ -133,8 +133,17 @@ enum Copy {
     static let speechSection = String(localized: "Spoken time")
     static let speakTime = String(localized: "Say the time")
     static let voice = String(localized: "Voice")
+    static let speechHours = String(localized: "Between")
+    static let speechHoursTo = String(localized: "and")
+    static let sayUpcoming = String(localized: "Say upcoming events")
+
+    static func hour(_ hour: Int) -> String {
+        let date = Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: .now) ?? .now
+        return time(date)
+    }
     static let preview = String(localized: "Preview")
-    static let speechFooter = String(localized: "Leve stays quiet during events and while alerts are paused.")
+    static let speechFooter = String(
+        localized: "Leve stays quiet during events and while alerts are paused. Upcoming events are said at any hour.")
 
     static func speechInterval(_ interval: SpeechInterval) -> String {
         switch interval {

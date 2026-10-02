@@ -30,7 +30,10 @@ only its event alerts.
 - Sends a notification a few minutes before each event.
 - Covers every display with a calm full-screen alert just before an event, until the owner joins
   or closes it.
-- Says the time on the half hour (or every 15 or 60 minutes), and stays quiet during events.
+- Says the time on the half hour (or every 15 or 60 minutes) between chosen hours, 8:00 to 20:00
+  by default, and stays quiet during events.
+- Says the next event's name a couple of minutes before it starts ("Daily en dos minutos"), at
+  any hour.
 - Lets the owner silence or hide one event, stop the full screen for one event, pause everything
   for a while, and choose how much attention each calendar gets.
 
@@ -79,3 +82,7 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | One attention choice per calendar: All alerts, No full screen, Menu only, Ignore (owner, 2026-10-02) | [What it does](#what-it-does) |
 | The menu bar shows "Free until …" when nothing is close (owner, 2026-10-02) | [What it does](#what-it-does) |
 | The spoken time defaults to a Spanish voice, as in Smart Desk | `Sources/Leve/Speech/TimeSpeaker.swift` |
+| Spoken warning before events, and hours for the spoken time (owner, 2026-10-03) | [What it does](#what-it-does) |
+| No snooze in the full screen and no second time zone, to keep Leve light (owner, 2026-10-03) | [Feel](#feel) |
+| A debug menu, off by default, simulates events without touching Calendar (owner, 2026-10-03) | `Sources/Leve/App/AppModel.swift` |
+| A dot in each calendar's color marks events and calendars (owner, 2026-10-03) | `Sources/Leve/Menu/CalendarDot.swift` |

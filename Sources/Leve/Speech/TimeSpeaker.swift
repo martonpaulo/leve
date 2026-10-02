@@ -20,17 +20,28 @@ final class TimeSpeaker {
     private let synthesizer = AVSpeechSynthesizer()
 
     func speak(_ date: Date, voiceIdentifier: String?) {
-        guard !synthesizer.isSpeaking else { return }
-        let voice =
-            voiceIdentifier.flatMap(AVSpeechSynthesisVoice.init(identifier:))
-            ?? AVSpeechSynthesisVoice(language: Self.defaultLanguage)
+        let voice = Self.voice(voiceIdentifier)
         let language = voice?.language ?? Self.defaultLanguage
-        let utterance = AVSpeechUtterance(
-            string: SpokenTime.phrase(for: date, languageCode: language, calendar: .current)
-        )
+        say(SpokenTime.phrase(for: date, languageCode: language, calendar: .current), voice: voice)
+    }
+
+    /// "Daily en dos minutos". The synthesizer queues it behind any sentence already playing.
+    func speakUpcoming(_ event: CalendarEvent, minutes: Int, voiceIdentifier: String?) {
+        let voice = Self.voice(voiceIdentifier)
+        let language = voice?.language ?? Self.defaultLanguage
+        say(SpokenTime.eventPhrase(title: event.title, minutes: minutes, languageCode: language), voice: voice)
+    }
+
+    private func say(_ text: String, voice: AVSpeechSynthesisVoice?) {
+        let utterance = AVSpeechUtterance(string: text)
         utterance.voice = voice
         utterance.prefersAssistiveTechnologySettings = true
         synthesizer.speak(utterance)
+    }
+
+    private static func voice(_ identifier: String?) -> AVSpeechSynthesisVoice? {
+        identifier.flatMap(AVSpeechSynthesisVoice.init(identifier:))
+            ?? AVSpeechSynthesisVoice(language: defaultLanguage)
     }
 
     static func availableVoices() -> [Voice] {

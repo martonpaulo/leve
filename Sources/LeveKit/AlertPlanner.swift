@@ -52,6 +52,24 @@ public enum AlertPlanner {
         .sorted { $0.start < $1.start }
     }
 
+    /// The events whose spoken warning is due: `leadMinutes` before an alerting, timed event, and
+    /// only until it starts. Each event is spoken once.
+    public static func dueSpokenAlerts(
+        events: [AttendedEvent],
+        now: Date,
+        leadMinutes: Int?,
+        alreadySpoken: Set<String>
+    ) -> [CalendarEvent] {
+        guard let leadMinutes else { return [] }
+        return events.compactMap { item in
+            let event = item.event
+            guard item.attention.isAlerting, !event.isAllDay, !alreadySpoken.contains(event.id) else { return nil }
+            let opens = event.start.addingTimeInterval(-Double(leadMinutes) * 60)
+            return (opens <= now && now < event.start) ? event : nil
+        }
+        .sorted { $0.start < $1.start }
+    }
+
     /// The spoken time stays quiet while an alerting event is happening.
     public static func isInAlertingEvent(events: [AttendedEvent], now: Date) -> Bool {
         events.contains { $0.attention.isAlerting && !$0.event.isAllDay && $0.event.isOngoing(at: now) }

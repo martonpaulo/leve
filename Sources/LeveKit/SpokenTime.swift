@@ -22,6 +22,29 @@ public enum SpeechInterval: Int, Sendable, CaseIterable, Codable {
     }
 }
 
+/// The hours in which Leve says the time, such as 8:00 to 20:00. Both ends are included, so the
+/// last announcement is the one at the end hour. A start after the end spans midnight.
+public struct SpeechHours: Sendable, Equatable {
+    public let startHour: Int
+    public let endHour: Int
+
+    public init(startHour: Int, endHour: Int) {
+        self.startHour = startHour
+        self.endHour = endHour
+    }
+
+    public func contains(_ date: Date, calendar: Calendar) -> Bool {
+        let parts = calendar.dateComponents([.hour, .minute], from: date)
+        let minute = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+        let start = startHour * 60
+        let end = endHour * 60
+        if start <= end {
+            return start <= minute && minute <= end
+        }
+        return minute >= start || minute <= end
+    }
+}
+
 /// The sentence spoken at a time boundary.
 public enum SpokenTime {
     /// A natural Spanish phrase ("Son las diez y media de la mañana") for a Spanish voice, ported
@@ -34,6 +57,19 @@ public enum SpokenTime {
         style.locale = Locale(identifier: languageCode)
         style.timeZone = calendar.timeZone
         return date.formatted(style)
+    }
+
+    /// The sentence spoken shortly before an event: "Daily en dos minutos".
+    public static func eventPhrase(title: String, minutes: Int, languageCode: String) -> String {
+        let code = languageCode.lowercased()
+        if code.hasPrefix("es") {
+            let amount = minutes == 1 ? "un minuto" : "\(minuteWords[minutes] ?? String(minutes)) minutos"
+            return "\(title) en \(amount)"
+        }
+        if code.hasPrefix("pt") {
+            return minutes == 1 ? "\(title) em um minuto" : "\(title) em \(minutes) minutos"
+        }
+        return minutes == 1 ? "\(title) in one minute" : "\(title) in \(minutes) minutes"
     }
 
     static func spanish(for date: Date, calendar: Calendar) -> String {

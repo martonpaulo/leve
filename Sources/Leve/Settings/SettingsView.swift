@@ -84,6 +84,20 @@ private struct GeneralPane: View {
                         Text(Copy.speechInterval(interval)).tag(interval)
                     }
                 }
+                LabeledContent(Copy.speechHours) {
+                    HStack {
+                        hourPicker($preferences.speechStartHour)
+                        Text(Copy.speechHoursTo).foregroundStyle(.secondary)
+                        hourPicker($preferences.speechEndHour)
+                    }
+                }
+                .disabled(preferences.speechInterval == .off)
+                Picker(Copy.sayUpcoming, selection: $preferences.spokenAlertMinutes) {
+                    Text(Copy.off).tag(Int?.none)
+                    ForEach(Preferences.spokenAlertOptions, id: \.self) { minutes in
+                        Text(Copy.minutesBefore(minutes)).tag(Int?.some(minutes))
+                    }
+                }
                 LabeledContent(Copy.voice) {
                     HStack {
                         Picker(Copy.voice, selection: $preferences.voiceIdentifier) {
@@ -96,7 +110,7 @@ private struct GeneralPane: View {
                         Button(Copy.preview) { model.previewSpeech() }
                     }
                 }
-                .disabled(preferences.speechInterval == .off)
+                .disabled(preferences.speechInterval == .off && preferences.spokenAlertMinutes == nil)
             } header: {
                 Text(Copy.speechSection)
             } footer: {
@@ -112,8 +126,18 @@ private struct GeneralPane: View {
         }
     }
 
+    private func hourPicker(_ hour: Binding<Int>) -> some View {
+        Picker(Copy.speechHours, selection: hour) {
+            ForEach(0..<24, id: \.self) { value in
+                Text(Copy.hour(value)).tag(value)
+            }
+        }
+        .labelsHidden()
+        .fixedSize()
+    }
+
     private var height: CGFloat {
-        var height: CGFloat = 540
+        var height: CGFloat = 590
         if model.reminders.notificationsAllowed == false { height += 52 }
         if model.reminders.supportsUrgentDelivery == true { height += 40 }
         if login.state == .needsApproval || login.state == .unavailable || login.failed { height += 40 }

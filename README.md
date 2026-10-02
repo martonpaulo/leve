@@ -11,7 +11,8 @@ When you hyperfocus, time disappears. Leve keeps it in view without asking for a
 - A **notification** arrives a few minutes before each event.
 - A calm **full-screen alert** covers every display just before an event, with a Join button, until
   you join or close it.
-- Leve **says the time** on the half hour, and **stays quiet during events**.
+- Leve **says the time** on the half hour during the day, **says the next event** two minutes
+  before it starts, and **stays quiet during events**.
 
 It reads today's events only, never changes your calendars, and has no window to manage.
 
