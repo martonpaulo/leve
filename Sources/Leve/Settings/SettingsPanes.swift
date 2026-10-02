@@ -27,29 +27,6 @@ struct GeneralPane: View {
                 loginNote
             }
 
-            Section {
-                Picker(Copy.notification, selection: $preferences.reminderLeadMinutes) {
-                    Text(Copy.off).tag(Int?.none)
-                    ForEach(Preferences.reminderLeadOptions, id: \.self) { minutes in
-                        Text(Copy.minutesBefore(minutes)).tag(Int?.some(minutes))
-                    }
-                }
-                Picker(Copy.fullScreen, selection: $preferences.fullScreenLeadMinutes) {
-                    Text(Copy.off).tag(Int?.none)
-                    ForEach(Preferences.fullScreenLeadOptions, id: \.self) { minutes in
-                        Text(minutes == 0 ? Copy.atStart : Copy.minutesBefore(minutes)).tag(Int?.some(minutes))
-                    }
-                }
-                if model.reminders.supportsUrgentDelivery == true {
-                    Toggle(Copy.urgentDelivery, isOn: $preferences.urgentDelivery)
-                        .disabled(preferences.reminderLeadMinutes == nil)
-                }
-            } header: {
-                Text(Copy.alertsSection)
-            } footer: {
-                Text(Copy.alertsFooter).settingsNote()
-            }
-
             Section(Copy.menuBarSection) {
                 Picker(Copy.countdown, selection: $preferences.countdownMinutes) {
                     ForEach(Preferences.countdownOptions, id: \.self) { minutes in
@@ -58,7 +35,6 @@ struct GeneralPane: View {
                 }
             }
 
-            speechSection(preferences)
             permissionsSection
 
             Section {
@@ -96,6 +72,89 @@ struct GeneralPane: View {
             return Copy.pausedUntil(until)
         }
         return Copy.status(model.status)
+    }
+
+    private var permissionsSection: some View {
+        Section(Copy.permissions) {
+            let calendarAllowed = model.calendar.access == .granted
+            LabeledContent {
+                PermissionStatus(granted: calendarAllowed)
+            } label: {
+                Text(Copy.calendarPermission)
+                Text(Copy.calendarPermissionNote)
+            }
+            if !calendarAllowed {
+                Button(Copy.openSystemSettings) { SystemSettings.openCalendarPrivacy() }
+            }
+            let notificationsAllowed = model.reminders.notificationsAllowed != false
+            LabeledContent {
+                PermissionStatus(granted: notificationsAllowed)
+            } label: {
+                Text(Copy.notificationPermission)
+                Text(Copy.notificationPermissionNote)
+            }
+            if !notificationsAllowed {
+                Button(Copy.openSystemSettings) { SystemSettings.openNotifications() }
+            }
+        }
+    }
+
+    @ViewBuilder private var loginNote: some View {
+        switch login.state {
+        case .needsApproval:
+            Label(Copy.loginNeedsApproval, systemImage: "exclamationmark.triangle.fill").settingsNote()
+            Button(Copy.openLoginItems) { login.openSystemSettings() }
+        case .unavailable:
+            Label(Copy.loginUnavailable, systemImage: "info.circle").settingsNote()
+        case .on, .off:
+            if login.failed {
+                Label(Copy.loginFailed, systemImage: "exclamationmark.triangle.fill").settingsNote()
+            }
+        }
+    }
+
+    private func refresh() {
+        login.refresh()
+        model.calendar.refreshAccess()
+        Task { await model.reminders.refreshSettings() }
+    }
+}
+
+// MARK: - Alerts
+
+/// When Leve warns before an event, and what it says out loud.
+struct AlertsPane: View {
+    @Bindable var model: AppModel
+
+    var body: some View {
+        @Bindable var preferences = model.preferences
+        Form {
+            Section {
+                Picker(Copy.notification, selection: $preferences.reminderLeadMinutes) {
+                    Text(Copy.off).tag(Int?.none)
+                    ForEach(Preferences.reminderLeadOptions, id: \.self) { minutes in
+                        Text(Copy.minutesBefore(minutes)).tag(Int?.some(minutes))
+                    }
+                }
+                Picker(Copy.fullScreen, selection: $preferences.fullScreenLeadMinutes) {
+                    Text(Copy.off).tag(Int?.none)
+                    ForEach(Preferences.fullScreenLeadOptions, id: \.self) { minutes in
+                        Text(minutes == 0 ? Copy.atStart : Copy.minutesBefore(minutes)).tag(Int?.some(minutes))
+                    }
+                }
+                if model.reminders.supportsUrgentDelivery == true {
+                    Toggle(Copy.urgentDelivery, isOn: $preferences.urgentDelivery)
+                        .disabled(preferences.reminderLeadMinutes == nil)
+                }
+            } header: {
+                Text(Copy.alertsSection)
+            } footer: {
+                Text(Copy.alertsFooter).settingsNote()
+            }
+
+            speechSection(preferences)
+        }
+        .settingsPane()
     }
 
     private func speechSection(_ preferences: Preferences) -> some View {
@@ -140,45 +199,6 @@ struct GeneralPane: View {
         }
     }
 
-    private var permissionsSection: some View {
-        Section(Copy.permissions) {
-            let calendarAllowed = model.calendar.access == .granted
-            LabeledContent {
-                PermissionStatus(granted: calendarAllowed)
-            } label: {
-                Text(Copy.calendarPermission)
-                Text(Copy.calendarPermissionNote)
-            }
-            if !calendarAllowed {
-                Button(Copy.openSystemSettings) { SystemSettings.openCalendarPrivacy() }
-            }
-            let notificationsAllowed = model.reminders.notificationsAllowed != false
-            LabeledContent {
-                PermissionStatus(granted: notificationsAllowed)
-            } label: {
-                Text(Copy.notificationPermission)
-                Text(Copy.notificationPermissionNote)
-            }
-            if !notificationsAllowed {
-                Button(Copy.openSystemSettings) { SystemSettings.openNotifications() }
-            }
-        }
-    }
-
-    @ViewBuilder private var loginNote: some View {
-        switch login.state {
-        case .needsApproval:
-            Label(Copy.loginNeedsApproval, systemImage: "exclamationmark.triangle.fill").settingsNote()
-            Button(Copy.openLoginItems) { login.openSystemSettings() }
-        case .unavailable:
-            Label(Copy.loginUnavailable, systemImage: "info.circle").settingsNote()
-        case .on, .off:
-            if login.failed {
-                Label(Copy.loginFailed, systemImage: "exclamationmark.triangle.fill").settingsNote()
-            }
-        }
-    }
-
     private func hourPicker(_ hour: Binding<Int>, label: String) -> some View {
         Picker(label, selection: hour) {
             ForEach(0..<24, id: \.self) { value in
@@ -190,11 +210,6 @@ struct GeneralPane: View {
         .accessibilityLabel(label)
     }
 
-    private func refresh() {
-        login.refresh()
-        model.calendar.refreshAccess()
-        Task { await model.reminders.refreshSettings() }
-    }
 }
 
 // MARK: - Calendars

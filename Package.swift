@@ -1,4 +1,4 @@
-// swift-tools-version:6.2
+// swift-tools-version:6.4
 import PackageDescription
 
 let swiftSettings: [SwiftSetting] = [
@@ -9,7 +9,7 @@ let swiftSettings: [SwiftSetting] = [
 let package = Package(
     name: "Leve",
     platforms: [
-        .macOS(.v26)
+        .macOS(.v27)
     ],
     targets: [
         // Pure logic: it imports only Foundation (AGENTS.md, "Architecture"). It keeps the

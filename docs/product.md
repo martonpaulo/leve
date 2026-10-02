@@ -60,7 +60,7 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 
 ## Constraints
 
-- macOS 26 or later, Apple Silicon, built with SwiftPM.
+- macOS 27 or later, Apple Silicon, built with SwiftPM (tools 6.4, macOS 27 SDK).
 - Calendar access through EventKit (read-only) and notifications through UserNotifications.
 - Signed locally for the owner's Mac; not distributed.
 
@@ -86,5 +86,6 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | No snooze in the full screen and no second time zone, to keep Leve light (owner, 2026-10-03) | [Feel](#feel) |
 | A debug menu, off by default, simulates events without touching Calendar (owner, 2026-10-03) | `Sources/Leve/App/AppModel.swift` |
 | A dot in each calendar's color marks events and calendars (owner, 2026-10-03) | `Sources/Leve/Menu/CalendarDot.swift` |
-| Settings follow WindowHop's pattern (owner, 2026-10-03) | `AGENTS.md`, Architecture and patterns |
+| macOS 27 minimum and the newest toolchain (owner, 2026-10-03) | [Constraints](#constraints) |
+| Settings follow WindowHop's pattern, General split from Alerts (owner, 2026-10-03) | `AGENTS.md`, Architecture and patterns |
 | One word per attention level: All alerts, No full screen, No alerts, Hidden; "Don't Show Full Screen" stays in the alert and joins the event's menu (owner, 2026-10-03) | `Sources/Leve/App/Copy.swift` |

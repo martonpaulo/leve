@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-Xcode 26 or later, SwiftLint, and the swift-format bundled with Xcode.
+Xcode 27 or later, SwiftLint, and the swift-format bundled with Xcode.
 
 ```bash
 git clone https://github.com/martonpaulo/leve.git && cd leve && make install

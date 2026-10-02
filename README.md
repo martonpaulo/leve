@@ -18,7 +18,7 @@ It reads today's events only, never changes your calendars, and has no window to
 
 ## Requirements
 
-macOS 26 or later on a Mac with Apple silicon.
+macOS 27 or later on a Mac with Apple silicon.
 
 ## Install
 
@@ -42,9 +42,10 @@ In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> cl
 
 ### Settings
 
-- **General:** open at login; when the notification and the full screen arrive; how early the
-  countdown starts; how often, between which hours and in which voice Leve says the time; whether it
-  says upcoming events; the Calendar and Notifications permissions.
+- **General:** open at login, how early the menu bar countdown starts, and the Calendar and
+  Notifications permissions.
+- **Alerts:** when the notification and the full screen arrive; how often, between which hours and
+  in which voice Leve says the time; whether it says upcoming events.
 - **Calendars:** for each calendar, All alerts, No full screen, No alerts, or Hidden.
 
 ## Privacy

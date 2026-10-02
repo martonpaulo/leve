@@ -105,6 +105,7 @@ enum Copy {
     // MARK: Settings
 
     static let general = String(localized: "General")
+    static let alerts = String(localized: "Alerts")
     static let calendars = String(localized: "Calendars")
     static let about = String(localized: "About")
 
