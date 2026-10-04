@@ -239,6 +239,30 @@ enum Copy {
     static let quitButton = String(localized: "Quit Leve…")
     static let quitQuestion = String(localized: "Quit Leve?")
     static let quitMessage = String(localized: "Leve stops showing your events and alerts until you open it again.")
+    static let debugEventsSection = String(localized: "Simulated events")
+    static let debugAlertsSection = String(localized: "Try now")
+    static let debugSimulated = String(localized: "Event in 2 minutes")
+    static let debugSimulatedNote = String(
+        localized: "Lasts 5 minutes, has a call link, and goes through every alert.")
+    static let debugAdd = String(localized: "Add")
+    static let debugClear = String(localized: "Clear")
+    static let debugShow = String(localized: "Show")
+    static let debugSend = String(localized: "Send")
+    static let debugSay = String(localized: "Say")
+    static let debugBreak = String(localized: "Break")
+    static let debugFullScreenNote = String(localized: "Each time in the next calendar color.")
+    static let debugBreakNote = String(localized: "For the break length set in Breaks.")
+    static let debugNotificationNote = String(localized: "For an event in 5 minutes.")
+    static let debugSpeechNote = String(localized: "The current time, in the chosen voice.")
+
+    static func debugSimulatedCount(_ count: Int) -> String {
+        switch count {
+        case 0: String(localized: "None now")
+        case 1: String(localized: "One now")
+        default: String(localized: "\(count) now")
+        }
+    }
+
     static let debugPaneFooter = String(
         localized: "Simulated events live in memory only and never reach Calendar.")
     static let debugFooter = String(localized: "Adds a Debug tab to try the alerts without real events.")

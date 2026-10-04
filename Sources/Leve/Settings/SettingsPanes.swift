@@ -306,21 +306,39 @@ struct DebugPane: View {
 
     var body: some View {
         Form {
-            Section {
-                Button(Copy.simulateEvent) { model.simulateEvent() }
-                Button(Copy.showFullScreenNow) { model.showFullScreenNow() }
-                Button(Copy.showBreakNow) { model.showBreakNow() }
-                Button(Copy.sendTestNotification) { model.sendTestNotification() }
-                Button(Copy.sayTimeNow) { model.previewSpeech() }
+            Section(Copy.debugEventsSection) {
+                row(Copy.debugSimulated, Copy.debugSimulatedNote, Copy.debugAdd) { model.simulateEvent() }
+                LabeledContent {
+                    Button(Copy.debugClear) { model.clearSimulatedEvents() }
+                        .disabled(model.simulatedEvents.isEmpty)
+                } label: {
+                    Text(Copy.debugSimulatedCount(model.simulatedEvents.count))
+                }
             }
             Section {
-                Button(Copy.clearSimulated) { model.clearSimulatedEvents() }
-                    .disabled(model.simulatedEvents.isEmpty)
+                row(Copy.fullScreen, Copy.debugFullScreenNote, Copy.debugShow) { model.showFullScreenNow() }
+                row(Copy.debugBreak, Copy.debugBreakNote, Copy.debugShow) { model.showBreakNow() }
+                row(Copy.notification, Copy.debugNotificationNote, Copy.debugSend) { model.sendTestNotification() }
+                row(Copy.speechSection, Copy.debugSpeechNote, Copy.debugSay) { model.previewSpeech() }
+            } header: {
+                Text(Copy.debugAlertsSection)
             } footer: {
                 Text(Copy.debugPaneFooter).settingsNote()
             }
         }
         .settingsPane()
+    }
+
+    /// One action per row: what it tries on the left, the button on the right.
+    private func row(_ title: String, _ note: String, _ button: String, action: @escaping () -> Void)
+        -> some View
+    {
+        LabeledContent {
+            Button(button, action: action)
+        } label: {
+            Text(title)
+            Text(note)
+        }
     }
 }
 
