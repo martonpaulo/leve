@@ -182,7 +182,10 @@ enum Copy {
     static let notification = String(localized: "Notification")
     static let fullScreen = String(localized: "Full screen")
     static let urgentDelivery = String(localized: "Show notifications during Focus")
-    static let alertsFooter = String(localized: "Full screen covers every display until you join or close it (Esc).")
+    static let alertsFooter = String(
+        localized:
+            "Full screen covers every display until you join or close it (Esc). When it comes at the time of the notification, it replaces it."
+    )
     static let off = String(localized: "Off")
     static let atStart = String(localized: "When it starts")
 

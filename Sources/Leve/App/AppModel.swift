@@ -227,7 +227,8 @@ final class AppModel {
             isPaused
             ? []
             : AlertPlanner.reminders(
-                events: attendedEvents, now: now, leadMinutes: preferences.reminderLeadMinutes, delivered: delivered)
+                events: attendedEvents, now: now, leadMinutes: preferences.reminderLeadMinutes, delivered: delivered,
+                fullScreenLeadMinutes: preferences.fullScreenLeadMinutes)
         let todayIDs = Set(events.map(\.id))
         reminderFireDates = reminderFireDates.filter { delivered.contains($0.key) && todayIDs.contains($0.key) }
         handledFullScreen.formIntersection(todayIDs)

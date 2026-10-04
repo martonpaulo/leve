@@ -25,7 +25,7 @@ final class BreakScreen {
         )
         overlay.present(view, tint: BreakView.tint, onEscape: skip)
         if sound {
-            BreakSound.play(volume: 0.35)
+            SoftSound.melody.play(volume: 0.3)
         }
         endTask?.cancel()
         endTask = Task { [weak self] in
@@ -33,7 +33,7 @@ final class BreakScreen {
             guard !Task.isCancelled else { return }
             // The same tone, softer, says the break is over to someone who looked away.
             if sound {
-                BreakSound.play(volume: 0.2)
+                SoftSound.melody.play(volume: 0.18)
             }
             self?.finish { self?.onDone?() }
         }

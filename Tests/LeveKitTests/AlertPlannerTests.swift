@@ -190,3 +190,34 @@ import Testing
         #expect(monday.id != later.id)
     }
 }
+
+/// The full screen already warns, with its sound; a notification at the same moment only adds noise.
+@Suite struct NotificationBesideFullScreenTests {
+    private let standup = Fixture.event("Standup", from: Fixture.at(10))
+
+    private func planned(_ item: AttendedEvent, now: Date, lead: Int, fullScreen: Int?) -> [Date] {
+        AlertPlanner.reminders(
+            events: [item], now: now, leadMinutes: lead, delivered: [], fullScreenLeadMinutes: fullScreen
+        ).map(\.fireDate)
+    }
+
+    @Test func noNotificationWhenTheFullScreenComesAtTheSameTime() {
+        #expect(planned(Fixture.attended(standup), now: Fixture.at(8), lead: 1, fullScreen: 1).isEmpty)
+        #expect(planned(Fixture.attended(standup), now: Fixture.at(8), lead: 1, fullScreen: 2).isEmpty)
+    }
+
+    @Test func anEarlierNotificationStays() {
+        #expect(planned(Fixture.attended(standup), now: Fixture.at(8), lead: 5, fullScreen: 1) == [Fixture.at(9, 55)])
+    }
+
+    @Test func launchingLateShowsOnlyTheFullScreen() {
+        let late = Fixture.at(9, 59).addingTimeInterval(30)
+        #expect(planned(Fixture.attended(standup), now: late, lead: 5, fullScreen: 1).isEmpty)
+    }
+
+    @Test func withoutAFullScreenTheNotificationStays() {
+        let noFullScreen = Fixture.attended(standup, override: .noFullScreen)
+        #expect(planned(noFullScreen, now: Fixture.at(8), lead: 1, fullScreen: 1) == [Fixture.at(9, 59)])
+        #expect(planned(Fixture.attended(standup), now: Fixture.at(8), lead: 1, fullScreen: nil) == [Fixture.at(9, 59)])
+    }
+}

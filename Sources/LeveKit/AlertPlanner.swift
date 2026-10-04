@@ -15,11 +15,14 @@ public enum AlertPlanner {
     /// One reminder per alerting, timed event that has not started yet. A reminder whose time
     /// already passed fires now, so launching Leve two minutes before a meeting still warns.
     /// `delivered` holds the events whose reminder already fired; a later replan skips them.
+    /// An event whose full screen opens at the reminder's time or before gets no reminder: the
+    /// full screen already warns, with its own sound.
     public static func reminders(
         events: [AttendedEvent],
         now: Date,
         leadMinutes: Int?,
-        delivered: Set<String>
+        delivered: Set<String>,
+        fullScreenLeadMinutes: Int? = nil
     ) -> [PlannedReminder] {
         guard let leadMinutes else { return [] }
         return events.compactMap { item in
@@ -29,6 +32,11 @@ public enum AlertPlanner {
                 return nil
             }
             let fireDate = max(event.start.addingTimeInterval(-Double(leadMinutes) * 60), now)
+            if item.attention.blocksScreen, let fullScreenLeadMinutes,
+                fireDate >= event.start.addingTimeInterval(-Double(fullScreenLeadMinutes) * 60)
+            {
+                return nil
+            }
             return PlannedReminder(event: event, fireDate: fireDate)
         }
     }

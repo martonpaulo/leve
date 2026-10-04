@@ -34,7 +34,7 @@ only its event alerts.
   calendar's color with a ring that counts down to the start, until the owner joins or closes it.
 - Says the time as a clock does, "It's 10 o'clock" or "It's 10:30", with no AM or PM.
 - Asks for a break after 55 minutes of work: "Stop. Breathe. Look away." for 5 minutes over a
-  slowly breathing circle and a soft tone, with Skip and Later (5 min). On by default, with its
+  slowly breathing circle and a short music-box phrase, with Skip and Later (5 min). On by default, with its
   own Settings tab. Time away from the Mac counts as a break.
   Breaks never cover an event or a call (a microphone in use), but that time counts as work, so a
   break that falls due during it appears right after.
@@ -108,3 +108,4 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | Tomorrow's first hour is loaded for alerts only, never listed (owner, 2026-10-04) | [What it will never do](#what-it-will-never-do) |
 | Out-of-office events and events of four hours or more are background: listed, but no alerts, no menu bar countdown, and they neither quiet the voice nor hold a break (owner, 2026-10-04) | `Sources/LeveKit/CalendarEvent.swift` |
 | A repeating event can be hidden for good ("Hide All Repeats", "Dismiss All Repeats"), and shown again from Settings, Calendars (owner, 2026-10-04) | `Sources/Leve/Settings/OverrideStore.swift` |
+| The full screen plays the bowl tone, the break a short music-box phrase; no notification when the full screen comes at the same time (owner, 2026-10-04) | `Sources/LeveKit/AlertPlanner.swift` |

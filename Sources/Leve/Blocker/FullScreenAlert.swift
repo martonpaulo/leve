@@ -31,6 +31,7 @@ final class FullScreenAlert {
             onNever: { [weak self] in self?.finish { self?.onNeverForEvent?(event) } }
         )
         overlay.present(view, tint: color, onEscape: close)
+        SoftSound.bowl.play(volume: 0.35)
     }
 
     /// Hides the alert without counting it as closed by the owner, for an event that disappeared.
