@@ -22,6 +22,7 @@ final class Preferences {
         static let spokenAlert: Int? = 2
         static let speechStart = 8
         static let speechEnd = 20
+        static let showAllDay = true
         static let breaks = true
         static let breakWork = 55
         static let breakLength = 5
@@ -41,6 +42,7 @@ final class Preferences {
         static let spokenAlert = "leve.spokenAlertMinutes.v1"
         static let speechStart = "leve.speechStartHour.v1"
         static let speechEnd = "leve.speechEndHour.v1"
+        static let showAllDay = "leve.showAllDayEvents.v1"
         static let breaks = "leve.breaks.v1"
         static let breakWork = "leve.breakWorkMinutes.v1"
         static let breakLength = "leve.breakLengthMinutes.v1"
@@ -80,6 +82,10 @@ final class Preferences {
     }
     var speechHours: SpeechHours {
         SpeechHours(startHour: speechStartHour, endHour: speechEndHour)
+    }
+    /// Lists all-day events in their own section of the menu. They never alert.
+    var showAllDayEvents: Bool {
+        didSet { defaults.set(showAllDayEvents, forKey: Key.showAllDay) }
     }
     /// Asks for a break after `breakWorkMinutes` of work.
     var breaks: Bool {
@@ -136,6 +142,7 @@ final class Preferences {
             defaults, Key.spokenAlert, options: Self.spokenAlertOptions, fallback: Default.spokenAlert)
         speechStartHour = Self.hour(defaults, Key.speechStart, fallback: Default.speechStart)
         speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: Default.speechEnd)
+        showAllDayEvents = defaults.object(forKey: Key.showAllDay) as? Bool ?? Default.showAllDay
         breaks = defaults.object(forKey: Key.breaks) as? Bool ?? Default.breaks
         breakWorkMinutes =
             Self.read(defaults, Key.breakWork, options: Self.breakWorkOptions, fallback: Default.breakWork)
@@ -156,6 +163,7 @@ final class Preferences {
         spokenAlertMinutes = Default.spokenAlert
         speechStartHour = Default.speechStart
         speechEndHour = Default.speechEnd
+        showAllDayEvents = Default.showAllDay
         breaks = Default.breaks
         breakWorkMinutes = Default.breakWork
         breakLengthMinutes = Default.breakLength

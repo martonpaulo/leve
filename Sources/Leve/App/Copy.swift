@@ -174,6 +174,9 @@ enum Copy {
 
     static let menuBarSection = String(localized: "Menu bar")
     static let countdown = String(localized: "Show countdown")
+    static let showAllDay = String(localized: "Show all-day events")
+    static let dismissAllDay = String(localized: "Dismiss")
+    static let showAllDayNote = String(localized: "Listed in their own section, without alerts.")
 
     static func minutes(_ minutes: Int) -> String {
         String(localized: "\(minutes) min")

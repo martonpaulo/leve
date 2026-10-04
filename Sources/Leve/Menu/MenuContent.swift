@@ -34,6 +34,7 @@ struct MenuContent: View {
         // The events Section draws its own separators; a Divider beside it would double them.
         stateSection
         eventsSection
+        allDaySection
         pauseSection
         Divider()
         Button(Copy.settings) { model.openSettings() }
@@ -76,6 +77,35 @@ struct MenuContent: View {
             if hidden > 0 {
                 Button(Copy.showHidden(hidden)) { model.overrides.unhideAll() }
             }
+        }
+    }
+
+    /// All-day events below the timed ones: listed only, with no alert choices, since they never alert.
+    @ViewBuilder private var allDaySection: some View {
+        let events = model.allDayEvents
+        if !events.isEmpty {
+            Section(Copy.allDay) {
+                ForEach(events, id: \.event.id) { item in
+                    allDayMenu(item.event)
+                }
+            }
+        }
+    }
+
+    private func allDayMenu(_ event: CalendarEvent) -> some View {
+        Menu {
+            Text(event.calendarTitle)
+            if let link = event.link {
+                Divider()
+                Button(Copy.join(link.provider)) { model.join(event) }
+            }
+            Divider()
+            // Dismiss hides it until the day ends, like Hide; "Show Hidden" brings it back. One word that
+            // fits a task, a holiday or a birthday alike.
+            Button(Copy.dismissAllDay) { model.hide(event) }
+        } label: {
+            CalendarDot.image(model.calendar.color(for: event.calendarID))
+            Text(event.title)
         }
     }
 

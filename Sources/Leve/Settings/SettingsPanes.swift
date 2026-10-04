@@ -33,6 +33,10 @@ struct GeneralPane: View {
                         Text(Copy.minutesBefore(minutes)).tag(minutes)
                     }
                 }
+                Toggle(isOn: $preferences.showAllDayEvents) {
+                    Text(Copy.showAllDay)
+                    Text(Copy.showAllDayNote)
+                }
             }
 
             permissionsSection

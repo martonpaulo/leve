@@ -98,9 +98,15 @@ final class AppModel {
 
     var isPaused: Bool { preferences.isPaused(at: now) }
 
-    /// Listed events that have not ended, all-day ones first.
+    /// Listed timed events that have not ended.
     var menuEvents: [AttendedEvent] {
-        attendedEvents.filter { $0.attention.isListed && !$0.event.hasEnded(at: now) }
+        attendedEvents.filter { $0.attention.isListed && !$0.event.isAllDay && !$0.event.hasEnded(at: now) }
+    }
+
+    /// Listed all-day events, for their own menu section; empty when they are turned off.
+    var allDayEvents: [AttendedEvent] {
+        guard preferences.showAllDayEvents else { return [] }
+        return attendedEvents.filter { $0.attention.isListed && $0.event.isAllDay && !$0.event.hasEnded(at: now) }
     }
 
     var hiddenCount: Int {

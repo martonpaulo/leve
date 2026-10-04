@@ -27,6 +27,8 @@ only its event alerts.
   "Standup · 20 min left".
 - Lists today's remaining events in the menu, with a Join button for Google Meet, Teams, Zoom and
   Webex links.
+- Lists all-day events in their own section below, without alerts; Dismiss hides one for the day,
+  and a General setting turns the section off.
 - Sends a notification a few minutes before each event.
 - Covers every display with a calm full-screen alert just before an event, washed in its
   calendar's color with a ring that counts down to the start, until the owner joins or closes it.
@@ -101,3 +103,4 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | The full-screen alert glows in the calendar's color with a countdown ring, and every full screen fades in and out (owner, 2026-10-04) | `Sources/Leve/Blocker/FullScreenAlert.swift` |
 | The voice stays quiet while a break is on screen; no setting (owner, 2026-10-04) | `Sources/Leve/App/AppModel.swift` |
 | No explanation text above the calendar choices (owner, 2026-10-04) | `Sources/Leve/Settings/SettingsPanes.swift` |
+| All-day events in their own menu section, never alerting, with Dismiss; on by default (owner, 2026-10-04) | [What it does](#what-it-does) |
