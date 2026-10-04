@@ -120,13 +120,16 @@ struct MenuContent: View {
                 Button(Copy.join(link.provider)) { model.join(event) }
             }
             Divider()
-            Button(override == .silenced ? Copy.alertsBackOn : Copy.alertsOffForEvent) {
-                model.toggleAlerts(event)
-            }
-            // Offered only where a full screen would come: a calendar with All alerts.
-            if rule == .everything && override != .silenced {
-                Button(override == .noFullScreen ? Copy.fullScreenBackOn : Copy.noFullScreenInMenu) {
-                    model.toggleFullScreen(event)
+            // A background event (out of office, four hours or more) never alerts: nothing to turn off.
+            if !event.isBackground {
+                Button(override == .silenced ? Copy.alertsBackOn : Copy.alertsOffForEvent) {
+                    model.toggleAlerts(event)
+                }
+                // Offered only where a full screen would come: a calendar with All alerts.
+                if rule == .everything && override != .silenced {
+                    Button(override == .noFullScreen ? Copy.fullScreenBackOn : Copy.noFullScreenInMenu) {
+                        model.toggleFullScreen(event)
+                    }
                 }
             }
             Button(Copy.hideEvent) { model.hide(event) }

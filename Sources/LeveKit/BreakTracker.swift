@@ -76,7 +76,7 @@ public struct BreakTracker: Sendable, Equatable {
     public static func eventStartsSoon(events: [AttendedEvent], now: Date, minutes: Int) -> Bool {
         let limit = now.addingTimeInterval(Double(minutes * 60))
         return events.contains {
-            $0.attention.isAlerting && !$0.event.isAllDay && $0.event.start > now && $0.event.start <= limit
+            $0.attention.isAlerting && !$0.event.isBackground && $0.event.start > now && $0.event.start <= limit
         }
     }
 }

@@ -127,7 +127,19 @@ final class CalendarStore {
             isAllDay: event.isAllDay,
             calendarID: event.calendar.calendarIdentifier,
             calendarTitle: event.calendar.title,
-            link: MeetingLink.resolve(url: event.url, location: event.location, notes: event.notes)
+            link: MeetingLink.resolve(url: event.url, location: event.location, notes: event.notes),
+            availability: availability(event.availability),
+            isRecurring: event.hasRecurrenceRules
         )
+    }
+
+    private static func availability(_ value: EKEventAvailability) -> Availability {
+        switch value {
+        case .busy: .busy
+        case .free: .free
+        case .tentative: .tentative
+        case .unavailable: .unavailable
+        default: .unknown
+        }
     }
 }

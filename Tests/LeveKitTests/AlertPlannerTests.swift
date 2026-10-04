@@ -150,3 +150,43 @@ import Testing
         #expect(!sayTime(Fixture.at(10, 0), events: [Fixture.attended(standup)]))
     }
 }
+
+/// Out of office and long events are listed, but they are not meetings.
+@Suite struct BackgroundEventTests {
+    private let conference = Fixture.event("Conference", from: Fixture.at(9), minutes: 8 * 60)
+    private let away = Fixture.event("Out of office", from: Fixture.at(10), minutes: 60, availability: .unavailable)
+    private let standup = Fixture.event("Standup", from: Fixture.at(10), minutes: 30)
+
+    @Test func longAndOutOfOfficeEventsAreBackground() {
+        #expect(conference.isBackground)
+        #expect(away.isBackground)
+        #expect(!standup.isBackground)
+        #expect(!Fixture.event("Workshop", from: Fixture.at(9), minutes: 3 * 60).isBackground)
+    }
+
+    @Test func backgroundEventsSendNoReminder() {
+        let reminders = AlertPlanner.reminders(
+            events: [Fixture.attended(conference), Fixture.attended(away)], now: Fixture.at(8), leadMinutes: 5,
+            delivered: [])
+        #expect(reminders.isEmpty)
+    }
+
+    @Test func theVoiceSpeaksDuringALongEventButNotDuringAMeeting() {
+        #expect(!AlertPlanner.isInAlertingEvent(events: [Fixture.attended(conference)], now: Fixture.at(11)))
+        #expect(AlertPlanner.isInAlertingEvent(events: [Fixture.attended(standup)], now: Fixture.at(10, 10)))
+    }
+
+    @Test func theMenuBarIgnoresALongEvent() {
+        let status = MenuBarStatus.resolve(
+            events: [Fixture.attended(conference), Fixture.attended(standup)], now: Fixture.at(9, 15),
+            countdownMinutes: 30)
+        #expect(status == .freeUntil(Fixture.at(10)))
+    }
+
+    @Test func aRepeatingEventKeepsOneSeriesID() {
+        let monday = Fixture.event("Standup", from: Fixture.at(10))
+        let later = Fixture.event("Standup", from: Fixture.at(15))
+        #expect(monday.seriesID == later.seriesID)
+        #expect(monday.id != later.id)
+    }
+}

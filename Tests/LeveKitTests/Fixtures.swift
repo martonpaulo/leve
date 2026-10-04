@@ -20,7 +20,8 @@ enum Fixture {
         from start: Date,
         minutes: Int = 30,
         allDay: Bool = false,
-        link: MeetingLink? = nil
+        link: MeetingLink? = nil,
+        availability: Availability = .busy
     ) -> CalendarEvent {
         CalendarEvent(
             id: CalendarEvent.occurrenceID(eventIdentifier: title, start: start),
@@ -30,7 +31,8 @@ enum Fixture {
             isAllDay: allDay,
             calendarID: "work",
             calendarTitle: "Work",
-            link: link
+            link: link,
+            availability: availability
         )
     }
 

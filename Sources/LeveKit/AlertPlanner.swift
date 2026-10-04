@@ -24,7 +24,8 @@ public enum AlertPlanner {
         guard let leadMinutes else { return [] }
         return events.compactMap { item in
             let event = item.event
-            guard item.attention.isAlerting, !event.isAllDay, event.start > now, !delivered.contains(event.id) else {
+            guard item.attention.isAlerting, !event.isBackground, event.start > now, !delivered.contains(event.id)
+            else {
                 return nil
             }
             let fireDate = max(event.start.addingTimeInterval(-Double(leadMinutes) * 60), now)
@@ -42,7 +43,7 @@ public enum AlertPlanner {
         guard let leadMinutes else { return [] }
         return events.compactMap { item in
             let event = item.event
-            guard item.attention.blocksScreen, !event.isAllDay, !alreadyHandled.contains(event.id) else {
+            guard item.attention.blocksScreen, !event.isBackground, !alreadyHandled.contains(event.id) else {
                 return nil
             }
             let opens = event.start.addingTimeInterval(-Double(leadMinutes) * 60)
@@ -63,7 +64,7 @@ public enum AlertPlanner {
         guard let leadMinutes else { return [] }
         return events.compactMap { item in
             let event = item.event
-            guard item.attention.isAlerting, !event.isAllDay, !alreadySpoken.contains(event.id) else { return nil }
+            guard item.attention.isAlerting, !event.isBackground, !alreadySpoken.contains(event.id) else { return nil }
             let opens = event.start.addingTimeInterval(-Double(leadMinutes) * 60)
             return (opens <= now && now < event.start) ? event : nil
         }
@@ -105,6 +106,6 @@ public enum AlertPlanner {
 
     /// The spoken time stays quiet while an alerting event is happening.
     public static func isInAlertingEvent(events: [AttendedEvent], now: Date) -> Bool {
-        events.contains { $0.attention.isAlerting && !$0.event.isAllDay && $0.event.isOngoing(at: now) }
+        events.contains { $0.attention.isAlerting && !$0.event.isBackground && $0.event.isOngoing(at: now) }
     }
 }

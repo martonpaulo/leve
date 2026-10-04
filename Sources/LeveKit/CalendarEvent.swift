@@ -1,5 +1,12 @@
 import Foundation
 
+/// How an event marks the owner's time in Calendar, from EventKit's availability.
+public enum Availability: String, Sendable, Hashable {
+    case busy, free, tentative, unknown
+    /// Out of office.
+    case unavailable
+}
+
 /// One occurrence of a calendar event, copied out of EventKit so the logic never touches it.
 public struct CalendarEvent: Sendable, Hashable, Identifiable {
     /// Stable for one occurrence: a recurring event yields a different id on each day.
@@ -11,6 +18,9 @@ public struct CalendarEvent: Sendable, Hashable, Identifiable {
     public let calendarID: String
     public let calendarTitle: String
     public let link: MeetingLink?
+    public let availability: Availability
+    /// One occurrence of a repeating event; all of them share `seriesID`.
+    public let isRecurring: Bool
 
     public init(
         id: String,
@@ -20,7 +30,9 @@ public struct CalendarEvent: Sendable, Hashable, Identifiable {
         isAllDay: Bool,
         calendarID: String,
         calendarTitle: String,
-        link: MeetingLink?
+        link: MeetingLink?,
+        availability: Availability = .busy,
+        isRecurring: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -30,7 +42,21 @@ public struct CalendarEvent: Sendable, Hashable, Identifiable {
         self.calendarID = calendarID
         self.calendarTitle = calendarTitle
         self.link = link
+        self.availability = availability
+        self.isRecurring = isRecurring
     }
+
+    /// Events this long are backdrops, such as a conference or a working-hours block, not meetings.
+    public static let backgroundDuration: TimeInterval = 4 * 60 * 60
+
+    /// Listed, but never a meeting: all day, out of office, or at least four hours long. It sends no
+    /// alert, keeps no menu bar countdown, and neither quiets the voice nor holds a break.
+    public var isBackground: Bool {
+        isAllDay || availability == .unavailable || end.timeIntervalSince(start) >= Self.backgroundDuration
+    }
+
+    /// The same for every occurrence of a repeating event: the id without its start.
+    public var seriesID: String { Self.split(id).base }
 
     /// The id for one occurrence of a possibly recurring event.
     public static func occurrenceID(eventIdentifier: String, start: Date) -> String {

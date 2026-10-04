@@ -3,7 +3,7 @@ import Foundation
 /// What the menu bar text says. It answers one question: am I in an event, is one coming, or am
 /// I free, and until when.
 public enum MenuBarStatus: Sendable, Equatable {
-    /// No alerting event is left today.
+    /// No alerting event is left today. Background events (all day, out of office, long) never count.
     case clear
     /// The next alerting event starts later than the countdown window.
     case freeUntil(Date)
@@ -17,7 +17,7 @@ public enum MenuBarStatus: Sendable, Equatable {
     ///   - events: today's events with their attention; only alerting, timed events count.
     ///   - countdownMinutes: how close an event must be before its countdown replaces "free until".
     public static func resolve(events: [AttendedEvent], now: Date, countdownMinutes: Int) -> MenuBarStatus {
-        let timed = events.filter { $0.attention.isAlerting && !$0.event.isAllDay }.map(\.event)
+        let timed = events.filter { $0.attention.isAlerting && !$0.event.isBackground }.map(\.event)
 
         if let current = timed.filter({ $0.isOngoing(at: now) }).min(by: { $0.end < $1.end }) {
             return .ongoing(
