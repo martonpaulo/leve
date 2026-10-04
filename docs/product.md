@@ -54,8 +54,9 @@ Every surface answers one question. A new option has to remove more effort than 
 
 - **No tasks, notes or editing of events.** Calendar owns the events; Leve only reads them. Tasks
   are why Smart Desk became too heavy.
-- **Nothing beyond today.** Leve plans today's events only; tomorrow starts at midnight. A week
-  view is a calendar app's job.
+- **Nothing beyond today.** Leve plans today's events only; tomorrow starts at midnight. The one
+  exception is the first hour after midnight, loaded so an event at 00:05 is still warned about,
+  and never listed. A week view is a calendar app's job.
 - **No main window.** The menu bar item and Settings are the whole interface, so there is nothing
   to keep open or arrange.
 - **No sync, account or server.** Settings live on this Mac. iOS and notes may return later as a
@@ -104,3 +105,4 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | The voice stays quiet while a break is on screen; no setting (owner, 2026-10-04) | `Sources/Leve/App/AppModel.swift` |
 | No explanation text above the calendar choices (owner, 2026-10-04) | `Sources/Leve/Settings/SettingsPanes.swift` |
 | All-day events in their own menu section, never alerting, with Dismiss; on by default (owner, 2026-10-04) | [What it does](#what-it-does) |
+| Tomorrow's first hour is loaded for alerts only, never listed (owner, 2026-10-04) | [What it will never do](#what-it-will-never-do) |

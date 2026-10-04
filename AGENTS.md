@@ -85,8 +85,9 @@ Each break decision is logged once per change in the `breaks` category:
 - **`AppModel`** is the one coordinator: a minute tick drives the menu bar text, the full-screen
   alert and the spoken time; notifications are scheduled ahead and replanned when a setting, an
   override, the pause or the calendar changes.
-- **Today only.** `CalendarStore` fetches the current day; `AppModel` reloads it on the first tick
-  of a new day, on wake and on a time-zone change. Nothing plans beyond today.
+- **Today only.** `CalendarStore` fetches the current day, plus the timed events of tomorrow's
+  first hour for their alerts only; `AppModel` reloads it on the first tick of a new day, on wake
+  and on a time-zone change. The menu lists today alone.
 - **Settings** have one owner, `Preferences`, with `leve.<name>.v1` keys; per-event choices live in
   `OverrideStore` and expire with their event.
 - **Copy** lives only in `Copy.swift`. **Shell** surfaces follow the `skd-macos-app-shell` standard

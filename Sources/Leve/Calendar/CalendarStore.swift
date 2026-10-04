@@ -88,15 +88,21 @@ final class CalendarStore {
         let calendar = Calendar.current
         let dayStart = calendar.startOfDay(for: now)
         guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return }
-        let predicate = store.predicateForEvents(withStart: dayStart, end: dayEnd, calendars: eventCalendars)
+        // Timed events in the first hour of tomorrow come too, for their alerts only: at 23:55 an
+        // event at 00:05 must already be known. The menu lists today's events alone.
+        let fetchEnd = dayEnd.addingTimeInterval(Self.lookahead)
+        let predicate = store.predicateForEvents(withStart: dayStart, end: fetchEnd, calendars: eventCalendars)
         events = store.events(matching: predicate)
             .filter { $0.status != .canceled && !Self.declinedByMe($0) }
+            .filter { $0.startDate < dayEnd || !$0.isAllDay }
             .map(Self.makeEvent)
             .sorted(by: CalendarEvent.displayOrder)
         if previous != (access, events, calendars) {
             onChange?()
         }
     }
+
+    static let lookahead: TimeInterval = 60 * 60
 
     private static func currentAccess() -> Access {
         switch EKEventStore.authorizationStatus(for: .event) {

@@ -101,9 +101,13 @@ final class AppModel {
 
     var isPaused: Bool { preferences.isPaused(at: now) }
 
-    /// Listed timed events that have not ended.
+    /// Listed timed events that have not ended, today's only: the first hour of tomorrow is loaded
+    /// for its alerts, not for the list.
     var menuEvents: [AttendedEvent] {
-        attendedEvents.filter { $0.attention.isListed && !$0.event.isAllDay && !$0.event.hasEnded(at: now) }
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: currentDay) ?? .distantFuture
+        return attendedEvents.filter {
+            $0.attention.isListed && !$0.event.isAllDay && !$0.event.hasEnded(at: now) && $0.event.start < tomorrow
+        }
     }
 
     /// Listed all-day events, for their own menu section; empty when they are turned off.
