@@ -30,6 +30,10 @@ final class AppModel {
     @ObservationIgnored var openSettings: () -> Void = {}
     @ObservationIgnored private let speaker = TimeSpeaker()
     @ObservationIgnored private let logger = Logger(subsystem: "com.martonpaulo.leve", category: "model")
+    /// Every break decision, so "why did the break (not) appear at 15:00?" has an answer in the log.
+    @ObservationIgnored private let breakLog = Logger(subsystem: "com.martonpaulo.leve", category: "breaks")
+    /// The last state written to `breakLog`; a state is written once, when it changes, not every minute.
+    @ObservationIgnored private var loggedBreakState = ""
     @ObservationIgnored private var tickTask: Task<Void, Never>?
     @ObservationIgnored private var handledFullScreen: Set<String> = []
     @ObservationIgnored private var lastSpokenMinute: Date?
@@ -58,10 +62,11 @@ final class AppModel {
         }
         reminders.calendarColor = color
         alert.tint = { color($0.calendarID) }
-        breakScreen.onDone = { [weak self] in self?.breakTracker.restart(now: .now) }
-        breakScreen.onSkip = { [weak self] in self?.breakTracker.restart(now: .now) }
+        breakScreen.onDone = { [weak self] in self?.endBreak("taken") }
+        breakScreen.onSkip = { [weak self] in self?.endBreak("skipped") }
         breakScreen.onLater = { [weak self] in
             self?.breakTracker.postpone(now: .now, minutes: Self.breakLaterMinutes)
+            self?.breakLog.notice("Break postponed \(Self.breakLaterMinutes, privacy: .public) min")
         }
         alert.onJoin = { [weak self] event in self?.join(event) }
         alert.onNeverForEvent = { [weak self] event in self?.overrides.set(.noFullScreen, for: event) }
@@ -259,24 +264,61 @@ final class AppModel {
         guard let schedule = preferences.breakSchedule else {
             // Turning breaks on starts a fresh count.
             breakTracker.restart(now: now)
+            logBreakState("off")
             return
         }
         guard !breakScreen.isVisible else { return }
-        let isBusy =
-            alert.isVisible || AlertPlanner.isInAlertingEvent(events: attendedEvents, now: now)
-            || ActivityMonitor.isMicrophoneInUse
+        let inEvent = AlertPlanner.isInAlertingEvent(events: attendedEvents, now: now)
+        let inCall = ActivityMonitor.isMicrophoneInUse
         let context = BreakContext(
             idleSeconds: ActivityMonitor.idleSeconds,
-            isBusy: isBusy,
+            isBusy: alert.isVisible || inEvent || inCall,
             eventStartsSoon: BreakTracker.eventStartsSoon(
                 events: attendedEvents, now: now, minutes: schedule.breakMinutes),
             isPaused: isPaused
         )
-        guard breakTracker.isDue(now: now, context: context, schedule: schedule) else { return }
-        logger.notice("Break after \(schedule.workMinutes, privacy: .public) minutes of work")
+        let countStart = breakTracker.workStart
+        let due = breakTracker.isDue(now: now, context: context, schedule: schedule)
+        let worked = Int(now.timeIntervalSince(countStart) / 60)
+        if breakTracker.workStart != countStart {
+            breakLog.notice(
+                "Away \(Int(context.idleSeconds / 60), privacy: .public) min after \(worked, privacy: .public) min of work: count restarted"
+            )
+        }
+        logBreakState(
+            Self.breakState(
+                context: context, inEvent: inEvent, inCall: inCall, fullScreen: alert.isVisible,
+                notBefore: breakTracker.notBefore, now: now))
+        guard due else { return }
+        breakLog.notice("Break shown after \(worked, privacy: .public) min of work")
         breakScreen.present(
             minutes: schedule.breakMinutes, laterMinutes: Self.breakLaterMinutes,
             sound: preferences.breakSound)
+    }
+
+    private func endBreak(_ how: String) {
+        breakTracker.restart(now: .now)
+        breakLog.notice("Break \(how, privacy: .public): count restarted")
+    }
+
+    /// Why the break is waiting, or "counting" when nothing holds it.
+    private static func breakState(
+        context: BreakContext, inEvent: Bool, inCall: Bool, fullScreen: Bool, notBefore: Date?, now: Date
+    ) -> String {
+        if fullScreen { return "waiting: event full screen" }
+        if inEvent { return "waiting: in an event" }
+        if inCall { return "waiting: call (microphone in use)" }
+        if context.eventStartsSoon { return "waiting: an event starts soon" }
+        if context.isPaused { return "waiting: alerts paused" }
+        if let notBefore, now < notBefore { return "waiting: later" }
+        return "counting"
+    }
+
+    private func logBreakState(_ state: String) {
+        guard state != loggedBreakState else { return }
+        loggedBreakState = state
+        let worked = Int(now.timeIntervalSince(breakTracker.workStart) / 60)
+        breakLog.notice("Break \(state, privacy: .public), \(worked, privacy: .public) min of work so far")
     }
 
     /// Says "Standup in 2 minutes" before an alerting event, at any hour, unless alerts are paused.
