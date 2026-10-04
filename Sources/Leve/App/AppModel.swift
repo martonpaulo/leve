@@ -43,6 +43,7 @@ final class AppModel {
         self.overrides = overrides
         self.calendar = calendar
         self.reminders = reminders
+        reminders.calendarColor = { [calendar] in calendar.color(for: $0) }
         alert.onJoin = { [weak self] event in self?.join(event) }
         alert.onNeverForEvent = { [weak self] event in self?.overrides.set(.noFullScreen, for: event) }
     }

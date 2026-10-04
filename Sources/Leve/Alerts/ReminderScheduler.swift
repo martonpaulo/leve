@@ -19,6 +19,9 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
     private(set) var supportsUrgentDelivery: Bool?
     /// False when notifications for Leve are off in System Settings; nil until read.
     private(set) var notificationsAllowed: Bool?
+    /// The event's calendar color, drawn as a dot beside the text. macOS always shows the app's
+    /// own icon in a notification, so an image attachment is the only place for the color.
+    @ObservationIgnored var calendarColor: (String) -> NSColor = { _ in .secondaryLabelColor }
 
     override init() {
         super.init()
@@ -56,7 +59,7 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
         let delivered = Set(await center.deliveredNotifications().map(\.request.identifier))
 
         for reminder in reminders where !delivered.contains(Self.prefix + reminder.event.id) {
-            let content = Self.content(for: reminder.event, at: reminder.fireDate, urgent: urgent)
+            let content = content(for: reminder.event, at: reminder.fireDate, urgent: urgent)
             let delay = max(1, reminder.fireDate.timeIntervalSince(now))
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
             let request = UNNotificationRequest(
@@ -74,7 +77,7 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
 
     /// Delivers one notification for `event` now, outside the plan; the Debug menu uses it.
     func sendNow(_ event: CalendarEvent) async {
-        let content = Self.content(for: event, at: .now, urgent: false)
+        let content = content(for: event, at: .now, urgent: false)
         let request = UNNotificationRequest(identifier: "leve.debug." + event.id, content: content, trigger: nil)
         do {
             try await center.add(request)
@@ -83,18 +86,46 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    /// One notification's content: the title, when it starts, and a Join button for a call link.
-    private static func content(for event: CalendarEvent, at date: Date, urgent: Bool) -> UNNotificationContent {
+    /// One notification's content in three lines: the title, when it starts, and its time and
+    /// calendar; a dot in the calendar's color; a Join button for a call link.
+    private func content(for event: CalendarEvent, at date: Date, urgent: Bool) -> UNNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = event.title
-        content.body = Copy.startsIn(event, now: date)
+        content.subtitle = Copy.startsInShort(event, now: date)
+        content.body = Copy.timeAndCalendar(event)
         content.sound = .default
         content.interruptionLevel = urgent ? .timeSensitive : .active
+        if let dot = colorDot(calendarColor(event.calendarID)) {
+            content.attachments = [dot]
+        }
         if let link = event.link {
-            content.categoryIdentifier = category
-            content.userInfo = [linkKey: link.url.absoluteString]
+            content.categoryIdentifier = Self.category
+            content.userInfo = [Self.linkKey: link.url.absoluteString]
         }
         return content
+    }
+
+    /// A PNG of a dot in `color`. The system moves the file into its own store when the request is
+    /// added, so each notification writes a new one.
+    private func colorDot(_ color: NSColor) -> UNNotificationAttachment? {
+        let side = 64.0
+        let image = NSImage(size: NSSize(width: side, height: side), flipped: false) { rect in
+            color.setFill()
+            NSBezierPath(ovalIn: rect.insetBy(dx: 14, dy: 14)).fill()
+            return true
+        }
+        guard
+            let tiff = image.tiffRepresentation,
+            let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
+        else { return nil }
+        let url = FileManager.default.temporaryDirectory.appending(path: "leve-dot-\(UUID().uuidString).png")
+        do {
+            try png.write(to: url)
+            return try UNNotificationAttachment(identifier: "dot", url: url)
+        } catch {
+            logger.error("Could not attach the calendar color: \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
     }
 
     nonisolated func userNotificationCenter(
