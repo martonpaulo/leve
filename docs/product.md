@@ -90,7 +90,7 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | Everything, including the voice, is in English (owner, 2026-10-03) | `Sources/Leve/Speech/TimeSpeaker.swift` |
 | Spoken warning before events, and hours for the spoken time (owner, 2026-10-03) | [What it does](#what-it-does) |
 | No snooze in the full screen and no second time zone, to keep Leve light (owner, 2026-10-03) | [Feel](#feel) |
-| A debug menu, off by default, simulates events without touching Calendar (owner, 2026-10-03) | `Sources/Leve/App/AppModel.swift` |
+| A debug menu, off by default, simulates events without touching Calendar (owner, 2026-10-03); since 2026-10-04 a Settings tab that shows only while its toggle in About is on | `Sources/Leve/App/AppModel.swift` |
 | A dot in each calendar's color marks events and calendars (owner, 2026-10-03) | `Sources/Leve/Menu/CalendarDot.swift` |
 | macOS 27 minimum and the newest toolchain (owner, 2026-10-03) | [Constraints](#constraints) |
 | Settings follow WindowHop's pattern, General split from Alerts (owner, 2026-10-03) | `AGENTS.md`, Architecture and patterns |
@@ -99,3 +99,5 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | The notification has two lines, "Standup (in 5 min)" over its time, and a dot in the calendar's color (owner, 2026-10-04) | `Sources/Leve/Alerts/ReminderScheduler.swift` |
 | Breaks: on by default in their own Settings tab, a soft tone on by default, 5 minutes after 55 minutes of work, Skip and Later only, never during an event or a call, meeting time counts (owner, 2026-10-04) | [What it does](#what-it-does) |
 | The full-screen alert glows in the calendar's color with a countdown ring, and every full screen fades in and out (owner, 2026-10-04) | `Sources/Leve/Blocker/FullScreenAlert.swift` |
+| The voice stays quiet while a break is on screen; no setting (owner, 2026-10-04) | `Sources/Leve/App/AppModel.swift` |
+| No explanation text above the calendar choices (owner, 2026-10-04) | `Sources/Leve/Settings/SettingsPanes.swift` |

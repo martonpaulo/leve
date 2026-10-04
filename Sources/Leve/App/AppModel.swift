@@ -292,6 +292,8 @@ final class AppModel {
     }
 
     private func speakIfDue() {
+        // The break asks for quiet; the time is said again at the next boundary after it.
+        guard !breakScreen.isVisible else { return }
         let calendar = Calendar.current
         guard
             AlertPlanner.shouldSayTime(

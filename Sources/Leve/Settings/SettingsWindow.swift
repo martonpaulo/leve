@@ -40,9 +40,14 @@ final class SettingsWindowController {
     }
 }
 
-/// The panes, in order: General, one pane per job, About last (skd-macos-app-shell).
+/// The panes, in order: General, one pane per job, About last (skd-macos-app-shell). Debug sits
+/// before About and shows only while its toggle in About is on.
 enum SettingsPane: String, CaseIterable {
-    case general, alerts, breaks, calendars, about
+    case general, alerts, breaks, calendars, debug, about
+
+    func isShown(_ preferences: Preferences) -> Bool {
+        self != .debug || preferences.debugMenu
+    }
 
     var title: String {
         switch self {
@@ -50,6 +55,7 @@ enum SettingsPane: String, CaseIterable {
         case .alerts: Copy.alerts
         case .breaks: Copy.breaks
         case .calendars: Copy.calendars
+        case .debug: Copy.debug
         case .about: Copy.about
         }
     }
@@ -60,6 +66,7 @@ enum SettingsPane: String, CaseIterable {
         case .alerts: "bell"
         case .breaks: "cup.and.saucer"
         case .calendars: "calendar"
+        case .debug: "ladybug"
         case .about: "info.circle"
         }
     }
@@ -70,6 +77,7 @@ enum SettingsPane: String, CaseIterable {
         case .alerts: AlertsPane(model: model)
         case .breaks: BreaksPane(preferences: model.preferences)
         case .calendars: CalendarsPane(model: model)
+        case .debug: DebugPane(model: model)
         case .about: AboutPane(preferences: model.preferences)
         }
     }
@@ -79,25 +87,56 @@ enum SettingsPane: String, CaseIterable {
 private final class SettingsTabViewController: NSTabViewController {
     private static let selectedPaneKey = "leve.settingsPane.v1"
 
+    private let model: AppModel
+
     init(model: AppModel) {
+        self.model = model
         super.init(nibName: nil, bundle: nil)
         tabStyle = .toolbar
         // Instant pane switches, friendly to Reduce Motion.
         transitionOptions = []
-        for pane in SettingsPane.allCases {
-            let hosting = NSHostingController(rootView: AnyView(pane.content(model)))
-            hosting.title = pane.title
-            hosting.sizingOptions = .preferredContentSize
-            let item = NSTabViewItem(viewController: hosting)
-            item.identifier = pane.rawValue
-            item.label = pane.title
-            item.image = NSImage(systemSymbolName: pane.symbol, accessibilityDescription: pane.title)
-            addTabViewItem(item)
+        for pane in SettingsPane.allCases where pane.isShown(model.preferences) {
+            addTabViewItem(item(for: pane))
         }
         if let saved = UserDefaults.standard.string(forKey: Self.selectedPaneKey),
-            let index = SettingsPane.allCases.firstIndex(where: { $0.rawValue == saved })
+            let index = tabViewItems.firstIndex(where: { $0.identifier as? String == saved })
         {
             selectedTabViewItemIndex = index
+        }
+        observeDebugTab()
+    }
+
+    private func item(for pane: SettingsPane) -> NSTabViewItem {
+        let hosting = NSHostingController(rootView: AnyView(pane.content(model)))
+        hosting.title = pane.title
+        hosting.sizingOptions = .preferredContentSize
+        let item = NSTabViewItem(viewController: hosting)
+        item.identifier = pane.rawValue
+        item.label = pane.title
+        item.image = NSImage(systemSymbolName: pane.symbol, accessibilityDescription: pane.title)
+        return item
+    }
+
+    /// Adds or removes the Debug tab when its toggle changes, keeping the panes' order.
+    private func observeDebugTab() {
+        withObservationTracking {
+            _ = model.preferences.debugMenu
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                self?.syncDebugTab()
+                self?.observeDebugTab()
+            }
+        }
+    }
+
+    private func syncDebugTab() {
+        let shown = SettingsPane.debug.isShown(model.preferences)
+        let existing = tabViewItems.first { $0.identifier as? String == SettingsPane.debug.rawValue }
+        if shown, existing == nil {
+            let index = tabViewItems.firstIndex { $0.identifier as? String == SettingsPane.about.rawValue }
+            insertTabViewItem(item(for: .debug), at: index ?? tabViewItems.count)
+        } else if !shown, let existing {
+            removeTabViewItem(existing)
         }
     }
 

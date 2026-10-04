@@ -69,7 +69,7 @@ enum Copy {
     }
 
     static let debug = String(localized: "Debug")
-    static let debugMenu = String(localized: "Show debug menu")
+    static let debugMenu = String(localized: "Show Debug tab")
     static let simulateEvent = String(localized: "Simulate Event in 2 Minutes")
     static let showFullScreenNow = String(localized: "Show Full Screen Now")
     static let showBreakNow = String(localized: "Show Break Now")
@@ -209,11 +209,6 @@ enum Copy {
         }
     }
 
-    static let calendarsHeader = String(
-        localized:
-            "All alerts: countdown, notification and full screen. No full screen: countdown and notification. No alerts: listed only. Hidden: not shown."
-    )
-
     static func rule(_ rule: CalendarRule) -> String {
         switch rule {
         case .everything: String(localized: "All alerts")
@@ -244,7 +239,9 @@ enum Copy {
     static let quitButton = String(localized: "Quit Leve…")
     static let quitQuestion = String(localized: "Quit Leve?")
     static let quitMessage = String(localized: "Leve stops showing your events and alerts until you open it again.")
-    static let debugFooter = String(localized: "Adds a Debug menu to try the alerts without real events.")
+    static let debugPaneFooter = String(
+        localized: "Simulated events live in memory only and never reach Calendar.")
+    static let debugFooter = String(localized: "Adds a Debug tab to try the alerts without real events.")
     static let developer = String(localized: "Developer")
 
     static let noCalendars = String(localized: "No calendars found on this Mac.")

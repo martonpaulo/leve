@@ -36,10 +36,6 @@ struct MenuContent: View {
         eventsSection
         pauseSection
         Divider()
-        if model.preferences.debugMenu {
-            debugMenu
-            Divider()
-        }
         Button(Copy.settings) { model.openSettings() }
             .keyboardShortcut(",")
         Button(Copy.quit) { NSApp.terminate(nil) }
@@ -107,20 +103,6 @@ struct MenuContent: View {
         } label: {
             CalendarDot.image(model.calendar.color(for: event.calendarID))
             Text(Copy.eventRow(event, override: override))
-        }
-    }
-
-    private var debugMenu: some View {
-        Menu(Copy.debug) {
-            Button(Copy.simulateEvent) { model.simulateEvent() }
-            Button(Copy.showFullScreenNow) { model.showFullScreenNow() }
-            Button(Copy.showBreakNow) { model.showBreakNow() }
-            Button(Copy.sendTestNotification) { model.sendTestNotification() }
-            Button(Copy.sayTimeNow) { model.previewSpeech() }
-            if !model.simulatedEvents.isEmpty {
-                Divider()
-                Button(Copy.clearSimulated) { model.clearSimulatedEvents() }
-            }
         }
     }
 

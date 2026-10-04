@@ -267,9 +267,8 @@ struct CalendarsPane: View {
 
     var body: some View {
         Form {
-            Section {
-                Text(Copy.calendarsHeader).settingsNote()
-                if model.calendar.calendars.isEmpty {
+            if model.calendar.calendars.isEmpty {
+                Section {
                     Text(Copy.noCalendars).settingsNote()
                 }
             }
@@ -296,6 +295,32 @@ struct CalendarsPane: View {
 
     private func ruleBinding(_ id: String) -> Binding<CalendarRule> {
         Binding(get: { model.preferences.rule(for: id) }, set: { model.preferences.setRule($0, for: id) })
+    }
+}
+
+// MARK: - Debug
+
+/// Tries every alert without real events. The tab shows only while "Show Debug tab" is on.
+struct DebugPane: View {
+    let model: AppModel
+
+    var body: some View {
+        Form {
+            Section {
+                Button(Copy.simulateEvent) { model.simulateEvent() }
+                Button(Copy.showFullScreenNow) { model.showFullScreenNow() }
+                Button(Copy.showBreakNow) { model.showBreakNow() }
+                Button(Copy.sendTestNotification) { model.sendTestNotification() }
+                Button(Copy.sayTimeNow) { model.previewSpeech() }
+            }
+            Section {
+                Button(Copy.clearSimulated) { model.clearSimulatedEvents() }
+                    .disabled(model.simulatedEvents.isEmpty)
+            } footer: {
+                Text(Copy.debugPaneFooter).settingsNote()
+            }
+        }
+        .settingsPane()
     }
 }
 
