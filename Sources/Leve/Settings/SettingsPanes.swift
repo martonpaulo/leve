@@ -120,6 +120,41 @@ struct GeneralPane: View {
     }
 }
 
+// MARK: - Breaks
+
+/// Whether Leve asks for breaks, how often, and how long.
+struct BreaksPane: View {
+    @Bindable var preferences: Preferences
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle(isOn: $preferences.breaks) {
+                    Text(Copy.takeBreaks)
+                    Text(Copy.takeBreaksNote)
+                }
+            }
+            Section {
+                Picker(Copy.breakWork, selection: $preferences.breakWorkMinutes) {
+                    ForEach(Preferences.breakWorkOptions, id: \.self) { minutes in
+                        Text(Copy.minutes(minutes)).tag(minutes)
+                    }
+                }
+                Picker(Copy.breakLength, selection: $preferences.breakLengthMinutes) {
+                    ForEach(Preferences.breakLengthOptions, id: \.self) { minutes in
+                        Text(Copy.minutes(minutes)).tag(minutes)
+                    }
+                }
+                Toggle(Copy.breakSound, isOn: $preferences.breakSound)
+            } footer: {
+                Text(Copy.breakFooter).settingsNote()
+            }
+            .disabled(!preferences.breaks)
+        }
+        .settingsPane()
+    }
+}
+
 // MARK: - Alerts
 
 /// When Leve warns before an event, and what it says out loud.
@@ -153,31 +188,8 @@ struct AlertsPane: View {
             }
 
             speechSection(preferences)
-            breakSection(preferences)
         }
         .settingsPane()
-    }
-
-    private func breakSection(_ preferences: Preferences) -> some View {
-        @Bindable var preferences = preferences
-        return Section {
-            Picker(Copy.breakEvery, selection: $preferences.breakWorkMinutes) {
-                Text(Copy.off).tag(Int?.none)
-                ForEach(Preferences.breakWorkOptions, id: \.self) { minutes in
-                    Text(Copy.minutesOfWork(minutes)).tag(Int?.some(minutes))
-                }
-            }
-            Picker(Copy.breakLength, selection: $preferences.breakLengthMinutes) {
-                ForEach(Preferences.breakLengthOptions, id: \.self) { minutes in
-                    Text(Copy.minutes(minutes)).tag(minutes)
-                }
-            }
-            .disabled(preferences.breakWorkMinutes == nil)
-        } header: {
-            Text(Copy.breakSection)
-        } footer: {
-            Text(Copy.breakFooter).settingsNote()
-        }
     }
 
     private func speechSection(_ preferences: Preferences) -> some View {

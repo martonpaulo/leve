@@ -20,6 +20,12 @@ final class AppModel {
     @ObservationIgnored let breakScreen = BreakScreen()
     @ObservationIgnored private var breakTracker = BreakTracker(now: .now)
     static let breakLaterMinutes = 5
+    /// The Debug menu's events take the next of Calendar's colors each time, to compare them.
+    @ObservationIgnored private var debugColorIndex = 0
+    private static let debugColors: [NSColor] = [
+        .systemIndigo, .systemOrange, .systemGreen, .systemPink, .systemYellow, .systemTeal, .systemPurple,
+        .systemBrown, .systemRed, .systemBlue,
+    ]
     /// Opens the Settings window; the app delegate, which owns it, sets this.
     @ObservationIgnored var openSettings: () -> Void = {}
     @ObservationIgnored private let speaker = TimeSpeaker()
@@ -46,8 +52,9 @@ final class AppModel {
         self.overrides = overrides
         self.calendar = calendar
         self.reminders = reminders
-        let color: (String) -> NSColor = { [calendar] id in
-            id == Self.debugCalendarID ? .systemIndigo : calendar.color(for: id)
+        let color: (String) -> NSColor = { [weak self, calendar] id in
+            guard id == Self.debugCalendarID, let self else { return calendar.color(for: id) }
+            return Self.debugColors[debugColorIndex % Self.debugColors.count]
         }
         reminders.calendarColor = color
         alert.tint = { color($0.calendarID) }
@@ -267,7 +274,9 @@ final class AppModel {
         )
         guard breakTracker.isDue(now: now, context: context, schedule: schedule) else { return }
         logger.notice("Break after \(schedule.workMinutes, privacy: .public) minutes of work")
-        breakScreen.present(minutes: schedule.breakMinutes, laterMinutes: Self.breakLaterMinutes)
+        breakScreen.present(
+            minutes: schedule.breakMinutes, laterMinutes: Self.breakLaterMinutes,
+            sound: preferences.breakSound)
     }
 
     /// Says "Standup in 2 minutes" before an alerting event, at any hour, unless alerts are paused.
@@ -347,13 +356,16 @@ extension AppModel {
     /// The event joins the simulated ones, so the next tick finds it and keeps the alert up.
     func showFullScreenNow() {
         let event = makeSimulatedEvent(start: Date.now.addingTimeInterval(60), minutes: 5)
+        debugColorIndex += 1
         simulatedEvents.append(event)
         handledFullScreen.insert(event.id)
         alert.present(event)
     }
 
     func showBreakNow() {
-        breakScreen.present(minutes: preferences.breakLengthMinutes, laterMinutes: Self.breakLaterMinutes)
+        breakScreen.present(
+            minutes: preferences.breakLengthMinutes, laterMinutes: Self.breakLaterMinutes,
+            sound: preferences.breakSound)
     }
 
     func sendTestNotification() {

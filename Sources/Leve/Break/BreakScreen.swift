@@ -13,7 +13,7 @@ final class BreakScreen {
 
     var isVisible: Bool { overlay.isVisible }
 
-    func present(minutes: Int, laterMinutes: Int) {
+    func present(minutes: Int, laterMinutes: Int, sound: Bool) {
         let end = Date.now.addingTimeInterval(Double(minutes * 60))
         let skip: () -> Void = { [weak self] in self?.finish { self?.onSkip?() } }
         let view = BreakView(
@@ -24,10 +24,17 @@ final class BreakScreen {
             onLater: { [weak self] in self?.finish { self?.onLater?() } }
         )
         overlay.present(view, tint: BreakView.tint, onEscape: skip)
+        if sound {
+            BreakSound.play(volume: 0.35)
+        }
         endTask?.cancel()
         endTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(end.timeIntervalSinceNow))
             guard !Task.isCancelled else { return }
+            // The same tone, softer, says the break is over to someone who looked away.
+            if sound {
+                BreakSound.play(volume: 0.2)
+            }
             self?.finish { self?.onDone?() }
         }
     }

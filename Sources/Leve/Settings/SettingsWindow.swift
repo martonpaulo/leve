@@ -42,12 +42,13 @@ final class SettingsWindowController {
 
 /// The panes, in order: General, one pane per job, About last (skd-macos-app-shell).
 enum SettingsPane: String, CaseIterable {
-    case general, alerts, calendars, about
+    case general, alerts, breaks, calendars, about
 
     var title: String {
         switch self {
         case .general: Copy.general
         case .alerts: Copy.alerts
+        case .breaks: Copy.breaks
         case .calendars: Copy.calendars
         case .about: Copy.about
         }
@@ -57,6 +58,7 @@ enum SettingsPane: String, CaseIterable {
         switch self {
         case .general: "gearshape"
         case .alerts: "bell"
+        case .breaks: "cup.and.saucer"
         case .calendars: "calendar"
         case .about: "info.circle"
         }
@@ -66,6 +68,7 @@ enum SettingsPane: String, CaseIterable {
         switch self {
         case .general: GeneralPane(model: model)
         case .alerts: AlertsPane(model: model)
+        case .breaks: BreaksPane(preferences: model.preferences)
         case .calendars: CalendarsPane(model: model)
         case .about: AboutPane(preferences: model.preferences)
         }

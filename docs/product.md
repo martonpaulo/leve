@@ -32,7 +32,8 @@ only its event alerts.
   calendar's color with a ring that counts down to the start, until the owner joins or closes it.
 - Says the time as a clock does, "It's 10 o'clock" or "It's 10:30", with no AM or PM.
 - Asks for a break after 55 minutes of work: "Stop. Breathe. Look away." for 5 minutes over a
-  slowly breathing circle, with Skip and Later (5 min). Time away from the Mac counts as a break.
+  slowly breathing circle and a soft tone, with Skip and Later (5 min). On by default, with its
+  own Settings tab. Time away from the Mac counts as a break.
   Breaks never cover an event or a call (a microphone in use), but that time counts as work, so a
   break that falls due during it appears right after.
 - Says the time on the half hour (or every 15 or 60 minutes) between chosen hours, 8:00 to 20:00
@@ -96,5 +97,5 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | One word per attention level: All alerts, No full screen, No alerts, Hidden; "Don't Show Full Screen" stays in the alert and joins the event's menu (owner, 2026-10-03) | `Sources/Leve/App/Copy.swift` |
 | The voice says "10 o'clock" and "10:30", never AM or PM (owner, 2026-10-04) | `Sources/LeveKit/SpokenTime.swift` |
 | The notification has two lines, "Standup (in 5 min)" over its time, and a dot in the calendar's color (owner, 2026-10-04) | `Sources/Leve/Alerts/ReminderScheduler.swift` |
-| Breaks: 5 minutes after 55 minutes of work, Skip and Later only, never during an event or a call, meeting time counts (owner, 2026-10-04) | [What it does](#what-it-does) |
-| The full-screen alert glows in the calendar's color with a countdown ring (owner, 2026-10-04) | `Sources/Leve/Blocker/FullScreenAlert.swift` |
+| Breaks: on by default in their own Settings tab, a soft tone on by default, 5 minutes after 55 minutes of work, Skip and Later only, never during an event or a call, meeting time counts (owner, 2026-10-04) | [What it does](#what-it-does) |
+| The full-screen alert glows in the calendar's color with a countdown ring, and every full screen fades in and out (owner, 2026-10-04) | `Sources/Leve/Blocker/FullScreenAlert.swift` |

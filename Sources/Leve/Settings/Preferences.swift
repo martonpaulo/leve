@@ -22,8 +22,10 @@ final class Preferences {
         static let spokenAlert: Int? = 2
         static let speechStart = 8
         static let speechEnd = 20
-        static let breakWork: Int? = 55
+        static let breaks = true
+        static let breakWork = 55
         static let breakLength = 5
+        static let breakSound = true
     }
 
     private enum Key {
@@ -39,8 +41,10 @@ final class Preferences {
         static let spokenAlert = "leve.spokenAlertMinutes.v1"
         static let speechStart = "leve.speechStartHour.v1"
         static let speechEnd = "leve.speechEndHour.v1"
+        static let breaks = "leve.breaks.v1"
         static let breakWork = "leve.breakWorkMinutes.v1"
         static let breakLength = "leve.breakLengthMinutes.v1"
+        static let breakSound = "leve.breakSound.v1"
     }
 
     /// `-1` is stored for "off", so a missing key can still mean the default.
@@ -77,15 +81,22 @@ final class Preferences {
     var speechHours: SpeechHours {
         SpeechHours(startHour: speechStartHour, endHour: speechEndHour)
     }
-    /// Minutes of work before a break; nil means no breaks.
-    var breakWorkMinutes: Int? {
-        didSet { store(breakWorkMinutes, Key.breakWork) }
+    /// Asks for a break after `breakWorkMinutes` of work.
+    var breaks: Bool {
+        didSet { defaults.set(breaks, forKey: Key.breaks) }
+    }
+    var breakWorkMinutes: Int {
+        didSet { defaults.set(breakWorkMinutes, forKey: Key.breakWork) }
     }
     var breakLengthMinutes: Int {
         didSet { defaults.set(breakLengthMinutes, forKey: Key.breakLength) }
     }
+    /// A quiet tone when a break starts and ends.
+    var breakSound: Bool {
+        didSet { defaults.set(breakSound, forKey: Key.breakSound) }
+    }
     var breakSchedule: BreakSchedule? {
-        breakWorkMinutes.map { BreakSchedule(workMinutes: $0, breakMinutes: breakLengthMinutes) }
+        breaks ? BreakSchedule(workMinutes: breakWorkMinutes, breakMinutes: breakLengthMinutes) : nil
     }
     /// nil means the default English voice.
     var voiceIdentifier: String? {
@@ -125,11 +136,14 @@ final class Preferences {
             defaults, Key.spokenAlert, options: Self.spokenAlertOptions, fallback: Default.spokenAlert)
         speechStartHour = Self.hour(defaults, Key.speechStart, fallback: Default.speechStart)
         speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: Default.speechEnd)
-        breakWorkMinutes = Self.read(
-            defaults, Key.breakWork, options: Self.breakWorkOptions, fallback: Default.breakWork)
+        breaks = defaults.object(forKey: Key.breaks) as? Bool ?? Default.breaks
+        breakWorkMinutes =
+            Self.read(defaults, Key.breakWork, options: Self.breakWorkOptions, fallback: Default.breakWork)
+            ?? Default.breakWork
         breakLengthMinutes =
             Self.read(defaults, Key.breakLength, options: Self.breakLengthOptions, fallback: Default.breakLength)
             ?? Default.breakLength
+        breakSound = defaults.object(forKey: Key.breakSound) as? Bool ?? Default.breakSound
     }
 
     /// Returns every setting to its default. The pause, the debug menu, macOS permissions and launch
@@ -142,8 +156,10 @@ final class Preferences {
         spokenAlertMinutes = Default.spokenAlert
         speechStartHour = Default.speechStart
         speechEndHour = Default.speechEnd
+        breaks = Default.breaks
         breakWorkMinutes = Default.breakWork
         breakLengthMinutes = Default.breakLength
+        breakSound = Default.breakSound
         voiceIdentifier = nil
         urgentDelivery = false
         calendarRules = [:]

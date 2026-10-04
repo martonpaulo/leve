@@ -132,17 +132,16 @@ enum Copy {
         String(localized: "Later (\(minutes) min)")
     }
 
-    static let breakSection = String(localized: "Breaks")
-    static let breakEvery = String(localized: "Take a break after")
-    static let breakLength = String(localized: "Break length")
+    static let breaks = String(localized: "Breaks")
+    static let takeBreaks = String(localized: "Remind me to take breaks")
+    static let takeBreaksNote = String(localized: "Stop, breathe and look away for a few minutes.")
+    static let breakWork = String(localized: "Work for")
+    static let breakLength = String(localized: "Break for")
+    static let breakSound = String(localized: "Play a soft sound")
     static let breakFooter = String(
         localized:
-            "Time away from the Mac counts as a break. Breaks never cover an event or a call, but the time counts, so the break comes right after."
+            "Time away from the Mac counts as a break. Breaks wait during events and calls (any app using the microphone), then come right after."
     )
-
-    static func minutesOfWork(_ minutes: Int) -> String {
-        String(localized: "\(minutes) min of work")
-    }
 
     static let joinAction = String(localized: "Join")
     static let close = String(localized: "Close")
