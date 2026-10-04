@@ -86,13 +86,12 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    /// One notification's content in three lines: the title, when it starts, and its time and
-    /// calendar; a dot in the calendar's color; a Join button for a call link.
+    /// One notification's content in two lines, "Standup (in 5 min)" over its time; a dot in the
+    /// calendar's color; a Join button for a call link.
     private func content(for event: CalendarEvent, at date: Date, urgent: Bool) -> UNNotificationContent {
         let content = UNMutableNotificationContent()
-        content.title = event.title
-        content.subtitle = Copy.startsInShort(event, now: date)
-        content.body = Copy.timeAndCalendar(event)
+        content.title = Copy.notificationTitle(event, now: date)
+        content.body = Copy.timeRange(event)
         content.sound = .default
         content.interruptionLevel = urgent ? .timeSensitive : .active
         if let dot = colorDot(calendarColor(event.calendarID)) {

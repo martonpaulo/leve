@@ -98,15 +98,12 @@ enum Copy {
         return String(localized: "Starts in \(minutes) min · \(timeRange(event))")
     }
 
-    /// The notification's second line: "Starts in 5 min".
-    static func startsInShort(_ event: CalendarEvent, now: Date) -> String {
+    /// The notification's title: "Standup (in 5 min)", or "Standup (now)". macOS draws the title
+    /// as one left-aligned line, so the time left cannot sit on the right.
+    static func notificationTitle(_ event: CalendarEvent, now: Date) -> String {
         let minutes = event.minutesUntilStart(from: now)
-        return minutes == 0 ? String(localized: "Starting now") : String(localized: "Starts in \(minutes) min")
-    }
-
-    /// The notification's third line: "12:40 PM – 12:45 PM · Work".
-    static func timeAndCalendar(_ event: CalendarEvent) -> String {
-        "\(timeRange(event)) · \(event.calendarTitle)"
+        return minutes == 0
+            ? String(localized: "\(event.title) (now)") : String(localized: "\(event.title) (in \(minutes) min)")
     }
 
     static let joinAction = String(localized: "Join")
