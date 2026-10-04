@@ -153,8 +153,31 @@ struct AlertsPane: View {
             }
 
             speechSection(preferences)
+            breakSection(preferences)
         }
         .settingsPane()
+    }
+
+    private func breakSection(_ preferences: Preferences) -> some View {
+        @Bindable var preferences = preferences
+        return Section {
+            Picker(Copy.breakEvery, selection: $preferences.breakWorkMinutes) {
+                Text(Copy.off).tag(Int?.none)
+                ForEach(Preferences.breakWorkOptions, id: \.self) { minutes in
+                    Text(Copy.minutesOfWork(minutes)).tag(Int?.some(minutes))
+                }
+            }
+            Picker(Copy.breakLength, selection: $preferences.breakLengthMinutes) {
+                ForEach(Preferences.breakLengthOptions, id: \.self) { minutes in
+                    Text(Copy.minutes(minutes)).tag(minutes)
+                }
+            }
+            .disabled(preferences.breakWorkMinutes == nil)
+        } header: {
+            Text(Copy.breakSection)
+        } footer: {
+            Text(Copy.breakFooter).settingsNote()
+        }
     }
 
     private func speechSection(_ preferences: Preferences) -> some View {

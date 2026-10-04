@@ -17,6 +17,9 @@ final class AppModel {
     private(set) var simulatedEvents: [CalendarEvent] = []
 
     @ObservationIgnored let alert = FullScreenAlert()
+    @ObservationIgnored let breakScreen = BreakScreen()
+    @ObservationIgnored private var breakTracker = BreakTracker(now: .now)
+    static let breakLaterMinutes = 5
     /// Opens the Settings window; the app delegate, which owns it, sets this.
     @ObservationIgnored var openSettings: () -> Void = {}
     @ObservationIgnored private let speaker = TimeSpeaker()
@@ -43,7 +46,16 @@ final class AppModel {
         self.overrides = overrides
         self.calendar = calendar
         self.reminders = reminders
-        reminders.calendarColor = { [calendar] in calendar.color(for: $0) }
+        let color: (String) -> NSColor = { [calendar] id in
+            id == Self.debugCalendarID ? .systemIndigo : calendar.color(for: id)
+        }
+        reminders.calendarColor = color
+        alert.tint = { color($0.calendarID) }
+        breakScreen.onDone = { [weak self] in self?.breakTracker.restart(now: .now) }
+        breakScreen.onSkip = { [weak self] in self?.breakTracker.restart(now: .now) }
+        breakScreen.onLater = { [weak self] in
+            self?.breakTracker.postpone(now: .now, minutes: Self.breakLaterMinutes)
+        }
         alert.onJoin = { [weak self] event in self?.join(event) }
         alert.onNeverForEvent = { [weak self] event in self?.overrides.set(.noFullScreen, for: event) }
     }
@@ -158,6 +170,7 @@ final class AppModel {
             preferences.resume()
         }
         checkFullScreen()
+        checkBreak()
         speakUpcomingIfDue()
         speakIfDue()
     }
@@ -229,7 +242,32 @@ final class AppModel {
         guard let event = due.first else { return }
         handledFullScreen.insert(event.id)
         logger.notice("Full-screen alert for an event at \(event.start, privacy: .public)")
+        // The event wins; its time counts as work, so the break comes back after it.
+        breakScreen.dismissSilently()
         alert.present(event)
+    }
+
+    /// Shows the break once enough work has passed, never over an event, a call or the pause.
+    private func checkBreak() {
+        guard let schedule = preferences.breakSchedule else {
+            // Turning breaks on starts a fresh count.
+            breakTracker.restart(now: now)
+            return
+        }
+        guard !breakScreen.isVisible else { return }
+        let isBusy =
+            alert.isVisible || AlertPlanner.isInAlertingEvent(events: attendedEvents, now: now)
+            || ActivityMonitor.isMicrophoneInUse
+        let context = BreakContext(
+            idleSeconds: ActivityMonitor.idleSeconds,
+            isBusy: isBusy,
+            eventStartsSoon: BreakTracker.eventStartsSoon(
+                events: attendedEvents, now: now, minutes: schedule.breakMinutes),
+            isPaused: isPaused
+        )
+        guard breakTracker.isDue(now: now, context: context, schedule: schedule) else { return }
+        logger.notice("Break after \(schedule.workMinutes, privacy: .public) minutes of work")
+        breakScreen.present(minutes: schedule.breakMinutes, laterMinutes: Self.breakLaterMinutes)
     }
 
     /// Says "Standup in 2 minutes" before an alerting event, at any hour, unless alerts are paused.
@@ -312,6 +350,10 @@ extension AppModel {
         simulatedEvents.append(event)
         handledFullScreen.insert(event.id)
         alert.present(event)
+    }
+
+    func showBreakNow() {
+        breakScreen.present(minutes: preferences.breakLengthMinutes, laterMinutes: Self.breakLaterMinutes)
     }
 
     func sendTestNotification() {

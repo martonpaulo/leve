@@ -78,7 +78,7 @@ read the menu bar item and menu through System Events, and capture Settings with
 ## Architecture and patterns
 
 - **`LeveKit`** holds every rule as pure value types and imports only Foundation:
-  `MenuBarStatus`, `AlertPlanner`, `EventAttention`, `SpokenTime`, `MeetingLink`. A new rule goes
+  `MenuBarStatus`, `AlertPlanner`, `EventAttention`, `SpokenTime`, `MeetingLink`, `BreakTracker`. A new rule goes
   there with a Swift Testing test; the app target only reads the system and draws.
 - **`AppModel`** is the one coordinator: a minute tick drives the menu bar text, the full-screen
   alert and the spoken time; notifications are scheduled ahead and replanned when a setting, an

@@ -72,6 +72,7 @@ enum Copy {
     static let debugMenu = String(localized: "Show debug menu")
     static let simulateEvent = String(localized: "Simulate Event in 2 Minutes")
     static let showFullScreenNow = String(localized: "Show Full Screen Now")
+    static let showBreakNow = String(localized: "Show Break Now")
     static let sendTestNotification = String(localized: "Send Test Notification")
     static let sayTimeNow = String(localized: "Say the Time Now")
     static let clearSimulated = String(localized: "Clear Simulated Events")
@@ -90,20 +91,57 @@ enum Copy {
 
     // MARK: Notifications and full screen
 
-    static func startsIn(_ event: CalendarEvent, now: Date) -> String {
-        let minutes = event.minutesUntilStart(from: now)
-        if minutes == 0 {
-            return String(localized: "Starting now · \(timeRange(event))")
-        }
-        return String(localized: "Starts in \(minutes) min · \(timeRange(event))")
-    }
-
     /// The notification's title: "Standup (in 5 min)", or "Standup (now)". macOS draws the title
     /// as one left-aligned line, so the time left cannot sit on the right.
     static func notificationTitle(_ event: CalendarEvent, now: Date) -> String {
         let minutes = event.minutesUntilStart(from: now)
         return minutes == 0
             ? String(localized: "\(event.title) (now)") : String(localized: "\(event.title) (in \(minutes) min)")
+    }
+
+    /// A countdown such as "4:59" or "0:42", rounded up so it never shows 0:00 early.
+    static func clock(seconds: TimeInterval) -> String {
+        let whole = Int(seconds.rounded(.up))
+        return "\(whole / 60):" + String(format: "%02d", whole % 60)
+    }
+
+    static let now = String(localized: "Now")
+    static let startingNow = String(localized: "Starting now")
+
+    static func startsInSeconds(_ seconds: TimeInterval) -> String {
+        let minutes = Int((seconds / 60).rounded(.up))
+        return String(localized: "Starts in \(minutes) min")
+    }
+
+    // MARK: Break
+
+    static let breakTitle = String(localized: "Stop. Breathe. Look away.")
+
+    static func breakBack(_ minutes: Int) -> String {
+        minutes == 1 ? String(localized: "Back in one minute") : String(localized: "Back in \(minutes) minutes")
+    }
+
+    static func breakLeft(_ seconds: TimeInterval) -> String {
+        let minutes = Int((seconds / 60).rounded(.up))
+        return String(localized: "\(minutes) min of break left")
+    }
+
+    static let breakSkip = String(localized: "Skip")
+
+    static func breakLater(_ minutes: Int) -> String {
+        String(localized: "Later (\(minutes) min)")
+    }
+
+    static let breakSection = String(localized: "Breaks")
+    static let breakEvery = String(localized: "Take a break after")
+    static let breakLength = String(localized: "Break length")
+    static let breakFooter = String(
+        localized:
+            "Time away from the Mac counts as a break. Breaks never cover an event or a call, but the time counts, so the break comes right after."
+    )
+
+    static func minutesOfWork(_ minutes: Int) -> String {
+        String(localized: "\(minutes) min of work")
     }
 
     static let joinAction = String(localized: "Join")
@@ -200,7 +238,7 @@ enum Copy {
     static let restoreDefaultsQuestion = String(localized: "Restore all Leve settings?")
     static let restoreDefaultsMessage = String(
         localized:
-            "Alerts, the countdown, spoken time and calendar choices return to their original values. Permissions, launch at login and per-event choices are unchanged."
+            "Alerts, the countdown, spoken time, breaks and calendar choices return to their original values. Permissions, launch at login and per-event choices are unchanged."
     )
     static let restoreDefaults = String(localized: "Restore Defaults")
     static let cancel = String(localized: "Cancel")

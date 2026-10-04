@@ -114,6 +114,7 @@ struct MenuContent: View {
         Menu(Copy.debug) {
             Button(Copy.simulateEvent) { model.simulateEvent() }
             Button(Copy.showFullScreenNow) { model.showFullScreenNow() }
+            Button(Copy.showBreakNow) { model.showBreakNow() }
             Button(Copy.sendTestNotification) { model.sendTestNotification() }
             Button(Copy.sayTimeNow) { model.previewSpeech() }
             if !model.simulatedEvents.isEmpty {
