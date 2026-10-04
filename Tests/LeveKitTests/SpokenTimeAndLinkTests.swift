@@ -3,11 +3,12 @@ import LeveKit
 import Testing
 
 @Suite struct SpokenTimeTests {
-    @Test(arguments: [(10, 0, "It's 10 AM"), (10, 30, "It's 10:30 AM"), (13, 15, "It's 1:15 PM"), (0, 0, "It's 12 AM")])
+    @Test(arguments: [
+        (10, 0, "It's 10 o'clock"), (12, 0, "It's 12 o'clock"), (0, 0, "It's 12 o'clock"),
+        (10, 30, "It's 10:30"), (13, 15, "It's 1:15"), (12, 45, "It's 12:45"),
+    ])
     func englishPhrase(hour: Int, minute: Int, expected: String) {
-        let phrase = SpokenTime.phrase(for: Fixture.at(hour, minute), calendar: Fixture.calendar)
-        // The formatter puts a narrow no-break space before AM and PM.
-        #expect(phrase.replacingOccurrences(of: "\u{202F}", with: " ") == expected)
+        #expect(SpokenTime.phrase(for: Fixture.at(hour, minute), calendar: Fixture.calendar) == expected)
     }
 
     @Test func halfHourBoundaries() {

@@ -47,13 +47,16 @@ public struct SpeechHours: Sendable, Equatable {
 
 /// The sentences Leve speaks, in English.
 public enum SpokenTime {
-    private static let locale = Locale(identifier: "en_US")
-
-    /// "It's 10 AM" on the hour, "It's 10:30 AM" otherwise.
+    /// "It's 10 o'clock" on the hour, "It's 10:30" otherwise, on a 12-hour clock without AM or PM:
+    /// the owner knows whether it is morning, and "o'clock" sounds like a clock, not a schedule.
     public static func phrase(for date: Date, calendar: Calendar) -> String {
-        var style = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone)
-        style = calendar.component(.minute, from: date) == 0 ? style.hour() : style.hour().minute()
-        return "It's \(date.formatted(style))"
+        let parts = calendar.dateComponents([.hour, .minute], from: date)
+        let hour = (parts.hour ?? 0) % 12 == 0 ? 12 : (parts.hour ?? 0) % 12
+        let minute = parts.minute ?? 0
+        if minute == 0 {
+            return "It's \(hour) o'clock"
+        }
+        return "It's \(hour):" + String(format: "%02d", minute)
     }
 
     /// The sentence spoken shortly before an event: "Standup in 2 minutes".
