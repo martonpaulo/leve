@@ -74,6 +74,8 @@ validate) is the gate before every commit and takes about a minute, so it always
 change to alerts, the menu or Settings is also checked in the installed app (`make install`):
 read the menu bar item and menu through System Events, and capture Settings with
 `screencapture -l`. In zsh, call `/usr/bin/log`; the shell's `log` builtin hides it.
+Each break decision is logged once per change in the `breaks` category:
+`/usr/bin/log show --last 1h --predicate 'subsystem == "com.martonpaulo.leve"' --style compact`.
 
 ## Architecture and patterns
 
