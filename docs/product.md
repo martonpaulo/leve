@@ -107,3 +107,4 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | All-day events in their own menu section, never alerting, with Dismiss; on by default (owner, 2026-10-04) | [What it does](#what-it-does) |
 | Tomorrow's first hour is loaded for alerts only, never listed (owner, 2026-10-04) | [What it will never do](#what-it-will-never-do) |
 | Out-of-office events and events of four hours or more are background: listed, but no alerts, no menu bar countdown, and they neither quiet the voice nor hold a break (owner, 2026-10-04) | `Sources/LeveKit/CalendarEvent.swift` |
+| A repeating event can be hidden for good ("Hide All Repeats", "Dismiss All Repeats"), and shown again from Settings, Calendars (owner, 2026-10-04) | `Sources/Leve/Settings/OverrideStore.swift` |

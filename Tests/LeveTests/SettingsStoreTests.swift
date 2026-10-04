@@ -113,6 +113,21 @@ private func event(at start: Date) -> CalendarEvent {
         }
     }
 
+    @Test func aHiddenSeriesHidesEveryRepeatUntilShown() {
+        withDefaults { defaults in
+            let store = OverrideStore(defaults: defaults, calendar: utc, now: .distantPast)
+            let today = event(at: Date(timeIntervalSince1970: 1_790_000_000))
+            let nextWeek = event(at: today.start.addingTimeInterval(7 * 86400))
+            store.hideSeries(of: today)
+            let reopened = OverrideStore(defaults: defaults, calendar: utc, now: nextWeek.start)
+            #expect(reopened.override(for: nextWeek) == .hidden)
+            // Shown again from Settings, not from the menu's "Show Hidden".
+            #expect(reopened.hiddenCount(among: [nextWeek]) == 0)
+            reopened.showSeries(nextWeek.seriesID)
+            #expect(reopened.override(for: nextWeek) == nil)
+        }
+    }
+
     @Test func unhideAllKeepsTheOtherChoices() {
         withDefaults { defaults in
             let store = OverrideStore(defaults: defaults, calendar: utc, now: .distantPast)

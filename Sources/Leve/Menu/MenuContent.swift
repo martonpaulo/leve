@@ -103,6 +103,9 @@ struct MenuContent: View {
             // Dismiss hides it until the day ends, like Hide; "Show Hidden" brings it back. One word that
             // fits a task, a holiday or a birthday alike.
             Button(Copy.dismissAllDay) { model.hide(event) }
+            if event.isRecurring {
+                Button(Copy.dismissSeries) { model.hideSeries(event) }
+            }
         } label: {
             CalendarDot.image(model.calendar.color(for: event.calendarID))
             Text(event.title)
@@ -133,6 +136,9 @@ struct MenuContent: View {
                 }
             }
             Button(Copy.hideEvent) { model.hide(event) }
+            if event.isRecurring {
+                Button(Copy.hideSeries) { model.hideSeries(event) }
+            }
         } label: {
             CalendarDot.image(model.calendar.color(for: event.calendarID))
             Text(Copy.eventRow(event, override: override))

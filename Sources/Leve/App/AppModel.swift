@@ -387,6 +387,10 @@ final class AppModel {
         overrides.set(.hidden, for: event)
     }
 
+    func hideSeries(_ event: CalendarEvent) {
+        overrides.hideSeries(of: event)
+    }
+
     func pause(minutes: Int) {
         preferences.pause(until: Date.now.addingTimeInterval(Double(minutes) * 60))
     }

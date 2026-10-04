@@ -77,6 +77,10 @@ enum Copy {
     static let noFullScreenInMenu = String(localized: "Don’t Show Full Screen")
     static let fullScreenBackOn = String(localized: "Show Full Screen Again")
     static let hideEvent = String(localized: "Hide This Event")
+    static let hideSeries = String(localized: "Hide All Repeats")
+    static let dismissSeries = String(localized: "Dismiss All Repeats")
+    static let hiddenSeriesSection = String(localized: "Hidden repeating events")
+    static let showSeries = String(localized: "Show")
 
     static func showHidden(_ count: Int) -> String {
         String(localized: "Show Hidden Events (\(count))")

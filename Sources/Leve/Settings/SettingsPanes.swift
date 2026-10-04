@@ -293,8 +293,23 @@ struct CalendarsPane: View {
                     }
                 }
             }
+            hiddenSeriesSection
         }
         .settingsPane()
+    }
+
+    /// Repeating events hidden from the menu, each with a way back.
+    @ViewBuilder private var hiddenSeriesSection: some View {
+        let series = model.overrides.hiddenSeries.sorted { $0.value < $1.value }
+        if !series.isEmpty {
+            Section(Copy.hiddenSeriesSection) {
+                ForEach(series, id: \.key) { id, title in
+                    LabeledContent(title) {
+                        Button(Copy.showSeries) { model.overrides.showSeries(id) }
+                    }
+                }
+            }
+        }
     }
 
     private func ruleBinding(_ id: String) -> Binding<CalendarRule> {

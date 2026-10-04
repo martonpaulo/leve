@@ -15,10 +15,13 @@ final class OverrideStore {
     /// v1 keyed entries by the occurrence id, which changes when an event moves.
     private static let legacyKey = "leve.eventOverrides.v1"
     private static let key = "leve.eventOverrides.v2"
+    private static let seriesKey = "leve.hiddenSeries.v1"
 
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let calendar: Calendar
     private var entries: [String: Entry]
+    /// Repeating events hidden for good, by series id, with the title Settings shows to undo it.
+    private(set) var hiddenSeries: [String: String]
     /// Changes on every write, so an observer can replan without reading each entry.
     private(set) var revision = 0
 
@@ -31,11 +34,24 @@ final class OverrideStore {
         }
         defaults.removeObject(forKey: Self.legacyKey)
         entries = loaded
+        hiddenSeries = defaults.dictionary(forKey: Self.seriesKey) as? [String: String] ?? [:]
         prune(now: now)
     }
 
     func override(for event: CalendarEvent) -> EventOverride? {
-        entries[event.choiceKey(calendar: calendar)]?.override
+        if hiddenSeries[event.seriesID] != nil { return .hidden }
+        return entries[event.choiceKey(calendar: calendar)]?.override
+    }
+
+    /// Hides every occurrence of a repeating event, today's and future ones, until Settings shows it.
+    func hideSeries(of event: CalendarEvent) {
+        hiddenSeries[event.seriesID] = event.title
+        saveSeries()
+    }
+
+    func showSeries(_ seriesID: String) {
+        hiddenSeries[seriesID] = nil
+        saveSeries()
     }
 
     /// A choice lasts until its event ends; on an all-day event it lasts until today ends, so a
@@ -49,9 +65,10 @@ final class OverrideStore {
         save()
     }
 
-    /// How many of `events` are hidden: the menu offers to show them again.
+    /// How many of `events` were hidden one by one: the menu offers to show them again. A hidden
+    /// series comes back from Settings instead, so it is not counted.
     func hiddenCount(among events: [CalendarEvent]) -> Int {
-        events.filter { override(for: $0) == .hidden }.count
+        events.filter { entries[$0.choiceKey(calendar: calendar)]?.override == .hidden }.count
     }
 
     func unhideAll() {
@@ -63,6 +80,11 @@ final class OverrideStore {
     func prune(now: Date) {
         entries = entries.filter { $0.value.eventEnd > now }
         save()
+    }
+
+    private func saveSeries() {
+        revision += 1
+        defaults.set(hiddenSeries, forKey: Self.seriesKey)
     }
 
     private func save() {
