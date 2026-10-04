@@ -45,6 +45,9 @@ final class AppModel {
     /// The spoken time is pointless with the displays asleep or another user at the Mac.
     @ObservationIgnored private var isAway = false
     @ObservationIgnored private var started = false
+    /// The day today's events were loaded for. `now` also moves in `replan()`, so comparing it
+    /// with the previous `now` could miss midnight when a replan lands just after it.
+    @ObservationIgnored private var currentDay = Calendar.current.startOfDay(for: .now)
 
     init(
         preferences: Preferences = Preferences(),
@@ -173,10 +176,11 @@ final class AppModel {
     }
 
     func tick() {
-        let previous = now
         now = .now
         // The one midnight trigger: a new day reloads today's events and forgets yesterday's.
-        if !Calendar.current.isDate(previous, inSameDayAs: now) {
+        let today = Calendar.current.startOfDay(for: now)
+        if today != currentDay {
+            currentDay = today
             overrides.prune(now: now)
             calendar.reload(now: now)
         }

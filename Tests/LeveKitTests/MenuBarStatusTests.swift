@@ -27,7 +27,7 @@ import Testing
         let status = MenuBarStatus.resolve(
             events: [Fixture.attended(standup), Fixture.attended(review)], now: Fixture.at(10, 10), countdownMinutes: 30
         )
-        #expect(status == .ongoing(title: "Standup", minutesLeft: 20))
+        #expect(status == .ongoing(title: "Standup", minutesLeft: 20, end: Fixture.at(10, 30)))
     }
 
     @Test func clearWhenNothingIsLeft() {

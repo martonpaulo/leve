@@ -38,8 +38,14 @@ final class OverrideStore {
         entries[event.choiceKey(calendar: calendar)]?.override
     }
 
-    func set(_ override: EventOverride?, for event: CalendarEvent) {
-        entries[event.choiceKey(calendar: calendar)] = override.map { Entry(override: $0, eventEnd: event.end) }
+    /// A choice lasts until its event ends; on an all-day event it lasts until today ends, so a
+    /// holiday dismissed on Tuesday comes back on Wednesday.
+    func set(_ override: EventOverride?, for event: CalendarEvent, now: Date = .now) {
+        var expiry = event.end
+        if event.isAllDay, let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) {
+            expiry = min(expiry, tomorrow)
+        }
+        entries[event.choiceKey(calendar: calendar)] = override.map { Entry(override: $0, eventEnd: expiry) }
         save()
     }
 

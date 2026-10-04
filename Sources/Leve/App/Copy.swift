@@ -18,9 +18,23 @@ enum Copy {
             String(localized: "Free until \(time(date))")
         case .upcoming(let title, let minutes):
             String(localized: "\(short(title)) in \(minutes) min")
-        case .ongoing(let title, let minutesLeft):
-            String(localized: "\(short(title)) · \(minutesLeft) min left")
+        case .ongoing(let title, let minutesLeft, let end):
+            String(localized: "\(short(title)) · \(timeLeft(minutesLeft, end: end))")
         }
+    }
+
+    /// "20 min left" within the hour; past it, when the event ends, "until 5:00 PM", or "until Fri"
+    /// for an event that ends on another day. Counting 180 minutes is harder to read than a time.
+    static func timeLeft(_ minutes: Int, end: Date, now: Date = .now, calendar: Calendar = .current) -> String {
+        if minutes < 60 {
+            return String(localized: "\(minutes) min left")
+        }
+        // An event that ends at midnight still ends today.
+        if calendar.isDate(end.addingTimeInterval(-1), inSameDayAs: now) {
+            return String(localized: "until \(time(end))")
+        }
+        let day = end.formatted(.dateTime.weekday(.abbreviated).locale(Locale(identifier: "en_US")))
+        return String(localized: "until \(day)")
     }
 
     static func pausedUntil(_ date: Date) -> String {

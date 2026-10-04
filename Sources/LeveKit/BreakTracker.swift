@@ -38,6 +38,9 @@ public struct BreakTracker: Sendable, Equatable {
     public private(set) var workStart: Date
     /// "Later" holds the break until this time.
     public private(set) var notBefore: Date?
+    /// The previous tick. A gap at least as long as a break means the Mac slept or Leve was not
+    /// running, which is time away, whatever the input idle time says.
+    private var lastTick: Date?
 
     public init(now: Date) {
         workStart = now
@@ -45,7 +48,10 @@ public struct BreakTracker: Sendable, Equatable {
 
     /// Updates the count for this tick and returns true when the break should appear now.
     public mutating func isDue(now: Date, context: BreakContext, schedule: BreakSchedule) -> Bool {
-        if !context.isBusy && context.idleSeconds >= Double(schedule.breakMinutes * 60) {
+        let breakSeconds = Double(schedule.breakMinutes * 60)
+        let gap = lastTick.map { now.timeIntervalSince($0) } ?? 0
+        lastTick = now
+        if gap >= breakSeconds || (!context.isBusy && context.idleSeconds >= breakSeconds) {
             restart(now: now)
             return false
         }

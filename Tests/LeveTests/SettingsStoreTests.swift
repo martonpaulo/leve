@@ -92,6 +92,27 @@ private func event(at start: Date) -> CalendarEvent {
         }
     }
 
+    /// Dismissing a holiday that spans several days hides it for the day it was dismissed only.
+    @Test func aDismissedMultiDayAllDayEventReturnsTheNextDay() {
+        withDefaults { defaults in
+            let monday = Date(timeIntervalSince1970: 1_790_640_000)  // 2026-09-29 00:00 UTC
+            let tuesdayNoon = monday.addingTimeInterval(36 * 3600)
+            let vacation = CalendarEvent(
+                id: CalendarEvent.occurrenceID(eventIdentifier: "vacation", start: monday), title: "Vacation",
+                start: monday, end: monday.addingTimeInterval(5 * 86400), isAllDay: true, calendarID: "home",
+                calendarTitle: "Home", link: nil)
+            OverrideStore(defaults: defaults, calendar: utc, now: tuesdayNoon).set(
+                .hidden, for: vacation, now: tuesdayNoon)
+            // Tuesday first: opening a store prunes, so Wednesday's would drop the choice.
+            let laterTuesday = OverrideStore(
+                defaults: defaults, calendar: utc, now: tuesdayNoon.addingTimeInterval(3600))
+            #expect(laterTuesday.override(for: vacation) == .hidden)
+            let wednesday = OverrideStore(
+                defaults: defaults, calendar: utc, now: monday.addingTimeInterval(2 * 86400 + 60))
+            #expect(wednesday.override(for: vacation) == nil)
+        }
+    }
+
     @Test func unhideAllKeepsTheOtherChoices() {
         withDefaults { defaults in
             let store = OverrideStore(defaults: defaults, calendar: utc, now: .distantPast)
@@ -122,5 +143,23 @@ private func event(at start: Date) -> CalendarEvent {
             #expect(store.override(for: event(at: start)) == .silenced)
             #expect(defaults.data(forKey: "leve.eventOverrides.v1") == nil)
         }
+    }
+}
+
+@MainActor @Suite struct TimeLeftTests {
+    private let now = Date(timeIntervalSince1970: 1_790_683_200)  // Tuesday 2026-09-29 12:00 UTC
+
+    @Test func minutesWithinTheHour() {
+        #expect(Copy.timeLeft(40, end: now.addingTimeInterval(40 * 60), now: now, calendar: utc) == "40 min left")
+    }
+
+    @Test func theEndTimeForALongEvent() {
+        let text = Copy.timeLeft(180, end: now.addingTimeInterval(3 * 3600), now: now, calendar: utc)
+        #expect(text.hasPrefix("until ") && !text.contains("min"))
+    }
+
+    @Test func theDayForAnEventThatEndsAnotherDay() {
+        let end = now.addingTimeInterval(3 * 86400)
+        #expect(Copy.timeLeft(4320, end: end, now: now, calendar: utc) == "until Fri")
     }
 }

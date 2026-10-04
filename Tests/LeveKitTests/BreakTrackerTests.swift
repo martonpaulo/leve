@@ -31,8 +31,10 @@ import Testing
 
     @Test func aMeetingCountsAndTheBreakFollowsIt() {
         var tracker = BreakTracker(now: Fixture.at(9))
-        // Listening in a call is idle at the keyboard, but it is not a break.
-        #expect(!due(&tracker, now: Fixture.at(9, 58), context: context(idle: 20 * 60, busy: true)))
+        // Listening in a call is idle at the keyboard, but it is not a break. Ticks come every minute.
+        for minute in 58...89 {
+            #expect(!due(&tracker, now: Fixture.at(9, minute), context: context(idle: 20 * 60, busy: true)))
+        }
         #expect(tracker.workStart == Fixture.at(9))
         #expect(due(&tracker, now: Fixture.at(10, 30), context: context()))
     }
@@ -50,6 +52,14 @@ import Testing
         #expect(due(&tracker, now: Fixture.at(10, 5), context: context()))
         tracker.restart(now: Fixture.at(10, 10))
         #expect(!due(&tracker, now: Fixture.at(10, 20), context: context()))
+    }
+
+    /// A Mac asleep overnight sends no ticks; the gap is a break, not 8 hours of work.
+    @Test func aLongGapBetweenTicksCountsAsABreak() {
+        var tracker = BreakTracker(now: Fixture.at(9))
+        #expect(!due(&tracker, now: Fixture.at(9, 30), context: context()))
+        #expect(!due(&tracker, now: Fixture.at(17, 30), context: context()))
+        #expect(tracker.workStart == Fixture.at(17, 30))
     }
 
     @Test func onlyAlertingTimedEventsStartSoon() {

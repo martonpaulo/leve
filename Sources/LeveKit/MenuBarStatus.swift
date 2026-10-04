@@ -9,8 +9,9 @@ public enum MenuBarStatus: Sendable, Equatable {
     case freeUntil(Date)
     /// The next alerting event starts within the countdown window.
     case upcoming(title: String, minutes: Int)
-    /// An alerting event is happening now.
-    case ongoing(title: String, minutesLeft: Int)
+    /// An alerting event is happening now. `end` lets a long event say when it ends instead of
+    /// counting hundreds of minutes.
+    case ongoing(title: String, minutesLeft: Int, end: Date)
 
     /// - Parameters:
     ///   - events: today's events with their attention; only alerting, timed events count.
@@ -20,7 +21,8 @@ public enum MenuBarStatus: Sendable, Equatable {
 
         if let current = timed.filter({ $0.isOngoing(at: now) }).min(by: { $0.end < $1.end }) {
             return .ongoing(
-                title: current.title, minutesLeft: max(1, Int((current.end.timeIntervalSince(now) / 60).rounded(.up))))
+                title: current.title, minutesLeft: max(1, Int((current.end.timeIntervalSince(now) / 60).rounded(.up))),
+                end: current.end)
         }
         guard let next = timed.filter({ $0.start > now }).min(by: { $0.start < $1.start }) else {
             return .clear
