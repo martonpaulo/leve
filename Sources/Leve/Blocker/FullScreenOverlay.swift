@@ -1,5 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
+import LeveKit
+import OSLog
 import SwiftUI
 
 /// A blurred layer over every display, above other apps and full-screen spaces, washed with one
@@ -8,18 +10,52 @@ import SwiftUI
 @MainActor
 final class FullScreenOverlay {
     private var windows: [OverlayWindow] = []
+    /// What is on screen, kept so a display change can lay it out again.
+    private var shown: (content: AnyView, tint: Color, onEscape: () -> Void)?
+    private var contentDisplay: UInt32?
+    private var screenObserver: NSObjectProtocol?
+    private let logger = Logger(subsystem: "com.martonpaulo.leve", category: "overlay")
 
     var isVisible: Bool { windows.contains { $0.isVisible } }
 
     func present(_ content: some View, tint: Color, onEscape: @escaping () -> Void) {
         close()
-        let primary = Self.screenWithPointer()
-        for screen in NSScreen.screens {
+        shown = (AnyView(content), tint, onEscape)
+        contentDisplay = nil
+        // A resolution change or a display connected or removed would leave the windows at the
+        // old frames, so the overlay is laid out again whenever the screens change (#11).
+        screenObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.relayout() }
+        }
+        layOut(fades: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+    }
+
+    /// Replaces the windows at once with one per current display, the content where it was.
+    private func relayout() {
+        guard shown != nil, !windows.isEmpty else { return }
+        for window in windows {
+            window.orderOut(nil)
+        }
+        windows = []
+        layOut(fades: false)
+        logger.notice("Overlay rebuilt for \(self.windows.count, privacy: .public) displays")
+    }
+
+    private func layOut(fades: Bool) {
+        guard let shown else { return }
+        let screens = NSScreen.screens
+        contentDisplay = OverlayDisplay.content(
+            connected: screens.compactMap(Self.displayID), previous: contentDisplay,
+            pointer: Self.screenWithPointer().flatMap(Self.displayID))
+        let primary = screens.first { Self.displayID($0) == contentDisplay }
+        for screen in screens {
             let window = makeWindow(on: screen)
-            window.onEscape = onEscape
+            window.onEscape = shown.onEscape
             let blur = Self.blurView()
-            let layer = OverlayBackdrop(tint: tint) {
-                if screen == primary { content }
+            let layer = OverlayBackdrop(tint: shown.tint) {
+                if screen == primary { shown.content }
             }
             let hosting = NSHostingView(rootView: layer)
             hosting.frame = blur.bounds
@@ -30,7 +66,6 @@ final class FullScreenOverlay {
         }
         // The blur and the glow fade in together, so the screen never changes all at once.
         // Reduce Motion shows it at once.
-        let fades = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         // No NSApp.activate(): macOS 14+ refuses activation the owner did not ask for. A
         // non-activating panel takes the keyboard anyway, and the owner's app stays in front.
         for window in windows {
@@ -51,6 +86,11 @@ final class FullScreenOverlay {
 
     /// Fades the windows out, then removes them. A new overlay can open at once; it gets new windows.
     func close() {
+        if let screenObserver {
+            NotificationCenter.default.removeObserver(screenObserver)
+        }
+        screenObserver = nil
+        shown = nil
         let closing = windows
         windows = []
         guard !closing.isEmpty else { return }
@@ -109,6 +149,10 @@ final class FullScreenOverlay {
         effect.blendingMode = .behindWindow
         effect.state = .active
         return effect
+    }
+
+    private static func displayID(_ screen: NSScreen) -> UInt32? {
+        screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? UInt32
     }
 
     private static func screenWithPointer() -> NSScreen? {
