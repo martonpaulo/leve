@@ -159,11 +159,12 @@ verify_app() { # $1 app
   grep -q '^Timestamp=' <<<"$signature" || fail "the signature has no secure timestamp"
 
   if [[ -f $ENTITLEMENTS ]]; then
-    # Both sides through plutil, so the comparison ignores the XML layout.
+    # Both sides through plutil and `jq -S`, so the comparison ignores the XML layout and the key
+    # order: codesign returns the keys sorted, the file keeps the order it was written in.
     entitlements=$(codesign -d --entitlements - --xml "$target" 2>/dev/null) || fail "codesign could not read the entitlements"
-    actual_entitlements=$(plutil -convert json -o - - <<<"$entitlements" 2>/dev/null) \
+    actual_entitlements=$(plutil -convert json -o - - <<<"$entitlements" 2>/dev/null | jq -S -c .) \
       || fail "the entitlements are not a property list"
-    wanted_entitlements=$(plutil -convert json -o - "$ENTITLEMENTS") || fail "$ENTITLEMENTS is not a property list"
+    wanted_entitlements=$(plutil -convert json -o - "$ENTITLEMENTS" | jq -S -c .) || fail "$ENTITLEMENTS is not a property list"
     [[ $actual_entitlements == "$wanted_entitlements" ]] || fail "the entitlements differ from $ENTITLEMENTS"
   else
     entitlements=$(codesign -d --entitlements - "$target" 2>/dev/null) || fail "codesign could not read the entitlements"
