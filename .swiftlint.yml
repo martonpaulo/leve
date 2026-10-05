@@ -9,6 +9,10 @@ excluded:
   - build
   - artifacts
   - DerivedData
+  # The same folders inside a local package (Pkg/.build/index-build is an editor's index cache).
+  # Quoted, because YAML reads a leading * as an alias. SwiftLint 0.65.1 matches ** here.
+  - "**/.build*"
+  - "**/DerivedData"
   # Agent worktrees and disposable prototypes live inside the checkout and are ignored by Git.
   - .claude
   - .scratch
@@ -96,3 +100,14 @@ custom_rules:
     regex: "^import Combine$"
     message: "Use Observation and Swift Concurrency; do not introduce Combine."
     severity: error
+
+  # Opt-in, for an app that sets a global .tint: copy it, uncommented, into the app's nested
+  # .swiftlint.yml. A plain Label inside Button(role: .destructive) then fails, because the tint
+  # colours its icon while the role colours only its title (swift-apps.md, Icon and title colour).
+  # It is not on by default: an app without a global tint, or one with no shared destructive label
+  # view, would fail on code that draws correctly.
+  # destructive_label:
+  #   name: "Destructive Label"
+  #   regex: "role:\\s*\\.destructive[^{}]*\\)\\s*(\\{[^{}]*\\}\\s*label:\\s*)?\\{(\\s*//[^\\n]*)*\\s*Label\\b"
+  #   message: "Draw a destructive action's label with the app's shared view (for example DestructiveLabel), so its icon and title share the system red."
+  #   severity: error

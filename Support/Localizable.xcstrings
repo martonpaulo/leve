@@ -1,0 +1,493 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ (alerts off)" : {
+
+    },
+    "%@ (default)" : {
+
+    },
+    "%@ (in %lld min)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (in %2$lld min)"
+          }
+        }
+      }
+    },
+    "%@ (no full screen)" : {
+
+    },
+    "%@ (now)" : {
+
+    },
+    "%@ in %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ in %2$lld min"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%lld min" : {
+
+    },
+    "%lld min before" : {
+
+    },
+    "%lld min left" : {
+
+    },
+    "%lld min of break left" : {
+
+    },
+    "%lld now" : {
+
+    },
+    "About" : {
+
+    },
+    "Add" : {
+
+    },
+    "Adds a Debug tab to try the alerts without real events." : {
+
+    },
+    "Alerts" : {
+
+    },
+    "Alerts paused until %@" : {
+
+    },
+    "Alerts, the countdown, spoken time, breaks and calendar choices return to their original values. Permissions, launch at login and per-event choices are unchanged." : {
+
+    },
+    "All alerts" : {
+
+    },
+    "All day" : {
+
+    },
+    "Allow Calendar Access…" : {
+
+    },
+    "Allow Leve in System Settings to open it at login." : {
+
+    },
+    "Allowed" : {
+
+    },
+    "Available only in the installed app." : {
+
+    },
+    "Back in %lld minutes" : {
+
+    },
+    "Back in one minute" : {
+
+    },
+    "Before an event" : {
+
+    },
+    "Between" : {
+
+    },
+    "Break" : {
+
+    },
+    "Break for" : {
+
+    },
+    "Breaks" : {
+
+    },
+    "Calendar" : {
+
+    },
+    "Calendars" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Clear" : {
+
+    },
+    "Clear Simulated Events" : {
+
+    },
+    "Close" : {
+
+    },
+    "Debug" : {
+
+    },
+    "Developer" : {
+
+    },
+    "Dismiss" : {
+
+    },
+    "Dismiss All Repeats" : {
+
+    },
+    "Don’t Show Full Screen" : {
+
+    },
+    "Don’t Show Full Screen for This Event" : {
+
+    },
+    "Each time in the next calendar color." : {
+
+    },
+    "Event in 2 minutes" : {
+
+    },
+    "Every 15 minutes" : {
+
+    },
+    "Every 30 minutes" : {
+
+    },
+    "Every hour" : {
+
+    },
+    "For 1 Hour" : {
+
+    },
+    "For 30 Minutes" : {
+
+    },
+    "For an event in 5 minutes." : {
+
+    },
+    "For the break length set in Breaks." : {
+
+    },
+    "Free until %@" : {
+
+    },
+    "From" : {
+
+    },
+    "Full screen" : {
+
+    },
+    "Full screen covers every display until you join or close it (Esc). When it comes at the time of the notification, it replaces it." : {
+
+    },
+    "General" : {
+
+    },
+    "Hidden" : {
+
+    },
+    "Hidden repeating events" : {
+
+    },
+    "Hide All Repeats" : {
+
+    },
+    "Hide This Event" : {
+
+    },
+    "Join" : {
+
+    },
+    "Join Google Meet" : {
+
+    },
+    "Join Microsoft Teams" : {
+
+    },
+    "Join Webex" : {
+
+    },
+    "Join Zoom" : {
+
+    },
+    "Know when your next event is, hear the time, and never miss a meeting while you focus." : {
+
+    },
+    "Lasts 5 minutes, has a call link, and goes through every alert." : {
+
+    },
+    "Later (%lld min)" : {
+
+    },
+    "Leve" : {
+
+    },
+    "Leve needs access to your calendars" : {
+
+    },
+    "Leve stays quiet during events and while alerts are paused. Upcoming events are said at any hour." : {
+
+    },
+    "Leve stops showing your events and alerts until you open it again." : {
+
+    },
+    "Listed in their own section, without alerts." : {
+
+    },
+    "Menu bar" : {
+
+    },
+    "Needed to read today’s events." : {
+
+    },
+    "Needed to warn you before events." : {
+
+    },
+    "No alerts" : {
+
+    },
+    "No calendars found on this Mac." : {
+
+    },
+    "No full screen" : {
+
+    },
+    "No more events today" : {
+
+    },
+    "None now" : {
+
+    },
+    "Not allowed" : {
+
+    },
+    "Nothing else today" : {
+
+    },
+    "Notification" : {
+
+    },
+    "Notifications" : {
+
+    },
+    "Now" : {
+
+    },
+    "Off" : {
+
+    },
+    "One now" : {
+
+    },
+    "Open Leve at login" : {
+
+    },
+    "Open Link" : {
+
+    },
+    "Open Login Items…" : {
+
+    },
+    "Open Privacy Settings…" : {
+
+    },
+    "Open System Settings…" : {
+
+    },
+    "Pause Alerts" : {
+
+    },
+    "Permissions" : {
+
+    },
+    "Play a soft sound" : {
+
+    },
+    "Preview" : {
+
+    },
+    "Quit Leve" : {
+
+    },
+    "Quit Leve?" : {
+
+    },
+    "Quit Leve…" : {
+
+    },
+    "Remind me to take breaks" : {
+
+    },
+    "Restore Defaults" : {
+
+    },
+    "Restore Defaults…" : {
+
+    },
+    "Restore all Leve settings?" : {
+
+    },
+    "Resume Alerts" : {
+
+    },
+    "Say" : {
+
+    },
+    "Say the Time Now" : {
+
+    },
+    "Say the time" : {
+
+    },
+    "Say upcoming events" : {
+
+    },
+    "Send" : {
+
+    },
+    "Send Test Notification" : {
+
+    },
+    "Settings…" : {
+
+    },
+    "Show" : {
+
+    },
+    "Show Break Now" : {
+
+    },
+    "Show Debug tab" : {
+
+    },
+    "Show Full Screen Again" : {
+
+    },
+    "Show Full Screen Now" : {
+
+    },
+    "Show Hidden Events (%lld)" : {
+
+    },
+    "Show all-day events" : {
+
+    },
+    "Show countdown" : {
+
+    },
+    "Show notifications during Focus" : {
+
+    },
+    "Show “Free until”" : {
+
+    },
+    "Simulate Event in 2 Minutes" : {
+
+    },
+    "Simulated events" : {
+
+    },
+    "Simulated events live in memory only and never reach Calendar." : {
+
+    },
+    "Skip" : {
+
+    },
+    "Spoken time" : {
+
+    },
+    "Starting now" : {
+
+    },
+    "Starts in %lld min" : {
+
+    },
+    "Stop, breathe and look away for a few minutes." : {
+
+    },
+    "Stop. Breathe. Look away." : {
+
+    },
+    "Take a Break Now" : {
+
+    },
+    "Test event %lld" : {
+
+    },
+    "The current time, in the chosen voice." : {
+
+    },
+    "Time away from the Mac counts as a break. Breaks wait during events and calls (any app using the microphone), then come right after." : {
+
+    },
+    "To" : {
+
+    },
+    "Today" : {
+
+    },
+    "Try now" : {
+
+    },
+    "Turn Alerts Back On" : {
+
+    },
+    "Turn Off Alerts for This Event" : {
+
+    },
+    "Until Tomorrow" : {
+
+    },
+    "Untitled event" : {
+
+    },
+    "Version %@" : {
+
+    },
+    "Version %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "Voice" : {
+
+    },
+    "When it starts" : {
+
+    },
+    "When no event is close, the menu bar shows only the leaf." : {
+
+    },
+    "Work for" : {
+
+    },
+    "and" : {
+
+    },
+    "in %lld min" : {
+
+    },
+    "macOS did not change the login item." : {
+
+    },
+    "until %@" : {
+
+    }
+  },
+  "version" : "1.0"
+}

@@ -10,8 +10,7 @@ deep focus never costs you a meeting.
 
 ## Who it is for
 
-People who hyperfocus at the computer, lose track of time, and miss meetings. The owner is the
-first of them.
+People who hyperfocus at the computer, lose track of time, and miss meetings.
 
 ## The job
 
@@ -77,40 +76,12 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 
 ## Accepted evidence gaps
 
-- Manual screen-reader passes are not run; accessibility evidence is automated
-  (martonpaulo/skill-deck#266).
+- Manual screen-reader passes are not run; the view code, reviewed in each change, is the
+  accessibility evidence (martonpaulo/skill-deck#266).
 - "Show notifications during Focus" appears only when macOS reports time-sensitive notifications
   as supported. A locally signed build without the time-sensitive entitlement reports them as not
   supported, so the option stays hidden.
 
-## Decision index
+## Decisions
 
-| Decision | Rule |
-| :--- | :--- |
-| Leve replaces Smart Desk's macOS event features in a new, small app (owner, 2026-10-02) | [What it is](#what-it-is) |
-| English-only interface for now (owner, 2026-10-02) | `AGENTS.md`, Product copy |
-| One "Pause Alerts" for notifications, full screen and speech, always with an end time (owner, 2026-10-02) | [What it does](#what-it-does) |
-| One attention choice per calendar (owner, 2026-10-02), named All alerts, No full screen, No alerts, Hidden since 2026-10-03 | [What it does](#what-it-does) |
-| The menu bar shows "Free until …" when nothing is close (owner, 2026-10-02) | [What it does](#what-it-does) |
-| Everything, including the voice, is in English (owner, 2026-10-03) | `Sources/Leve/Speech/TimeSpeaker.swift` |
-| Spoken warning before events, and hours for the spoken time (owner, 2026-10-03) | [What it does](#what-it-does) |
-| No snooze in the full screen and no second time zone, to keep Leve light (owner, 2026-10-03) | [Feel](#feel) |
-| A debug menu, off by default, simulates events without touching Calendar (owner, 2026-10-03); since 2026-10-04 a Settings tab that shows only while its toggle in About is on | `Sources/Leve/App/AppModel.swift` |
-| A dot in each calendar's color marks events and calendars (owner, 2026-10-03) | `Sources/Leve/Menu/CalendarDot.swift` |
-| macOS 27 minimum and the newest toolchain (owner, 2026-10-03) | [Constraints](#constraints) |
-| Settings follow WindowHop's pattern, General split from Alerts (owner, 2026-10-03) | `AGENTS.md`, Architecture and patterns |
-| One word per attention level: All alerts, No full screen, No alerts, Hidden; "Don't Show Full Screen" stays in the alert and joins the event's menu (owner, 2026-10-03) | `Sources/Leve/App/Copy.swift` |
-| The voice says "10 o'clock" and "10:30", never AM or PM (owner, 2026-10-04) | `Sources/LeveKit/SpokenTime.swift` |
-| The notification has two lines, "Standup (in 5 min)" over its time, and a dot in the calendar's color (owner, 2026-10-04) | `Sources/Leve/Alerts/ReminderScheduler.swift` |
-| Breaks: on by default in their own Settings tab, a soft tone on by default, 5 minutes after 55 minutes of work, Skip and Later only, never during an event or a call, meeting time counts (owner, 2026-10-04) | [What it does](#what-it-does) |
-| The full-screen alert glows in the calendar's color with a countdown ring, and every full screen fades in and out (owner, 2026-10-04) | `Sources/Leve/Blocker/FullScreenAlert.swift` |
-| The voice stays quiet while a break is on screen; no setting (owner, 2026-10-04) | `Sources/Leve/App/AppModel.swift` |
-| No explanation text above the calendar choices (owner, 2026-10-04) | `Sources/Leve/Settings/SettingsPanes.swift` |
-| All-day events in their own menu section, never alerting, with Dismiss; on by default (owner, 2026-10-04) | [What it does](#what-it-does) |
-| Tomorrow's first hour is loaded for alerts only, never listed (owner, 2026-10-04) | [What it will never do](#what-it-will-never-do) |
-| Out-of-office events and events of four hours or more are background: listed, but no alerts, no menu bar countdown, and they neither quiet the voice nor hold a break (owner, 2026-10-04) | `Sources/LeveKit/CalendarEvent.swift` |
-| A repeating event can be hidden for good ("Hide All Repeats", "Dismiss All Repeats"), and shown again from Settings, Calendars (owner, 2026-10-04) | `Sources/Leve/Settings/OverrideStore.swift` |
-| The full screen plays the bowl tone, the break a short music-box phrase; no notification when the full screen comes at the same time (owner, 2026-10-04) | `Sources/LeveKit/AlertPlanner.swift` |
-| The menu bar never shows an event's name, with no setting, replacing the planned "show title" toggle (owner, 2026-10-05, #4) | [What it does](#what-it-does) |
-| "Free until …" in the menu bar can be turned off in General; "Nothing else today" is not shown there either way (owner, 2026-10-05, #10) | [What it does](#what-it-does) |
-| "Take a Break Now" in the menu, while breaks are on; it restarts the work count (owner, 2026-10-05, #9) | [What it does](#what-it-does) |
+The history of every product decision is in [`decisions.md`](decisions.md).

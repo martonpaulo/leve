@@ -60,6 +60,9 @@ bin_path=$(swift build -c release --arch arm64 --product "$executable" --show-bi
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin_path/$executable" "$app/Contents/MacOS/$executable"
 cp "$PLIST" "$app/Contents/Info.plist"
+cp Support/PrivacyInfo.xcprivacy "$app/Contents/Resources/PrivacyInfo.xcprivacy"
+# Writes one .lproj per translated locale; an English-only catalog produces nothing yet.
+xcrun xcstringstool compile Support/Localizable.xcstrings --output-directory "$app/Contents/Resources" >&2
 if [[ -f Support/AppIcon.icns ]]; then
   cp Support/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
   "$PLIST_BUDDY" -c "Add :CFBundleIconFile string AppIcon" "$app/Contents/Info.plist"

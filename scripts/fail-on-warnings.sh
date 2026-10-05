@@ -44,13 +44,16 @@ if (( status )); then
   exit 1
 fi
 
-# A diagnostic line is `<path>:<line>[:<column>]: warning: <message>`. The compiler colours it even
-# into a pipe, so ANSI colour (CSI) and hyperlink (OSC 8) sequences are removed first.
+# A diagnostic line is `<path>:<line>[:<column>]: warning: <message>`. The asset catalog compiler
+# (actool) reports without a line number: `<path>.xcassets[/...]: warning: <message>`. The compiler
+# colours its output even into a pipe, so ANSI colour (CSI) and hyperlink (OSC 8) sequences are
+# removed first.
 warnings=()
 files=()
 while IFS= read -r line; do
   # `.+` is greedy, so the column form is tried first; otherwise the line number joins the path.
-  if [[ $line =~ ^(.+):[0-9]+:[0-9]+:\ warning: ]] || [[ $line =~ ^(.+):[0-9]+:\ warning: ]]; then
+  if [[ $line =~ ^(.+):[0-9]+:[0-9]+:\ warning: ]] || [[ $line =~ ^(.+):[0-9]+:\ warning: ]] ||
+    [[ $line =~ ^(.+\.xcassets[^:]*):\ warning: ]]; then
     path=${BASH_REMATCH[1]}
   else
     continue
