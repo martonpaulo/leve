@@ -5,6 +5,8 @@ and Leve uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-05
+
 ### Added
 
 - The menu bar shows "Free until 2:00 PM", "in 12 min" or "20 min left", never an event's name.
