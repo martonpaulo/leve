@@ -357,7 +357,8 @@ final class AppModel {
 
     /// The macOS prompt could open under the break, so it waits until the break is gone.
     private func askMediaPermissionAfterBreak() {
-        let apps = mediaNeedingPermission
+        let apps = MediaPause.permissionToAsk(
+            pending: mediaNeedingPermission, settingIsOn: preferences.pauseMediaOnBreak)
         mediaNeedingPermission = []
         guard !apps.isEmpty else { return }
         askMediaPermission(apps)

@@ -124,6 +124,11 @@ public enum MediaPause {
         MediaApp.allCases.filter { outcomes[$0] == .needsPermission }
     }
 
+    /// What to ask for when the break ends: nothing once the setting was turned off meanwhile.
+    public static func permissionToAsk(pending: [MediaApp], settingIsOn: Bool) -> [MediaApp] {
+        settingIsOn ? pending : []
+    }
+
     /// One log line for a break: each app asked and its outcome.
     public static func logLine(_ outcomes: [MediaApp: MediaPauseOutcome]) -> String {
         let parts = MediaApp.allCases.compactMap { app in

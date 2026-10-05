@@ -79,6 +79,11 @@ import Testing
         #expect(MediaPause.needingPermission(outcomes) == [.spotify])
     }
 
+    @Test func nothingIsAskedOnceTheSettingIsTurnedOffDuringTheBreak() {
+        #expect(MediaPause.permissionToAsk(pending: [.spotify, .safari], settingIsOn: true) == [.spotify, .safari])
+        #expect(MediaPause.permissionToAsk(pending: [.spotify, .safari], settingIsOn: false).isEmpty)
+    }
+
     @Test func theLogLineNamesAppsAndOutcomesOnly() {
         #expect(MediaPause.logLine([:]) == "no player running")
         #expect(
