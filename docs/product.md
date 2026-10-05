@@ -62,7 +62,8 @@ Every surface answers one question. A new option has to remove more effort than 
   to keep open or arrange.
 - **No sync, account or server.** Settings live on this Mac. iOS and notes may return later as a
   separate decision, not as hidden scope now.
-- **No telemetry.** Nothing leaves the Mac.
+- **No telemetry.** The only network request is Sparkle's update check against Leve's feed on
+  GitHub; nothing about the person, the Mac or the calendars leaves it (#7).
 
 ## How you know it worked
 
@@ -72,7 +73,9 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 
 - macOS 27 or later, Apple Silicon, built with SwiftPM (tools 6.4, macOS 27 SDK).
 - Calendar access through EventKit (read-only) and notifications through UserNotifications.
-- Signed locally for the owner's Mac; not distributed.
+- Distributed directly, like WindowHop: a Developer ID signed and notarized disk image on GitHub
+  Releases, the Homebrew cask `martonpaulo/tap/leve`, and Sparkle updates (#7). The release policy
+  is in [`AGENTS.md`](../AGENTS.md).
 
 ## Accepted evidence gaps
 

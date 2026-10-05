@@ -23,10 +23,26 @@ macOS 27 or later on a Mac with Apple silicon.
 
 ## Install
 
-Leve is not distributed. Build and install it on this Mac:
+Download `Leve-<version>.dmg` from the
+[latest release](https://github.com/martonpaulo/leve/releases/latest), open it, and drag Leve to
+Applications. The disk image is signed and notarized, and Leve updates itself.
+
+Or install it with [Homebrew](https://brew.sh):
 
 ```bash
-make install
+brew install --cask martonpaulo/tap/leve
+```
+
+If Leve is already installed from the disk image, let Homebrew manage that copy:
+
+```bash
+brew install --cask --adopt martonpaulo/tap/leve
+```
+
+Or build it from source, with Xcode 27 ([`CONTRIBUTING.md`](CONTRIBUTING.md)):
+
+```bash
+git clone https://github.com/martonpaulo/leve.git && cd leve && make install
 ```
 
 ## Use it
@@ -38,7 +54,8 @@ Click the leaf in the menu bar:
 - **Pause Alerts** stops notifications, the full screen and the spoken time for 30 minutes, an hour,
   or until tomorrow.
 - **Take a Break Now** starts a break at once, when breaks are on.
-- **Settings…** (<kbd>⌘</kbd> <kbd>,</kbd>) and **Quit Leve** (<kbd>⌘</kbd> <kbd>Q</kbd>).
+- **Check for Updates…**, **Settings…** (<kbd>⌘</kbd> <kbd>,</kbd>) and **Quit Leve**
+  (<kbd>⌘</kbd> <kbd>Q</kbd>).
 
 In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> closes it.
 
@@ -49,11 +66,14 @@ In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> cl
 - **Alerts:** when the notification and the full screen arrive; how often, between which hours and
   in which voice Leve says the time; whether it says upcoming events.
 - **Calendars:** for each calendar, All alerts, No full screen, No alerts, or Hidden.
+- **About:** the version, and whether Leve checks for updates automatically.
 
 ## Privacy
 
-Leve reads today's events from the calendars on this Mac and keeps its settings on this Mac. It
-sends nothing anywhere.
+Leve reads today's events from the calendars on this Mac and keeps its settings on this Mac. The
+only thing it sends over the network is the update check: it reads Leve's update feed on GitHub,
+once a day or when you choose Check for Updates…. Nothing about you, your Mac or your calendars
+leaves it. Turn automatic checks off in Settings ▸ About.
 
 ## Limitations
 
@@ -63,11 +83,14 @@ sends nothing anywhere.
 
 ## Uninstall
 
+Quit Leve and move it from Applications to the Bin. With Homebrew, this also removes its settings:
+
 ```bash
-make uninstall
+brew uninstall --zap --cask leve
 ```
 
-Then remove Leve from System Settings ▸ General ▸ Login Items if you turned on "Open Leve at login".
+For a build from source, run `make uninstall`. Then remove Leve from System Settings ▸ General ▸
+Login Items if you turned on "Open Leve at login".
 
 ## For developers
 
