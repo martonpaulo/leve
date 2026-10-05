@@ -1,8 +1,7 @@
 # Fleet Dependabot configuration, from skill-deck's project-setup template
 # (assets/dependabot.template.yml). Majors are ignored and reviewed by hand; the cooldown
 # keeps a day-old release out of a pull request. Swift packages have no production or
-# development split, so the one group matches every package by name. A `github-actions`
-# entry joins when .github/workflows exists.
+# development split, so the one group matches every package by name.
 version: 2
 updates:
   - package-ecosystem: swift
@@ -25,3 +24,14 @@ updates:
       swift-packages:
         patterns: ["*"]
         update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:15"
+      timezone: Europe/Madrid
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 5

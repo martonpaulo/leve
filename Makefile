@@ -1,6 +1,5 @@
-# Task entry points: skill-deck's shared targets that apply to an app with no public
-# distribution (no dmg, keys or appcast), plus Leve's own install targets. `make check` is the
-# gate before every commit; there is no CI (AGENTS.md, "Build and validate").
+# Task entry points: skill-deck's shared targets, plus Leve's own install targets. `make check` is
+# the gate before every commit and the Validate workflow's job (AGENTS.md, "Build and validate").
 
 .DEFAULT_GOAL := help
 

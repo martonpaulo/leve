@@ -22,12 +22,11 @@
 - Commit subject: a commit made for an issue ends with `(#<issue number>)`, never the pull request's.
 - Delete branches after merge: enabled.
 - Default-branch approving review: not required under the direct-to-`main` policy. Do not add a pull-request-only protection rule without reopening that policy.
-- Default-branch required status check: none. `main` has no branch protection and no ruleset, because its one author commits to it directly and there is no CI yet; the gate is `make check` before each commit (owner, 2026-10-05).
+- Default-branch required status check: none. `main` has no branch protection and no ruleset, because its one author commits to it directly; `make check` gates each commit, and the `Validate` result is read after each push (owner, 2026-10-05).
 - Secret protection: GitHub secret scanning and push protection enabled (owner, 2026-10-05), and private vulnerability reporting enabled for `SECURITY.md`. These are backstops, not substitutes for inspecting the exact publication payload.
 - Release, signing, and secret-storage policy: Not applicable: no public distribution (owner, 2026-10-02). `make install` builds `build/Leve.app` with `scripts/build-app.sh`, signs it with `DEVELOPER_ID_IDENTITY` from the untracked `.env` (ad-hoc without it), with hardened runtime and `Support/Leve.entitlements` (calendar access only), and copies it to `/Applications`. No notarization, release, tag, appcast or secret.
 - Skills baseline revision: `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`
 - Skills baseline applied: `2026-10-03`
-- Skills baseline divergence `continuous-integration` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: no Validate workflow. macOS runners spend the private repository's minutes on every push for one author; `make check` runs locally before each commit instead (owner, 2026-10-02).
 - Skills baseline divergence `canonical-scripts` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: `scripts/build-app.sh` replaces the canonical `package-app.sh`, which requires Sparkle and has no entitlements option; Leve has neither updates nor distribution and needs the calendar entitlement.
 - Skills baseline divergence `layout` at `ecd0609ec96b53aa6f2110ac4dea987a3f023318`: no `docs/architecture.md` or `docs/design-system.md`. Leve is a small app; "Architecture and patterns" below describes its architecture, and the Feel rule its visual system (owner, 2026-10-05).
 
@@ -151,7 +150,7 @@ Shape every message and ask the owner as Skill Deck's global rules define (`glob
 
 - Ignore secrets, local environments, logs, caches, and build output. Keep `.env.example` with every variable and a safe placeholder, and secrets only in the platform's secure store. Nothing new in `~` (`project-layout.md`).
 - Add CI, dependency updates, release workflows, and signing only when distribution or risk requires them.
-- Workflows: none; the divergence `continuous-integration` records why. A workflow added outside the `project-setup` skill's `references/ci-pipelines.md` is a recorded exception. A Node repository's `validate` script runs exactly what CI runs. Do not add an image-optimisation bot.
+- Workflows: `validate.yml` (`Validate`, `make check` on the `xcode-27` runner, #7); the release and deploy workflows arrive with #7 and #8. A workflow added outside the `project-setup` skill's `references/ci-pipelines.md` is a recorded exception. A Node repository's `validate` script runs exactly what CI runs. Do not add an image-optimisation bot.
 - The agent rules live in `AGENTS.md`, the one real file; `CLAUDE.md` is a symlink to it. Do not create `GEMINI.md`, `.gemini/rules/agents.md`, or any other alias, and never commit `.claude/settings.local.json`.
 - Change the repository `homepage` only as the `project-setup` skill's `references/github-settings.md` describes.
 
