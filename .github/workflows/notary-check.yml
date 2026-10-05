@@ -1,0 +1,37 @@
+# Manual check that the notarization secrets authenticate, without building or publishing
+# anything. Run it after creating or rotating the team API key (project-setup
+# macos-distribution.md, Credential check). A green run proves only that the key authenticates.
+name: Notary credentials check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# The same Xcode pin as validate.yml and release.yml; change them together.
+env:
+  XCODE_VERSION: "27.0"
+
+jobs:
+  check:
+    runs-on: xcode-27
+    steps:
+      - name: Confirm the pinned Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -version | grep -qx "Xcode $XCODE_VERSION"
+      - name: Authenticate with the team API key
+        env:
+          NOTARY_API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_ISSUER_ID: ${{ secrets.NOTARY_API_ISSUER_ID }}
+        run: |
+          umask 077
+          KEY_PATH="$RUNNER_TEMP/notary/AuthKey.p8"
+          mkdir -p "$(dirname "$KEY_PATH")"
+          trap 'rm -rf "$RUNNER_TEMP/notary"' EXIT
+          printf '%s\n' "$NOTARY_API_KEY" > "$KEY_PATH"
+          xcrun notarytool history --key "$KEY_PATH" --key-id "$NOTARY_API_KEY_ID" \
+            --issuer "$NOTARY_API_ISSUER_ID" > /dev/null
+          echo "The notary API key authenticates."

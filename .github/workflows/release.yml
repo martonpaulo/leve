@@ -1,0 +1,308 @@
+name: Release
+
+# A pushed vX.Y.Z tag starts a release. workflow_dispatch reruns one by hand, and only on such a
+# tag: publication always happens here, never from a Mac (AGENTS.md, release policy; #7). Modelled
+# on WindowHop's release.yml.
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# The same Xcode pin as validate.yml; change both together.
+env:
+  XCODE_VERSION: "27.0"
+  # appdmg 0.6.6, which make-dmg.sh runs, needs Node 24 or older.
+  NODE_VERSION: "24"
+
+jobs:
+  release:
+    runs-on: xcode-27
+    # Optional: a fine-grained token with Contents read and write on martonpaulo/homebrew-tap.
+    # A secret cannot appear in a step's `if:`, so it is exposed here and tested as env.
+    env:
+      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    steps:
+      - name: Require a release tag
+        run: |
+          case "$GITHUB_REF" in
+            refs/tags/v*.*.*) ;;
+            *) echo "Release runs only on a vX.Y.Z tag; dispatch it on the tag, not $GITHUB_REF." >&2
+               exit 1 ;;
+          esac
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Confirm the pinned Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -version | grep -qx "Xcode $XCODE_VERSION"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Only SwiftPM's download cache: a signed release always compiles from a clean .build,
+      # never from objects a previous run left behind.
+      - name: Restore the SwiftPM download cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/Library/Caches/org.swift.swiftpm
+          key: swiftpm-downloads-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Package.resolved') }}
+
+      - name: Tests and validation
+        run: |
+          swift test
+          scripts/validate.sh
+
+      - name: Derive version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+          BUILD=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce release source and version
+        run: |
+          git fetch origin main
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || {
+            echo "Official release tags must point at the current main commit." >&2
+            exit 1
+          }
+          PLIST_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Support/Info.plist)
+          PLIST_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Support/Info.plist)
+          test "$PLIST_VERSION" = "${{ steps.version.outputs.version }}" || {
+            echo "Tag version does not match Support/Info.plist." >&2
+            exit 1
+          }
+          test "$PLIST_BUILD" = "${{ steps.version.outputs.build }}" || {
+            echo "Derived build number does not match Support/Info.plist." >&2
+            exit 1
+          }
+          scripts/release-notes.sh --check
+
+      - name: Require official release credentials
+        env:
+          CERT: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+          NOTARY_API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_ISSUER_ID: ${{ secrets.NOTARY_API_ISSUER_ID }}
+          SPARKLE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          missing=()
+          [ -n "$CERT" ] || missing+=(DEVELOPER_ID_CERT_P12)
+          [ -n "$CERT_PASSWORD" ] || missing+=(DEVELOPER_ID_CERT_PASSWORD)
+          [ -n "$NOTARY_API_KEY" ] || missing+=(NOTARY_API_KEY)
+          [ -n "$NOTARY_API_KEY_ID" ] || missing+=(NOTARY_API_KEY_ID)
+          [ -n "$NOTARY_API_ISSUER_ID" ] || missing+=(NOTARY_API_ISSUER_ID)
+          [ -n "$SPARKLE_KEY" ] || missing+=(SPARKLE_PRIVATE_KEY)
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "Official release blocked: missing required secrets: ${missing[*]}" >&2
+            exit 1
+          fi
+
+      # A stable Developer ID identity keeps the Calendar grant valid across updates. The identity
+      # is selected by the SHA-1 fingerprint of the committed public leaf, never by its name
+      # (project-setup macos-distribution.md, Selecting the identity in CI).
+      - name: Import the Developer ID certificate
+        env:
+          CERT: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+        run: |
+          umask 077
+          KEYCHAIN=build.keychain
+          security create-keychain -p ci "$KEYCHAIN"
+          security default-keychain -s "$KEYCHAIN"
+          security unlock-keychain -p ci "$KEYCHAIN"
+          echo "$CERT" | base64 --decode > cert.p12
+          # OpenSSL 3 PKCS#12 encryption and non-ASCII export passwords are not consistently
+          # accepted by macOS Security.framework. Validate the supplied password, then normalize
+          # the bundle into the legacy PKCS#12 profile that Keychain accepts. The unencrypted
+          # intermediate is permission-restricted and removed by the EXIT trap on all paths.
+          export CERT_PASSWORD
+          COMPAT_PASSWORD=leve-ephemeral-ci-import
+          export COMPAT_PASSWORD
+          trap 'rm -f cert.p12 cert-extracted.pem cert-compatible.p12' EXIT
+          openssl pkcs12 -legacy -in cert.p12 -passin env:CERT_PASSWORD -nodes -out cert-extracted.pem
+          openssl pkcs12 -export -legacy -in cert-extracted.pem -passout env:COMPAT_PASSWORD \
+            -out cert-compatible.p12
+          security import cert-compatible.p12 -k "$KEYCHAIN" -P "$COMPAT_PASSWORD" -T /usr/bin/codesign
+          rm -f cert.p12 cert-extracted.pem cert-compatible.p12
+          trap - EXIT
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci "$KEYCHAIN"
+          want=$(openssl x509 -inform DER -in Support/ReleaseCertificate.cer -noout -fingerprint -sha1 \
+            | cut -d= -f2 | tr -d ':' | tr '[:lower:]' '[:upper:]')
+          if ! printf '%s\n' "$want" | grep -Eq '^[0-9A-F]{40}$'; then
+            echo "error: no SHA-1 fingerprint could be read from Support/ReleaseCertificate.cer" >&2
+            exit 1
+          fi
+          listing=$(security find-identity -v -p codesigning "$KEYCHAIN")
+          matches=$(printf '%s\n' "$listing" \
+            | awk -v want="$want" '$2 == want && /"Developer ID Application: / { n++ } END { print n + 0 }')
+          if [ "$matches" != 1 ]; then
+            echo "error: $matches valid Developer ID Application identities have SHA-1 $want; expected exactly 1" >&2
+            printf '%s\n' "$listing" >&2
+            exit 1
+          fi
+          echo "DEVELOPER_ID_IDENTITY=$want" >> "$GITHUB_ENV"
+          echo "signing with the identity whose SHA-1 is $want"
+
+      # A fingerprint does not start with "Developer ID Application:", so --hardened turns the
+      # hardened runtime and the secure timestamp on.
+      - name: Build and package
+        run: |
+          scripts/package-app.sh --hardened --version "${{ steps.version.outputs.version }}" \
+            --build-number "${{ steps.version.outputs.build }}"
+          scripts/verify-release-identity.sh --app build/Leve.app
+
+      # The team App Store Connect API key is written to a private temporary file for
+      # scripts/notarize.sh and removed by the always-run step at the end.
+      - name: Write the notary API key
+        env:
+          NOTARY_API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          NOTARY_API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_API_ISSUER_ID: ${{ secrets.NOTARY_API_ISSUER_ID }}
+        run: |
+          umask 077
+          KEY_PATH="$RUNNER_TEMP/notary/AuthKey.p8"
+          mkdir -p "$(dirname "$KEY_PATH")"
+          printf '%s\n' "$NOTARY_API_KEY" > "$KEY_PATH"
+          {
+            echo "NOTARY_API_KEY_PATH=$KEY_PATH"
+            echo "NOTARY_API_KEY_ID=$NOTARY_API_KEY_ID"
+            echo "NOTARY_API_ISSUER_ID=$NOTARY_API_ISSUER_ID"
+          } >> "$GITHUB_ENV"
+
+      - name: Notarize, staple, and validate the app
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          scripts/notarize.sh --artifact "artifacts/Leve-$VERSION.zip"
+          xcrun stapler staple build/Leve.app
+          xcrun stapler validate build/Leve.app
+          codesign --verify --deep --strict --verbose=2 build/Leve.app
+          spctl --assess --type execute --verbose=2 build/Leve.app
+          rm "artifacts/Leve-$VERSION.zip"
+          ditto -c -k --keepParent build/Leve.app "artifacts/Leve-$VERSION.zip"
+
+      # scripts/sign-update.sh runs the sign_update of the resolved Sparkle binary target that
+      # SwiftPM checksum-verified and embedded, so the tool and the framework come from one release.
+      - name: Sign the update for Sparkle
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          RESOLVED=$(python3 -c 'import json; print(next(p["state"]["version"] for p in json.load(open("Package.resolved"))["pins"] if p["identity"] == "sparkle"))')
+          EMBEDDED=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" build/Leve.app/Contents/Frameworks/Sparkle.framework/Resources/Info.plist)
+          echo "Sparkle resolved: $RESOLVED; embedded framework: $EMBEDDED"
+          test "$RESOLVED" = "$EMBEDDED" || {
+            echo "Embedded Sparkle ($EMBEDDED) differs from Package.resolved ($RESOLVED)." >&2
+            exit 1
+          }
+          SIG=$(printf '%s\n' "$SPARKLE_PRIVATE_KEY" \
+            | scripts/sign-update.sh --archive "artifacts/Leve-$VERSION.zip" -- --ed-key-file -)
+          echo "SPARKLE_SIG_ATTRS=$SIG" >> "$GITHUB_ENV"
+
+      - name: Disk image
+        run: scripts/make-dmg.sh --version "${{ steps.version.outputs.version }}"
+
+      - name: Notarize, staple, and validate the disk image
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DMG="artifacts/Leve-$VERSION.dmg"
+          scripts/notarize.sh --artifact "$DMG"
+          codesign --verify --verbose=2 "$DMG"
+          spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
+          scripts/verify-dmg-branding.sh --dmg "$DMG"
+          MOUNT=$(mktemp -d)
+          hdiutil attach "$DMG" -nobrowse -readonly -mountpoint "$MOUNT"
+          trap 'hdiutil detach "$MOUNT" -quiet || true; rmdir "$MOUNT" || true' EXIT
+          codesign --verify --deep --strict --verbose=2 "$MOUNT/Leve.app"
+          scripts/verify-release-identity.sh --app "$MOUNT/Leve.app"
+          spctl --assess --type execute --verbose=2 "$MOUNT/Leve.app"
+          hdiutil detach "$MOUNT" -quiet
+          rmdir "$MOUNT"
+          trap - EXIT
+          # GitHub's raw-asset transport cannot keep a macOS resource fork. This download ZIP keeps
+          # the disk image's Finder icon; the raw disk image stays attached for direct mounts.
+          ditto -c -k --sequesterRsrc "$DMG" "artifacts/Leve-$VERSION-Installer.zip"
+          ZIP_TEST=$(mktemp -d)
+          ditto -x -k "artifacts/Leve-$VERSION-Installer.zip" "$ZIP_TEST"
+          EXTRACTED_DMG="$ZIP_TEST/Leve-$VERSION.dmg"
+          test -f "$EXTRACTED_DMG" || {
+            echo "Installer ZIP has an unexpected directory layout." >&2
+            exit 1
+          }
+          DeRez -only icns "$EXTRACTED_DMG" | grep -F "data 'icns'" >/dev/null || {
+            echo "Installer ZIP did not keep the disk image's Finder icon resource." >&2
+            exit 1
+          }
+          hdiutil verify "$EXTRACTED_DMG" -quiet
+          find "$ZIP_TEST" -depth -delete
+
+      # Every artifact is staged in a draft and verified before the release becomes public,
+      # because the appcast step below may only advertise files that already exist.
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          scripts/release-notes.sh --version "$VERSION" > release-notes.md
+          scripts/publish-release.sh --tag "$GITHUB_REF_NAME" --notes-file release-notes.md \
+            --artifact "artifacts/Leve-$VERSION.dmg" \
+            --artifact "artifacts/Leve-$VERSION-Installer.zip" \
+            --artifact "artifacts/Leve-$VERSION.zip"
+
+      # Only now, with the update ZIP downloadable, does the public feed learn about it. An
+      # existing entry for this version is accepted only when it matches this build exactly.
+      - name: Update the appcast on main
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          scripts/make-appcast.sh --version "$VERSION" \
+            --build-number "${{ steps.version.outputs.build }}" \
+            --archive "artifacts/Leve-$VERSION.zip" --signature "$SPARKLE_SIG_ATTRS"
+          if ! git diff --quiet appcast.xml; then
+            git add appcast.xml
+            git commit -m "chore(release): appcast entry for $VERSION"
+            # a concurrent change on main must be reconciled, never discarded
+            git pull --rebase origin main
+            git push origin main
+          fi
+
+      # Keeps the cask martonpaulo/tap/leve on the version just published. Without the token the
+      # step is skipped and the cask is bumped by hand; the cask is auto_updates, so an older cask
+      # still installs and Sparkle updates it.
+      - name: Update the Homebrew cask
+        if: env.HOMEBREW_TAP_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # The digest of the published asset, never a checksum of the local build (skill-deck#419).
+          SHA=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$VERSION" --jq '.assets[] | select(.name == "Leve-'"$VERSION"'.dmg") | .digest' | sed 's/^sha256://')
+          if [ -z "$SHA" ]; then
+            echo "No recorded digest for Leve-$VERSION.dmg on release v$VERSION" >&2
+            exit 1
+          fi
+          git clone --depth 1 "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/martonpaulo/homebrew-tap.git" "$RUNNER_TEMP/tap"
+          cd "$RUNNER_TEMP/tap"
+          perl -pi -e "s/^  version \".*\"/  version \"$VERSION\"/; s/^  sha256 \".*\"/  sha256 \"$SHA\"/" Casks/leve.rb
+          git diff --stat
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: Leve $VERSION"
+          git push origin HEAD
+
+      - name: Remove the notary API key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/notary"

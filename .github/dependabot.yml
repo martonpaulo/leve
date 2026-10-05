@@ -1,7 +1,8 @@
 # Fleet Dependabot configuration, from skill-deck's project-setup template
-# (assets/dependabot.template.yml). Only GitHub Actions: Leve has no Swift package dependency,
-# and Dependabot's Swift (6.3.1) cannot read `swift-tools-version:6.4` (AGENTS.md, divergence
-# `dependabot`). The cooldown keeps a day-old release out of a pull request.
+# (assets/dependabot.template.yml). Only GitHub Actions: Dependabot's Swift (6.3.1) cannot read
+# `swift-tools-version:6.4`, so a `swift` entry would fail on every run; Sparkle, Leve's one
+# package dependency, is updated by hand (AGENTS.md, divergence `dependabot`). The cooldown keeps a
+# day-old release out of a pull request.
 version: 2
 updates:
   - package-ecosystem: github-actions

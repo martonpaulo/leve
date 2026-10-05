@@ -11,7 +11,7 @@ permissions:
 # The Xcode pin: Leve needs the macOS 27 SDK, which only the `xcode-27` image carries (a public
 # preview: https://github.com/actions/runner-images/issues/14404). The job checks the version it
 # got rather than a path, because the preview image's install path is not documented yet. Change
-# XCODE_VERSION here and in release.yml together.
+# XCODE_VERSION here, in release.yml and in notary-check.yml together.
 env:
   XCODE_VERSION: "27.0"
   # The SwiftLint pin: a release binary with a verified checksum, so CI lints with the same
