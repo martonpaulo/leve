@@ -47,6 +47,7 @@ for key, entry in catalog["strings"].items():
 handle = tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=os.path.dirname(path), delete=False)
 with handle:
     json.dump(catalog, handle, indent=2, separators=(",", " : "), ensure_ascii=False, sort_keys=True)
+os.chmod(handle.name, os.stat(path).st_mode & 0o777)
 os.replace(handle.name, path)
 sys.stderr.write("%s: %d entries, %d given their English value\n" % (path, len(catalog["strings"]), filled))
 PY

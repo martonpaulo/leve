@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Repository invariants that need no compiler: the version and build number agree, the agent
-# rules fit what every client loads, and the logic target imports only Foundation.
+# rules fit what every client loads, the logic target imports only Foundation, and the changelog
+# has its Keep a Changelog shape.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -24,6 +25,15 @@ while IFS= read -r line; do
 done < <(grep -rhoE '^import [A-Za-z]+' Sources/LeveKit | sort -u)
 
 plutil -lint -s Support/Info.plist Support/Leve.entitlements || fail "a property list in Support/ is invalid"
+
+# release-notes.sh --check requires a released version whose heading equals the app version, so
+# until the first release only the one `## [Unreleased]` heading is checked (#7).
+if grep -qE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md; then
+  scripts/release-notes.sh --check || fail "CHANGELOG.md does not match Support/Info.plist"
+else
+  unreleased=$(grep -c '^## \[Unreleased\]$' CHANGELOG.md || true)
+  [[ $unreleased == 1 ]] || fail "CHANGELOG.md needs exactly one ## [Unreleased] heading, found $unreleased"
+fi
 
 if (( failures > 0 )); then
   echo "validate: $failures failure(s)" >&2

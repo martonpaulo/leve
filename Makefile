@@ -3,7 +3,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build test lint format validate check app icon strings install uninstall run clean
+.PHONY: help build test lint format validate check app dmg icon keys appcast strings install uninstall run clean
 
 # Any compiler warning fails `build` and `test`: Package.swift turns warnings into errors, and
 # scripts/fail-on-warnings.sh fails on any `warning:` line that still points into a project file.
@@ -21,7 +21,7 @@ export
 LOCAL_SIGNING_IDENTITY := $(subst ",,$(LOCAL_SIGNING_IDENTITY))
 DEVELOPER_ID_IDENTITY := $(subst ",,$(DEVELOPER_ID_IDENTITY))
 
-# FORCE=1 lets `app` replace an existing bundle and archive; `install` always replaces them.
+# FORCE=1 lets `app` and `dmg` replace their output; `install` always replaces the bundle.
 FORCE ?=
 FORCE_FLAG = $(if $(filter 1,$(FORCE)),--force,)
 
@@ -57,13 +57,37 @@ check: build lint test validate ## Everything a commit needs, stopping at the fi
 app: ## build/Leve.app and its update zip, signed with the identity in .env, else ad-hoc (FORCE=1 replaces)
 	@scripts/package-app.sh $(FORCE_FLAG)
 
-# The app icon is authored as Support/AppIcon.icon; this renders its four appearances to check it.
-icon: ## Render Support/AppIcon.icon's Default, Dark, Clear and Tinted appearances into artifacts/icon
+# The app icon is authored as Support/AppIcon.icon; this renders its four appearances to check it,
+# then regenerates the disk image's art from it.
+icon: ## Render the app icon's appearances to artifacts/icon; regenerate the installer icon and DMG background
 	@mkdir -p artifacts/icon
 	@for r in Default Dark ClearLight TintedDark; do \
 		"$(ICTOOL)" Support/AppIcon.icon --export-image --output-file "artifacts/icon/$$r.png" \
 			--platform macOS --rendition $$r --width 512 --height 512 --scale 1 >/dev/null; done
 	@echo "Wrote artifacts/icon/{Default,Dark,ClearLight,TintedDark}.png"
+	@# The disk image's art, committed: the installer icon from the Default appearance, and the
+	@# background at 1x and 2x (project-setup swift-apps.md, Make targets).
+	@"$(ICTOOL)" Support/AppIcon.icon --export-image --output-file artifacts/icon/AppIcon-1024.png \
+		--platform macOS --rendition Default --width 1024 --height 1024 --scale 1 >/dev/null
+	@scripts/render-installer-icon.swift
+	@scripts/render-dmg-background.swift
+	@tiffutil -cathidpicheck artifacts/dmg-bg.png artifacts/dmg-bg@2x.png \
+		-out Support/LeveInstallerBackground.tiff
+
+dmg: app ## The branded disk image artifacts/Leve-<version>.dmg from build/Leve.app (FORCE=1 replaces)
+	@scripts/make-dmg.sh $(FORCE_FLAG)
+
+keys: ## Once per machine: check the Sparkle key in the login Keychain matches SUPublicEDKey
+	@scripts/make-keys.sh
+
+# For a rehearsal or a recovery; the release workflow calls make-appcast.sh itself.
+VERSION ?=
+BUILD_NUMBER ?=
+ARCHIVE ?=
+SIGNATURE ?=
+appcast: ## Add one entry to appcast.xml (VERSION, BUILD_NUMBER, ARCHIVE, SIGNATURE)
+	@scripts/make-appcast.sh --version "$(VERSION)" --build-number "$(BUILD_NUMBER)" \
+		--archive "$(ARCHIVE)" --signature '$(SIGNATURE)'
 
 # The compiler lists every String(localized:) key; the catalog keeps the English source strings.
 strings: ## Refresh Support/Localizable.xcstrings from the app's String(localized:) calls
