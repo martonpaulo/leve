@@ -34,15 +34,20 @@ only its event alerts.
   calendar's color with a ring that counts down to the start, until the owner joins or closes it.
 - Says the time as a clock does, "It's 10 o'clock" or "It's 10:30", with no AM or PM.
 - Asks for a break after 55 minutes of work: "Stop. Breathe. Look away." for 5 minutes over a
-  slowly breathing circle and a short music-box phrase, with Skip and Later (5 min). On by default, with its
+  slowly breathing circle and a short music-box phrase, with Skip and Later (5 min). When sound
+  plays and Leve would not pause it on its own, a third button, Pause Music and Videos, pauses it
+  (Decided on #13). On by default, with its
   own Settings tab. Time away from the Mac counts as a break. "Take a Break Now" in the menu starts
   one at once, and it counts like the others (Decided on #9).
   Breaks never cover an event or a call (a microphone in use), but that time counts as work, so a
   break that falls due during it appears right after.
   A Breaks setting, off by default, pauses Music, Spotify and TV and the playing videos of every
   Brave, Chrome and Safari tab when a break starts, with Apple Events; it never resumes them and
-  never opens an app. macOS asks once per app, and browser tabs need the browser's "Allow
-  JavaScript from Apple Events"; Settings names a browser that refused (Decided on #2).
+  never opens an app (Decided on #2). Nothing about it shows during the break. When an app kept
+  playing, a notification after the break names it, and clicking it opens Settings › Breaks at
+  the fix: the browser's "Allow JavaScript from Apple Events", or Leve allowed in System Settings ›
+  Automation. That fix shows in Settings only while the problem exists, and the same unchanged
+  problem is notified again only after 7 days (Decided on #12).
 - Says the time on the half hour (or every 15 or 60 minutes) between chosen hours, 8:00 to 20:00
   by default, and stays quiet during events.
 - Says the next event's name a couple of minutes before it starts ("Standup in 2 minutes"), at

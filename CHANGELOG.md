@@ -5,6 +5,15 @@ and Leve uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The break screen offers Pause Music and Videos when sound plays and pausing at breaks is off.
+
+### Changed
+
+- When an app kept playing during a break, a notification after the break names it and opens the
+  fix in Settings, Breaks. The fix shows there only while the problem exists.
+
 ## [0.2.0] - 2026-10-05
 
 ### Added
