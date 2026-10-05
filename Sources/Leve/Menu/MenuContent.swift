@@ -26,7 +26,8 @@ struct StatusLabel: View {
     }
 }
 
-/// The menu: what is happening, today's events, pause, then Settings and Quit (HIG order).
+/// The menu: what is happening, today's events, pause, then the closing group: Check for Updates…,
+/// Settings…, and Quit (skd-macos-app-shell, menu-architecture.md).
 struct MenuContent: View {
     let model: AppModel
 
@@ -37,8 +38,14 @@ struct MenuContent: View {
         allDaySection
         pauseSection
         Divider()
+        // An unbundled build has no updater: the command is absent rather than doing nothing.
+        if model.updates.isAvailable {
+            Button(Copy.checkForUpdates) { model.updates.checkForUpdates() }
+                .disabled(!model.updates.canCheckForUpdates)
+        }
         Button(Copy.settings) { model.openSettings() }
             .keyboardShortcut(",")
+        Divider()
         Button(Copy.quit) { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }

@@ -34,5 +34,11 @@
 	<string>© 2026 Marton Paulo. Licensed under the MIT License.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/martonpaulo/leve/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>6uivEfA8KeH2gsJHxX/ryov0kIjluroMuj0NyZ9OuLw=</string>
 </dict>
 </plist>

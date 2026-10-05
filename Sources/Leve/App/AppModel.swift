@@ -18,6 +18,8 @@ final class AppModel {
 
     @ObservationIgnored let alert = FullScreenAlert()
     @ObservationIgnored let breakScreen = BreakScreen()
+    /// Sparkle's updater; the app delegate starts it at launch (#7).
+    @ObservationIgnored let updates = UpdateManager()
     @ObservationIgnored private var breakTracker = BreakTracker(now: .now)
     static let breakLaterMinutes = 5
     /// The Debug menu's events take the next of Calendar's colors each time, to compare them.

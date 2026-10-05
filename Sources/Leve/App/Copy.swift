@@ -118,6 +118,7 @@ enum Copy {
     static let pauseUntilTomorrow = String(localized: "Until Tomorrow")
     static let resume = String(localized: "Resume Alerts")
     static let takeBreakNow = String(localized: "Take a Break Now")
+    static let checkForUpdates = String(localized: "Check for Updates…")
     static let settings = String(localized: "Settings…")
     static let quit = String(localized: "Quit Leve")
 
@@ -307,6 +308,19 @@ enum Copy {
         localized: "Simulated events live in memory only and never reach Calendar.")
     static let debugFooter = String(localized: "Adds a Debug tab to try the alerts without real events.")
     static let developer = String(localized: "Developer")
+
+    static let updatesSection = String(localized: "Updates")
+    static let automaticUpdates = String(localized: "Check for updates automatically")
+    static let updatesUnavailable = String(localized: "Updates work in the installed app.")
+    static let notCheckedYet = String(localized: "Not checked yet.")
+    static let updatesFooter = String(
+        localized: "Checking for updates is the only thing Leve sends over the network. Nothing else leaves this Mac.")
+
+    /// "Last checked 2 hours ago."
+    static func lastChecked(_ date: Date) -> String {
+        let relative = date.formatted(.relative(presentation: .named))
+        return String(localized: "Last checked \(relative).")
+    }
 
     static let noCalendars = String(localized: "No calendars found on this Mac.")
     static let aboutDescription = String(

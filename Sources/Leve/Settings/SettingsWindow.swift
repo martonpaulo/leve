@@ -78,7 +78,7 @@ enum SettingsPane: String, CaseIterable {
         case .breaks: BreaksPane(preferences: model.preferences)
         case .calendars: CalendarsPane(model: model)
         case .debug: DebugPane(model: model)
-        case .about: AboutPane(preferences: model.preferences)
+        case .about: AboutPane(preferences: model.preferences, updates: model.updates)
         }
     }
 }

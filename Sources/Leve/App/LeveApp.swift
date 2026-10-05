@@ -22,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         model.openSettings = { [weak self] in self?.settings.show() }
+        model.updates.startIfBundled()
         Task { await model.start() }
     }
 }

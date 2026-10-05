@@ -341,6 +341,36 @@
         }
       }
     },
+    "Check for Updates…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
+          }
+        }
+      }
+    },
+    "Check for updates automatically" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for updates automatically"
+          }
+        }
+      }
+    },
+    "Checking for updates is the only thing Leve sends over the network. Nothing else leaves this Mac." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking for updates is the only thing Leve sends over the network. Nothing else leaves this Mac."
+          }
+        }
+      }
+    },
     "Clear" : {
       "localizations" : {
         "en" : {
@@ -671,6 +701,16 @@
         }
       }
     },
+    "Last checked %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last checked %@."
+          }
+        }
+      }
+    },
     "Lasts 5 minutes, has a call link, and goes through every alert." : {
       "localizations" : {
         "en" : {
@@ -827,6 +867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not allowed"
+          }
+        }
+      }
+    },
+    "Not checked yet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked yet."
           }
         }
       }
@@ -1427,6 +1477,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Untitled event"
+          }
+        }
+      }
+    },
+    "Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updates"
+          }
+        }
+      }
+    },
+    "Updates work in the installed app." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updates work in the installed app."
           }
         }
       }

@@ -369,6 +369,7 @@ struct DebugPane: View {
 
 struct AboutPane: View {
     @Bindable var preferences: Preferences
+    @Bindable var updates: UpdateManager
     private let info = Bundle.main.infoDictionary ?? [:]
 
     var body: some View {
@@ -388,6 +389,7 @@ struct AboutPane: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
             }
+            updatesSection
             Section {
                 Toggle(Copy.debugMenu, isOn: $preferences.debugMenu)
             } header: {
@@ -402,6 +404,30 @@ struct AboutPane: View {
             }
         }
         .settingsPane()
+    }
+
+    /// Sparkle's own toggle and check, as WindowHop's About pane; Sparkle's windows do the rest.
+    private var updatesSection: some View {
+        Section {
+            Toggle(Copy.automaticUpdates, isOn: $updates.automaticallyChecks)
+                .disabled(!updates.isAvailable)
+            LabeledContent {
+                Button(Copy.checkForUpdates) { updates.checkForUpdates() }
+                    .disabled(!updates.canCheckForUpdates)
+            } label: {
+                Text(updateStatus).foregroundStyle(.secondary)
+            }
+        } header: {
+            Text(Copy.updatesSection)
+        } footer: {
+            Text(Copy.updatesFooter).settingsNote()
+        }
+    }
+
+    private var updateStatus: String {
+        guard updates.isAvailable else { return Copy.updatesUnavailable }
+        guard let date = updates.lastCheckDate else { return Copy.notCheckedYet }
+        return Copy.lastChecked(date)
     }
 
     /// "Version 0.1.0 (100) · 3 October 2026": the build only when it differs from the version,
