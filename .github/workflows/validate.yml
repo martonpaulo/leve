@@ -44,7 +44,7 @@ jobs:
           fi
           CHANGED=$(git diff --name-only "$BASE" "${{ github.sha }}")
           echo "changed files:"; echo "$CHANGED"
-          if echo "$CHANGED" | grep -qE '^(Sources/|Tests/|Support/|scripts/|Makefile|Package\.swift|\.swift-format|\.swiftlint\.yml|AGENTS\.md|\.github/workflows/validate\.yml)'; then
+          if echo "$CHANGED" | grep -qE '^(Sources/|Tests/|Support/|scripts/|Makefile|Package\.swift|Package\.resolved|\.swift-format|\.swiftlint\.yml|AGENTS\.md|\.github/workflows/validate\.yml)'; then
             echo "swift=true" >> "$GITHUB_OUTPUT"
           else
             echo "swift=false" >> "$GITHUB_OUTPUT"
@@ -65,7 +65,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .build
-          key: swiftpm-${{ runner.os }}-${{ runner.arch }}-xcode-${{ env.XCODE_VERSION }}-${{ hashFiles('Package.swift') }}
+          key: swiftpm-${{ runner.os }}-${{ runner.arch }}-xcode-${{ env.XCODE_VERSION }}-${{ hashFiles('Package.swift', 'Package.resolved') }}
       - name: Install the pinned SwiftLint
         run: |
           curl -fsSL -o "$RUNNER_TEMP/swiftlint.zip" \

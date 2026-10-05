@@ -12,10 +12,18 @@ SWIFT_SOURCES ?= Sources Tests
 # Icon Composer's renderer, run from its real path: it finds icrtool beside itself.
 ICTOOL ?= $(shell xcode-select -p)/../Applications/Icon Composer.app/Contents/Executables/ictool
 
-# A stable signature keeps the calendar, notification and login-item permissions across rebuilds.
-# Only this one variable is read from the untracked .env; the shell wins when it sets it.
-DEVELOPER_ID_IDENTITY ?= $(shell sed -n 's/^DEVELOPER_ID_IDENTITY=//p' .env 2>/dev/null | tr -d '"')
-export DEVELOPER_ID_IDENTITY
+# A stable signature keeps the calendar, notification and login-item permissions across rebuilds:
+# scripts/package-app.sh signs with LOCAL_SIGNING_IDENTITY, else DEVELOPER_ID_IDENTITY, from the
+# untracked .env (project-setup swift-apps.md, Local signing). Make keeps the quotes of a quoted
+# .env value, which codesign would read as part of the name, so they are removed.
+-include .env
+export
+LOCAL_SIGNING_IDENTITY := $(subst ",,$(LOCAL_SIGNING_IDENTITY))
+DEVELOPER_ID_IDENTITY := $(subst ",,$(DEVELOPER_ID_IDENTITY))
+
+# FORCE=1 lets `app` replace an existing bundle and archive; `install` always replaces them.
+FORCE ?=
+FORCE_FLAG = $(if $(filter 1,$(FORCE)),--force,)
 
 APP_BUNDLE := /Applications/Leve.app
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
@@ -46,8 +54,8 @@ validate: ## Repository invariants (scripts/validate.sh); no compiler, seconds
 
 check: build lint test validate ## Everything a commit needs, stopping at the first failure
 
-app: ## build/Leve.app, signed with DEVELOPER_ID_IDENTITY from the shell or .env, else ad-hoc
-	@scripts/build-app.sh --force
+app: ## build/Leve.app and its update zip, signed with the identity in .env, else ad-hoc (FORCE=1 replaces)
+	@scripts/package-app.sh $(FORCE_FLAG)
 
 # The app icon is authored as Support/AppIcon.icon; this renders its four appearances to check it.
 icon: ## Render Support/AppIcon.icon's Default, Dark, Clear and Tinted appearances into artifacts/icon
@@ -70,6 +78,7 @@ clean: ## Remove the SwiftPM build and build/
 # Notifications, calendar access and launch at login reach only a real bundle.
 # `quit` returns before Leve exits; opening the new copy while the old one is still closing fails
 # with LaunchServices error -600, so wait for the process to end (at most 5 seconds).
+install: FORCE = 1
 install: app ## Quit a running Leve, copy build/Leve.app into /Applications and open it
 	@-osascript -e 'quit app "Leve"' >/dev/null 2>&1
 	@for i in $$(seq 1 25); do pgrep -x Leve >/dev/null || break; sleep 0.2; done

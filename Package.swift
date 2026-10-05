@@ -11,6 +11,10 @@ let package = Package(
     platforms: [
         .macOS(.v27)
     ],
+    dependencies: [
+        // The one runtime dependency: automatic updates, the same version as WindowHop (#7).
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.10.0")
+    ],
     targets: [
         // Pure logic: it imports only Foundation (AGENTS.md, "Architecture"). It keeps the
         // nonisolated default, so its callers decide isolation.
@@ -21,9 +25,16 @@ let package = Package(
         ),
         .executableTarget(
             name: "Leve",
-            dependencies: ["LeveKit"],
+            dependencies: [
+                "LeveKit",
+                .product(name: "Sparkle", package: "Sparkle"),
+            ],
             path: "Sources/Leve",
-            swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)]
+            swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)],
+            linkerSettings: [
+                // scripts/package-app.sh embeds Sparkle.framework in Contents/Frameworks.
+                .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])
+            ]
         ),
         .testTarget(
             name: "LeveKitTests",
