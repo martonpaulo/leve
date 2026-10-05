@@ -46,4 +46,20 @@ import Testing
         let status = MenuBarStatus.resolve(events: events, now: Fixture.at(9, 50), countdownMinutes: 30)
         #expect(status == .freeUntil(Fixture.at(14)))
     }
+
+    @Test func freeUntilShowsTextOnlyWhenKept() {
+        let free = MenuBarStatus.freeUntil(Fixture.at(14))
+        #expect(free.showsText(freeUntil: true))
+        #expect(!free.showsText(freeUntil: false))
+    }
+
+    @Test func nothingElseTodayNeverShowsTextAndEventsAlwaysDo() {
+        for kept in [true, false] {
+            #expect(!MenuBarStatus.clear.showsText(freeUntil: kept))
+            #expect(MenuBarStatus.upcoming(title: "Standup", minutes: 12).showsText(freeUntil: kept))
+            #expect(
+                MenuBarStatus.ongoing(title: "Standup", minutesLeft: 20, end: Fixture.at(10, 30))
+                    .showsText(freeUntil: kept))
+        }
+    }
 }

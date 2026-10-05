@@ -23,6 +23,7 @@ final class Preferences {
         static let speechStart = 8
         static let speechEnd = 20
         static let showAllDay = true
+        static let showFreeUntil = true
         static let breaks = true
         static let breakWork = 55
         static let breakLength = 5
@@ -43,6 +44,7 @@ final class Preferences {
         static let speechStart = "leve.speechStartHour.v1"
         static let speechEnd = "leve.speechEndHour.v1"
         static let showAllDay = "leve.showAllDayEvents.v1"
+        static let showFreeUntil = "leve.showFreeUntil.v1"
         static let breaks = "leve.breaks.v1"
         static let breakWork = "leve.breakWorkMinutes.v1"
         static let breakLength = "leve.breakLengthMinutes.v1"
@@ -82,6 +84,10 @@ final class Preferences {
     }
     var speechHours: SpeechHours {
         SpeechHours(startHour: speechStartHour, endHour: speechEndHour)
+    }
+    /// Writes "Free until …" in the menu bar when no event is close; off, the leaf stands alone.
+    var showFreeUntil: Bool {
+        didSet { defaults.set(showFreeUntil, forKey: Key.showFreeUntil) }
     }
     /// Lists all-day events in their own section of the menu. They never alert.
     var showAllDayEvents: Bool {
@@ -143,6 +149,7 @@ final class Preferences {
         speechStartHour = Self.hour(defaults, Key.speechStart, fallback: Default.speechStart)
         speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: Default.speechEnd)
         showAllDayEvents = defaults.object(forKey: Key.showAllDay) as? Bool ?? Default.showAllDay
+        showFreeUntil = defaults.object(forKey: Key.showFreeUntil) as? Bool ?? Default.showFreeUntil
         breaks = defaults.object(forKey: Key.breaks) as? Bool ?? Default.breaks
         breakWorkMinutes =
             Self.read(defaults, Key.breakWork, options: Self.breakWorkOptions, fallback: Default.breakWork)
@@ -164,6 +171,7 @@ final class Preferences {
         speechStartHour = Default.speechStart
         speechEndHour = Default.speechEnd
         showAllDayEvents = Default.showAllDay
+        showFreeUntil = Default.showFreeUntil
         breaks = Default.breaks
         breakWorkMinutes = Default.breakWork
         breakLengthMinutes = Default.breakLength

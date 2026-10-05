@@ -7,7 +7,8 @@ never costs you a meeting.
 
 When you hyperfocus, time disappears. Leve keeps it in view without asking for attention:
 
-- The menu bar says **"Free until 2:00 PM"**, **"Standup in 12 min"** or **"Standup · 20 min left"**.
+- The menu bar says **"Free until 2:00 PM"**, **"in 12 min"** or **"20 min left"**, never the
+  event's name, so it is safe on a shared screen.
 - A **notification** arrives a few minutes before each event.
 - A calm **full-screen alert** covers every display just before an event, with a Join button, until
   you join or close it.
@@ -36,14 +37,15 @@ Click the leaf in the menu bar:
   its full screen, or hide it.
 - **Pause Alerts** stops notifications, the full screen and the spoken time for 30 minutes, an hour,
   or until tomorrow.
+- **Take a Break Now** starts a break at once, when breaks are on.
 - **Settings…** (<kbd>⌘</kbd> <kbd>,</kbd>) and **Quit Leve** (<kbd>⌘</kbd> <kbd>Q</kbd>).
 
 In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> closes it.
 
 ### Settings
 
-- **General:** open at login, how early the menu bar countdown starts, and the Calendar and
-  Notifications permissions.
+- **General:** open at login, how early the menu bar countdown starts, whether it shows "Free
+  until", and the Calendar and Notifications permissions.
 - **Alerts:** when the notification and the full screen arrive; how often, between which hours and
   in which voice Leve says the time; whether it says upcoming events.
 - **Calendars:** for each calendar, All alerts, No full screen, No alerts, or Hidden.

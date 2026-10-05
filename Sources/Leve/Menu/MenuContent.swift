@@ -7,12 +7,12 @@ struct StatusLabel: View {
     let model: AppModel
 
     var body: some View {
-        let text = Copy.status(model.status)
+        let text = Copy.menuBarStatus(model.status)
         // The status item draws the image and the text with no gap of its own and ignores the
         // stack's spacing, so an en space opens the room.
         HStack {
             Image(systemName: model.isPaused ? "bell.slash" : "leaf")
-            if model.status != .clear {
+            if model.status.showsText(freeUntil: model.preferences.showFreeUntil) {
                 Text("\u{2002}" + text)
             }
         }
@@ -154,6 +154,10 @@ struct MenuContent: View {
                 Button(Copy.pauseOneHour) { model.pause(minutes: 60) }
                 Button(Copy.pauseUntilTomorrow) { model.pauseUntilTomorrow() }
             }
+        }
+        if model.preferences.breaks {
+            Button(Copy.takeBreakNow) { model.takeBreakNow() }
+                .disabled(model.isBreakVisible)
         }
     }
 }

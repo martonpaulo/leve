@@ -68,6 +68,7 @@ final class AppModel {
         breakScreen.onDone = { [weak self] in self?.endBreak("taken") }
         breakScreen.onSkip = { [weak self] in self?.endBreak("skipped") }
         breakScreen.onLater = { [weak self] in
+            self?.isBreakVisible = false
             self?.breakTracker.postpone(now: .now, minutes: Self.breakLaterMinutes)
             self?.breakLog.notice("Break postponed \(Self.breakLaterMinutes, privacy: .public) min")
         }
@@ -100,6 +101,9 @@ final class AppModel {
     }
 
     var isPaused: Bool { preferences.isPaused(at: now) }
+
+    /// Whether the break is on screen, for the menu; `BreakScreen` itself is not observed.
+    private(set) var isBreakVisible = false
 
     /// Listed timed events that have not ended, today's only: the first hour of tomorrow is loaded
     /// for its alerts, not for the list.
@@ -271,6 +275,7 @@ final class AppModel {
         logger.notice("Full-screen alert for an event at \(event.start, privacy: .public)")
         // The event wins; its time counts as work, so the break comes back after it.
         breakScreen.dismissSilently()
+        isBreakVisible = false
         alert.present(event)
     }
 
@@ -306,12 +311,24 @@ final class AppModel {
                 notBefore: breakTracker.notBefore, now: now))
         guard due else { return }
         breakLog.notice("Break shown after \(worked, privacy: .public) min of work")
-        breakScreen.present(
-            minutes: schedule.breakMinutes, laterMinutes: Self.breakLaterMinutes,
-            sound: preferences.breakSound)
+        presentBreak(minutes: schedule.breakMinutes)
+    }
+
+    /// A break the owner asked for from the menu. It is a real one: Done and Skip restart the
+    /// count, as after an automatic break (#9).
+    func takeBreakNow() {
+        guard preferences.breaks, !breakScreen.isVisible else { return }
+        breakLog.notice("Break taken from the menu")
+        presentBreak(minutes: preferences.breakLengthMinutes)
+    }
+
+    private func presentBreak(minutes: Int) {
+        isBreakVisible = true
+        breakScreen.present(minutes: minutes, laterMinutes: Self.breakLaterMinutes, sound: preferences.breakSound)
     }
 
     private func endBreak(_ how: String) {
+        isBreakVisible = false
         breakTracker.restart(now: .now)
         breakLog.notice("Break \(how, privacy: .public): count restarted")
     }
@@ -426,6 +443,7 @@ extension AppModel {
     }
 
     func showBreakNow() {
+        isBreakVisible = true
         breakScreen.present(
             minutes: preferences.breakLengthMinutes, laterMinutes: Self.breakLaterMinutes,
             sound: preferences.breakSound)

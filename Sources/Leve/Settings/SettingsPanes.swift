@@ -33,6 +33,10 @@ struct GeneralPane: View {
                         Text(Copy.minutesBefore(minutes)).tag(minutes)
                     }
                 }
+                Toggle(isOn: $preferences.showFreeUntil) {
+                    Text(Copy.showFreeUntil)
+                    Text(Copy.showFreeUntilNote)
+                }
                 Toggle(isOn: $preferences.showAllDayEvents) {
                     Text(Copy.showAllDay)
                     Text(Copy.showAllDayNote)

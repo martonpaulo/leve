@@ -23,8 +23,9 @@ only its event alerts.
 
 ## What it does
 
-- Shows one short line in the menu bar: "Free until 2:00 PM", "Standup in 12 min", or
-  "Standup · 20 min left".
+- Shows one short line in the menu bar: "Free until 2:00 PM", "in 12 min", or "20 min left". It
+  never names the event there, so a shared screen does not show it (Decided on #4); the menu does.
+  A General setting leaves only the leaf when nothing is close (Decided on #10).
 - Lists today's remaining events in the menu, with a Join button for Google Meet, Teams, Zoom and
   Webex links.
 - Lists all-day events in their own section below, without alerts; Dismiss hides one for the day,
@@ -35,7 +36,8 @@ only its event alerts.
 - Says the time as a clock does, "It's 10 o'clock" or "It's 10:30", with no AM or PM.
 - Asks for a break after 55 minutes of work: "Stop. Breathe. Look away." for 5 minutes over a
   slowly breathing circle and a short music-box phrase, with Skip and Later (5 min). On by default, with its
-  own Settings tab. Time away from the Mac counts as a break.
+  own Settings tab. Time away from the Mac counts as a break. "Take a Break Now" in the menu starts
+  one at once, and it counts like the others (Decided on #9).
   Breaks never cover an event or a call (a microphone in use), but that time counts as work, so a
   break that falls due during it appears right after.
 - Says the time on the half hour (or every 15 or 60 minutes) between chosen hours, 8:00 to 20:00
@@ -109,3 +111,6 @@ The owner stops missing meetings while working, and does not open Calendar to ch
 | Out-of-office events and events of four hours or more are background: listed, but no alerts, no menu bar countdown, and they neither quiet the voice nor hold a break (owner, 2026-10-04) | `Sources/LeveKit/CalendarEvent.swift` |
 | A repeating event can be hidden for good ("Hide All Repeats", "Dismiss All Repeats"), and shown again from Settings, Calendars (owner, 2026-10-04) | `Sources/Leve/Settings/OverrideStore.swift` |
 | The full screen plays the bowl tone, the break a short music-box phrase; no notification when the full screen comes at the same time (owner, 2026-10-04) | `Sources/LeveKit/AlertPlanner.swift` |
+| The menu bar never shows an event's name, with no setting, replacing the planned "show title" toggle (owner, 2026-10-05, #4) | [What it does](#what-it-does) |
+| "Free until …" in the menu bar can be turned off in General; "Nothing else today" is not shown there either way (owner, 2026-10-05, #10) | [What it does](#what-it-does) |
+| "Take a Break Now" in the menu, while breaks are on; it restarts the work count (owner, 2026-10-05, #9) | [What it does](#what-it-does) |

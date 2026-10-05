@@ -23,6 +23,19 @@ enum Copy {
         }
     }
 
+    /// The menu bar item's text: the status without the event's name, which the menu, the alerts
+    /// and the voice still say. A shared screen shows the menu bar, never the open menu (#4).
+    static func menuBarStatus(_ status: MenuBarStatus) -> String {
+        switch status {
+        case .clear, .freeUntil:
+            Self.status(status)
+        case .upcoming(_, let minutes):
+            String(localized: "in \(minutes) min")
+        case .ongoing(_, let minutesLeft, let end):
+            timeLeft(minutesLeft, end: end)
+        }
+    }
+
     /// "20 min left" within the hour; past it, when the event ends, "until 5:00 PM", or "until Fri"
     /// for an event that ends on another day. Counting 180 minutes is harder to read than a time.
     static func timeLeft(_ minutes: Int, end: Date, now: Date = .now, calendar: Calendar = .current) -> String {
@@ -104,6 +117,7 @@ enum Copy {
     static let pauseOneHour = String(localized: "For 1 Hour")
     static let pauseUntilTomorrow = String(localized: "Until Tomorrow")
     static let resume = String(localized: "Resume Alerts")
+    static let takeBreakNow = String(localized: "Take a Break Now")
     static let settings = String(localized: "Settings…")
     static let quit = String(localized: "Quit Leve")
 
@@ -195,6 +209,8 @@ enum Copy {
 
     static let menuBarSection = String(localized: "Menu bar")
     static let countdown = String(localized: "Show countdown")
+    static let showFreeUntil = String(localized: "Show \u{201C}Free until\u{201D}")
+    static let showFreeUntilNote = String(localized: "When no event is close, the menu bar shows only the leaf.")
     static let showAllDay = String(localized: "Show all-day events")
     static let dismissAllDay = String(localized: "Dismiss")
     static let showAllDayNote = String(localized: "Listed in their own section, without alerts.")

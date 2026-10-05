@@ -13,6 +13,17 @@ public enum MenuBarStatus: Sendable, Equatable {
     /// counting hundreds of minutes.
     case ongoing(title: String, minutesLeft: Int, end: Date)
 
+    /// Whether the menu bar item writes this status next to its icon. "Nothing else today" never
+    /// does, and "Free until …" only when the owner keeps it on (#10). The accessibility label
+    /// always carries the text.
+    public func showsText(freeUntil: Bool) -> Bool {
+        switch self {
+        case .clear: false
+        case .freeUntil: freeUntil
+        case .upcoming, .ongoing: true
+        }
+    }
+
     /// - Parameters:
     ///   - events: today's events with their attention; only alerting, timed events count.
     ///   - countdownMinutes: how close an event must be before its countdown replaces "free until".

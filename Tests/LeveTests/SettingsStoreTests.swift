@@ -60,12 +60,14 @@ private func event(at start: Date) -> CalendarEvent {
         withDefaults { defaults in
             let preferences = Preferences(defaults: defaults)
             preferences.countdownMinutes = 60
+            preferences.showFreeUntil = false
             preferences.setRule(.ignore, for: "work")
             preferences.debugMenu = true
             let until = Date.now.addingTimeInterval(600)
             preferences.pause(until: until)
             preferences.restoreDefaults()
             #expect(preferences.countdownMinutes == 30)
+            #expect(preferences.showFreeUntil)
             #expect(preferences.rule(for: "work") == .everything)
             #expect(preferences.debugMenu)
             #expect(preferences.pausedUntil == until)
@@ -176,5 +178,25 @@ private func event(at start: Date) -> CalendarEvent {
     @Test func theDayForAnEventThatEndsAnotherDay() {
         let end = now.addingTimeInterval(3 * 86400)
         #expect(Copy.timeLeft(4320, end: end, now: now, calendar: utc) == "until Fri")
+    }
+}
+
+/// The menu bar never names the event; the menu's own status line still does (#4).
+@MainActor @Suite struct MenuBarTextTests {
+    private let end = Date.now.addingTimeInterval(20 * 60)
+
+    @Test func anUpcomingEventShowsOnlyTheCountdown() {
+        #expect(Copy.menuBarStatus(.upcoming(title: "Standup", minutes: 12)) == "in 12 min")
+    }
+
+    @Test func anOngoingEventShowsOnlyTheTimeLeft() {
+        #expect(Copy.menuBarStatus(.ongoing(title: "Standup", minutesLeft: 20, end: end)) == "20 min left")
+        let long = Copy.menuBarStatus(
+            .ongoing(title: "Workshop", minutesLeft: 180, end: Date.now.addingTimeInterval(3 * 3600)))
+        #expect(long.hasPrefix("until ") && !long.contains("Workshop"))
+    }
+
+    @Test func theMenuStillNamesTheEvent() {
+        #expect(Copy.status(.upcoming(title: "Standup", minutes: 12)) == "Standup in 12 min")
     }
 }
