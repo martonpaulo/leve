@@ -39,6 +39,10 @@ only its event alerts.
   one at once, and it counts like the others (Decided on #9).
   Breaks never cover an event or a call (a microphone in use), but that time counts as work, so a
   break that falls due during it appears right after.
+  A Breaks setting, off by default, pauses Music, Spotify and TV and the playing videos of every
+  Brave, Chrome and Safari tab when a break starts, with Apple Events; it never resumes them and
+  never opens an app. macOS asks once per app, and browser tabs need the browser's "Allow
+  JavaScript from Apple Events"; Settings names a browser that refused (Decided on #2).
 - Says the time on the half hour (or every 15 or 60 minutes) between chosen hours, 8:00 to 20:00
   by default, and stays quiet during events.
 - Says the next event's name a couple of minutes before it starts ("Standup in 2 minutes"), at
@@ -63,7 +67,8 @@ Every surface answers one question. A new option has to remove more effort than 
 - **No sync, account or server.** Settings live on this Mac. iOS and notes may return later as a
   separate decision, not as hidden scope now.
 - **No telemetry.** The only network request is Sparkle's update check against Leve's feed on
-  GitHub; nothing about the person, the Mac or the calendars leaves it (#7).
+  GitHub; nothing about the person, the Mac or the calendars leaves it (#7). The Apple Events that
+  pause media stay on the Mac (#2).
 
 ## How you know it worked
 

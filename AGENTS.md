@@ -31,7 +31,7 @@
   - Team ID: `TBN79KU9ML`.
   - Bundle identifier: `com.martonpaulo.leve`; the embedded Sparkle code is verified to be signed by the same team.
   - Build and package command: `make dmg` (`scripts/package-app.sh`, then `scripts/make-dmg.sh`); `scripts/verify-release-identity.sh` and `scripts/verify-dmg-branding.sh` check the result. `make install` packages with the local identity of the untracked `.env` (`LOCAL_SIGNING_IDENTITY`, else `DEVELOPER_ID_IDENTITY`, else ad-hoc) and copies the app to `/Applications`.
-  - Entitlements and hardened runtime: `Support/Leve.entitlements` (calendar access only) on the app, never on the nested Sparkle code; hardened runtime on for every Developer ID signature.
+  - Entitlements and hardened runtime: `Support/Leve.entitlements` (calendar access, and Apple Events to pause media, #2) on the app, never on the nested Sparkle code; hardened runtime on for every Developer ID signature.
   - Keychain profile: `skd-notary`, for local rehearsals only; CI notarizes with the team API key from the `NOTARY_API_KEY*` secrets.
   - Release workflow: `.github/workflows/release.yml`, run by a `vX.Y.Z` tag on the current `main` commit, pushed or dispatched by hand on that tag. It is the only thing that publishes; the local scripts rehearse and diagnose.
   - Update feed: Sparkle, from `appcast.xml` on `raw.githubusercontent.com` (`main`), written by `release.yml` only after the update ZIP is downloadable; each entry's notes are its GitHub release page. Leve shares WindowHop's EdDSA key pair (`SUPublicEDKey`).
@@ -80,7 +80,7 @@ validation).
 ## Architecture and patterns
 
 - **`LeveKit`** holds every rule as pure value types and imports only Foundation:
-  `MenuBarStatus`, `AlertPlanner`, `EventAttention`, `SpokenTime`, `MeetingLink`, `BreakTracker`, `OverlayDisplay`. A new rule goes
+  `MenuBarStatus`, `AlertPlanner`, `EventAttention`, `SpokenTime`, `MeetingLink`, `BreakTracker`, `OverlayDisplay`, `MediaPause`. A new rule goes
   there with a Swift Testing test; the app target only reads the system and draws.
 - **`AppModel`** is the one coordinator: a minute tick drives the menu bar text, the full-screen
   alert and the spoken time; notifications are scheduled ahead and replanned when a setting, an

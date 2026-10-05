@@ -13,6 +13,8 @@ and Leve uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Leve says the time on the half hour, says the next event two minutes before it starts, and
   stays quiet during events.
 - Breaks: five minutes after 55 minutes of work, never during an event or a call.
+- Breaks can pause Music, Spotify, TV and the videos in Brave, Chrome and Safari, when turned on in
+  Settings, Breaks.
 - One attention level per calendar: All alerts, No full screen, No alerts or Hidden.
 - Automatic updates, and Check for Updates… in the menu and in Settings, About.
 - A signed and notarized disk image on GitHub Releases, and a Homebrew cask:

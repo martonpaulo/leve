@@ -65,6 +65,8 @@ In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> cl
   until", and the Calendar and Notifications permissions.
 - **Alerts:** when the notification and the full screen arrive; how often, between which hours and
   in which voice Leve says the time; whether it says upcoming events.
+- **Breaks:** whether Leve asks for breaks, after how much work and for how long, the soft sound,
+  and whether a break pauses Music, Spotify, TV and the videos in Brave, Chrome and Safari.
 - **Calendars:** for each calendar, All alerts, No full screen, No alerts, or Hidden.
 - **About:** the version, and whether Leve checks for updates automatically.
 
@@ -73,7 +75,8 @@ In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> cl
 Leve reads today's events from the calendars on this Mac and keeps its settings on this Mac. The
 only thing it sends over the network is the update check: it reads Leve's update feed on GitHub,
 once a day or when you choose Check for Updates…. Nothing about you, your Mac or your calendars
-leaves it. Turn automatic checks off in Settings ▸ About.
+leaves it. Turn automatic checks off in Settings ▸ About. If you turn on pausing music and videos in
+Settings ▸ Breaks, Leve asks those apps on this Mac to pause, after macOS asks you once for each.
 
 ## Limitations
 
