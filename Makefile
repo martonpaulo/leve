@@ -59,11 +59,7 @@ icon: ## Render Support/AppIcon.icon's Default, Dark, Clear and Tinted appearanc
 
 # The compiler lists every String(localized:) key; the catalog keeps the English source strings.
 strings: ## Refresh Support/Localizable.xcstrings from the app's String(localized:) calls
-	@# A fresh scratch build, because an up-to-date build emits no strings.
-	@rm -rf .build/strings .build/strings-data && mkdir -p .build/strings-data
-	@swift build --product Leve --scratch-path .build/strings -Xswiftc -emit-localized-strings \
-		-Xswiftc -emit-localized-strings-path -Xswiftc "$(CURDIR)/.build/strings-data"
-	@xcrun xcstringstool sync Support/Localizable.xcstrings --stringsdata .build/strings-data/*.stringsdata
+	@scripts/strings.sh
 
 clean: ## Remove the SwiftPM build and build/
 	swift package clean
