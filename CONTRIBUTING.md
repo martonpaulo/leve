@@ -23,7 +23,7 @@ Leve opens in the menu bar and asks for calendar and notification access once.
 | `make app` | Builds and signs `build/Leve.app`. |
 | `make install` | Builds Leve, replaces `/Applications/Leve.app` and opens it. |
 | `make uninstall` | Quits Leve and removes it from `/Applications`. |
-| `make icon` | Redraws `Support/AppIcon.icns` from `scripts/make-icon.swift`. |
+| `make icon` | Renders the four appearances of `Support/AppIcon.icon` into `artifacts/icon/` for a visual check. |
 | `make strings` | Refreshes `Support/Localizable.xcstrings` from the `String(localized:)` calls. |
 
 ## Secrets and variables

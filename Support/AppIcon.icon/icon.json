@@ -1,0 +1,26 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.54000,0.84000,0.86000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "leaf.png",
+          "name" : "leaf"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}

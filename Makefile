@@ -9,6 +9,8 @@
 # scripts/fail-on-warnings.sh fails on any `warning:` line that still points into a project file.
 CONFIGURATION ?= debug
 SWIFT_SOURCES ?= Sources Tests
+# Icon Composer's renderer, run from its real path: it finds icrtool beside itself.
+ICTOOL ?= $(shell xcode-select -p)/../Applications/Icon Composer.app/Contents/Executables/ictool
 
 # A stable signature keeps the calendar, notification and login-item permissions across rebuilds.
 # Only this one variable is read from the untracked .env; the shell wins when it sets it.
@@ -47,10 +49,13 @@ check: build lint test validate ## Everything a commit needs, stopping at the fi
 app: ## build/Leve.app, signed with DEVELOPER_ID_IDENTITY from the shell or .env, else ad-hoc
 	@scripts/build-app.sh --force
 
-# The icon is committed; regenerate it only after changing scripts/make-icon.swift.
-icon: ## Redraw Support/AppIcon.icns from scripts/make-icon.swift
-	@scripts/make-icon.swift artifacts/icon
-	@iconutil -c icns artifacts/icon/AppIcon.iconset -o Support/AppIcon.icns
+# The app icon is authored as Support/AppIcon.icon; this renders its four appearances to check it.
+icon: ## Render Support/AppIcon.icon's Default, Dark, Clear and Tinted appearances into artifacts/icon
+	@mkdir -p artifacts/icon
+	@for r in Default Dark ClearLight TintedDark; do \
+		"$(ICTOOL)" Support/AppIcon.icon --export-image --output-file "artifacts/icon/$$r.png" \
+			--platform macOS --rendition $$r --width 512 --height 512 --scale 1 >/dev/null; done
+	@echo "Wrote artifacts/icon/{Default,Dark,ClearLight,TintedDark}.png"
 
 # The compiler lists every String(localized:) key; the catalog keeps the English source strings.
 strings: ## Refresh Support/Localizable.xcstrings from the app's String(localized:) calls

@@ -63,10 +63,18 @@ cp "$PLIST" "$app/Contents/Info.plist"
 cp Support/PrivacyInfo.xcprivacy "$app/Contents/Resources/PrivacyInfo.xcprivacy"
 # Writes one .lproj per translated locale; an English-only catalog produces nothing yet.
 xcrun xcstringstool compile Support/Localizable.xcstrings --output-directory "$app/Contents/Resources" >&2
-if [[ -f Support/AppIcon.icns ]]; then
-  cp Support/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
-  "$PLIST_BUDDY" -c "Add :CFBundleIconFile string AppIcon" "$app/Contents/Info.plist"
-fi
+# The app icon is the Icon Composer file, compiled into Assets.car and an AppIcon.icns fallback
+# (project-setup swift-apps.md, App icon, #3). actool resolves paths against a long-lived helper's
+# folder, so every path is absolute; with no matching icon it exits 0 and writes nothing.
+app_abs=$(cd "$app" && pwd)
+icon_plist=$(mktemp)
+minimum_macos=$("$PLIST_BUDDY" -c "Print :LSMinimumSystemVersion" "$PLIST")
+xcrun actool "$PWD/Support/AppIcon.icon" --compile "$app_abs/Contents/Resources" --platform macosx \
+  --minimum-deployment-target "$minimum_macos" --app-icon AppIcon \
+  --output-partial-info-plist "$icon_plist" --errors --warnings >&2
+[[ -f $app_abs/Contents/Resources/Assets.car ]] || { echo "error: actool produced no Assets.car" >&2; exit 1; }
+"$PLIST_BUDDY" -c "Merge $icon_plist" "$app/Contents/Info.plist"
+rm -f "$icon_plist"
 
 release_date=$(git log -1 --format=%cs 2>/dev/null || true)
 if [[ -n $release_date ]]; then
