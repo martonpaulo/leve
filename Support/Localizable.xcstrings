@@ -221,6 +221,16 @@
         }
       }
     },
+    "Allow Leve to control %@ in System Settings › Privacy & Security › Automation." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Leve to control %@ in System Settings › Privacy & Security › Automation."
+          }
+        }
+      }
+    },
     "Allowed" : {
       "localizations" : {
         "en" : {
@@ -397,6 +407,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear Simulated Events"
+          }
+        }
+      }
+    },
+    "Click to see how to fix it." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click to see how to fix it."
           }
         }
       }
@@ -661,6 +681,26 @@
         }
       }
     },
+    "In %@, choose View › Developer › Allow JavaScript from Apple Events." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@, choose View › Developer › Allow JavaScript from Apple Events."
+          }
+        }
+      }
+    },
+    "In Safari, choose Develop › Allow JavaScript from Apple Events, or turn it on in Safari › Settings › Developer." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Safari, choose Develop › Allow JavaScript from Apple Events, or turn it on in Safari › Settings › Developer."
+          }
+        }
+      }
+    },
     "Join" : {
       "localizations" : {
         "en" : {
@@ -707,6 +747,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Join Zoom"
+          }
+        }
+      }
+    },
+    "Kept playing at the last break" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kept playing at the last break"
           }
         }
       }
@@ -761,22 +811,12 @@
         }
       }
     },
-    "Leve could not pause the videos in %@. In %@, choose View › Developer › Allow JavaScript from Apple Events." : {
+    "Leve could not pause %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leve could not pause the videos in %1$@. In %2$@, choose View › Developer › Allow JavaScript from Apple Events."
-          }
-        }
-      }
-    },
-    "Leve could not pause the videos in Safari. In Safari, choose Develop › Allow JavaScript from Apple Events." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Leve could not pause the videos in Safari. In Safari, choose Develop › Allow JavaScript from Apple Events."
+            "value" : "Leve could not pause %@"
           }
         }
       }
@@ -991,6 +1031,16 @@
         }
       }
     },
+    "Open Automation Settings…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Automation Settings…"
+          }
+        }
+      }
+    },
     "Open Leve at login" : {
       "localizations" : {
         "en" : {
@@ -1051,12 +1101,32 @@
         }
       }
     },
+    "Pause Music and Videos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause Music and Videos"
+          }
+        }
+      }
+    },
     "Pause music and videos" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pause music and videos"
+          }
+        }
+      }
+    },
+    "Pauses Music, Spotify, TV and the videos playing in Brave, Chrome and Safari." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauses Music, Spotify, TV and the videos playing in Brave, Chrome and Safari."
           }
         }
       }
@@ -1621,12 +1691,12 @@
         }
       }
     },
-    "When a break starts, pause Music, Spotify and TV, and the videos playing in Brave, Chrome and Safari. They stay paused after the break." : {
+    "When a break starts, pause Music, Spotify, TV and the videos in Brave, Chrome and Safari. If one keeps playing, Leve tells you after the break." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When a break starts, pause Music, Spotify and TV, and the videos playing in Brave, Chrome and Safari. They stay paused after the break."
+            "value" : "When a break starts, pause Music, Spotify, TV and the videos in Brave, Chrome and Safari. If one keeps playing, Leve tells you after the break."
           }
         }
       }
@@ -1677,16 +1747,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "in %lld min"
-          }
-        }
-      }
-    },
-    "macOS asks once for each app whether Leve may control it. To pause browser tabs, turn on Allow JavaScript from Apple Events: in Brave and Chrome, View › Developer; in Safari, the Develop menu or Settings › Developer." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS asks once for each app whether Leve may control it. To pause browser tabs, turn on Allow JavaScript from Apple Events: in Brave and Chrome, View › Developer; in Safari, the Develop menu or Settings › Developer."
           }
         }
       }

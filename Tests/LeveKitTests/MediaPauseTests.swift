@@ -63,15 +63,6 @@ import Testing
         #expect(MediaPause.outcome(for: .spotify, reply: nil, errorNumber: -1712) == .failed(-1712))
     }
 
-    @Test func theHintKeepsABrowserUntilItAnswers() {
-        let refused = MediaPause.javaScriptOff(previous: [], outcomes: [.brave: .javaScriptOff, .music: .paused(1)])
-        #expect(refused == [.brave])
-        // Brave was not running at the next break: the hint stays.
-        #expect(MediaPause.javaScriptOff(previous: refused, outcomes: [.safari: .notPlaying]) == [.brave])
-        #expect(MediaPause.javaScriptOff(previous: refused, outcomes: [.brave: .notPlaying]).isEmpty)
-        #expect(MediaPause.javaScriptOff(previous: refused, outcomes: [.brave: .paused(1)]).isEmpty)
-    }
-
     @Test func permissionIsAskedAfterTheBreakOnlyWhereItIsMissing() {
         let outcomes: [MediaApp: MediaPauseOutcome] = [
             .spotify: .needsPermission, .safari: .notAllowed, .tv: .notPlaying,
@@ -84,10 +75,109 @@ import Testing
         #expect(MediaPause.permissionToAsk(pending: [.spotify, .safari], settingIsOn: false).isEmpty)
     }
 
+    @Test func thePauseButtonStillAsksForPermissionWithTheSettingOff() {
+        #expect(
+            MediaPause.permissionToAsk(pending: [.brave], settingIsOn: false, pausedOnRequest: true) == [.brave])
+    }
+
     @Test func theLogLineNamesAppsAndOutcomesOnly() {
         #expect(MediaPause.logLine([:]) == "no player running")
         #expect(
             MediaPause.logLine([.safari: .javaScriptOff, .music: .paused(1)])
                 == "music paused 1, safari JavaScript from Apple Events off")
+    }
+}
+
+@Suite struct MediaFixTests {
+    let start = Date(timeIntervalSince1970: 1_000_000)
+
+    @Test func aRefusalIsAProblemAndIsNotifiedOnce() {
+        var fix = MediaFix()
+        #expect(fix.record([.brave: .javaScriptOff, .music: .paused(1)], now: start) == [.brave])
+        #expect(fix.problems == [.brave: .javaScriptOff])
+        // The same unchanged problem at the next breaks: no notification, the fix stays in Settings.
+        #expect(fix.record([.brave: .javaScriptOff], now: start.addingTimeInterval(3600)).isEmpty)
+        #expect(fix.record([.brave: .javaScriptOff], now: start.addingTimeInterval(86_400)).isEmpty)
+        #expect(fix.apps == [.brave])
+    }
+
+    @Test func everyAppPausedOrNothingAskedPostsNothing() {
+        var fix = MediaFix()
+        #expect(fix.record([:], now: start).isEmpty)
+        #expect(fix.record([.music: .paused(1), .safari: .notPlaying, .tv: .notRunning], now: start).isEmpty)
+        #expect(fix.problems.isEmpty)
+    }
+
+    @Test func aNewProblemIsNotifiedAndNamesOnlyWhatThisBreakFound() {
+        var fix = MediaFix()
+        _ = fix.record([.brave: .javaScriptOff], now: start)
+        // Brave is not running at this break; Music refuses for the first time.
+        #expect(fix.record([.music: .notAllowed], now: start.addingTimeInterval(60)) == [.music])
+        #expect(fix.apps == [.music, .brave])
+    }
+
+    @Test func anAppThatWasNotAskedKeepsItsProblem() {
+        var fix = MediaFix()
+        _ = fix.record([.safari: .javaScriptOff], now: start)
+        _ = fix.record([.brave: .notPlaying, .spotify: .needsPermission, .tv: .failed(-1712)], now: start)
+        #expect(fix.problems == [.safari: .javaScriptOff])
+    }
+
+    @Test func aFixedProblemThatComesBackIsNotifiedAgain() {
+        var fix = MediaFix()
+        _ = fix.record([.brave: .javaScriptOff], now: start)
+        #expect(fix.record([.brave: .paused(2)], now: start.addingTimeInterval(60)).isEmpty)
+        #expect(fix.problems.isEmpty)
+        #expect(fix.record([.brave: .javaScriptOff], now: start.addingTimeInterval(120)) == [.brave])
+    }
+
+    @Test func aDifferentProblemForTheSameAppIsNotified() {
+        var fix = MediaFix()
+        _ = fix.record([.brave: .javaScriptOff], now: start)
+        #expect(fix.record([.brave: .notAllowed], now: start.addingTimeInterval(60)) == [.brave])
+    }
+
+    @Test func anUnchangedProblemIsNotifiedAgainAfterAWeek() {
+        var fix = MediaFix()
+        _ = fix.record([.brave: .javaScriptOff], now: start)
+        let almost = start.addingTimeInterval(MediaFix.repeatAfter - 1)
+        #expect(fix.record([.brave: .javaScriptOff], now: almost).isEmpty)
+        let week = start.addingTimeInterval(MediaFix.repeatAfter)
+        #expect(fix.record([.brave: .javaScriptOff], now: week) == [.brave])
+        #expect(fix.record([.brave: .javaScriptOff], now: week.addingTimeInterval(60)).isEmpty)
+    }
+
+    @Test func anAllowedAppOrTheSettingTurnedOffClearsTheFix() {
+        var fix = MediaFix()
+        _ = fix.record([.music: .notAllowed, .safari: .javaScriptOff], now: start)
+        fix.forgetAllowed([.music: .allowed, .safari: .allowed])
+        // Permission does not turn on a browser's JavaScript option.
+        #expect(fix.apps == [.safari])
+        _ = fix.record([.safari: .allowed], now: start)
+        #expect(fix.apps == [.safari])
+        fix.clear()
+        #expect(fix.problems.isEmpty)
+        #expect(fix.record([.safari: .javaScriptOff], now: start.addingTimeInterval(60)) == [.safari])
+    }
+}
+
+@Suite struct PauseButtonTests {
+    @Test func onlyAnotherProcessPlayingCountsAsSound() {
+        let own: Int32 = 42
+        #expect(!MediaPause.isOtherAudioPlaying([], ownPID: own))
+        // The break's own tone plays in Leve's process.
+        #expect(!MediaPause.isOtherAudioPlaying([AudioProcess(pid: own, isRunningOutput: true)], ownPID: own))
+        #expect(!MediaPause.isOtherAudioPlaying([AudioProcess(pid: 7, isRunningOutput: false)], ownPID: own))
+        #expect(
+            MediaPause.isOtherAudioPlaying(
+                [AudioProcess(pid: own, isRunningOutput: true), AudioProcess(pid: 7, isRunningOutput: true)],
+                ownPID: own))
+    }
+
+    @Test func theButtonShowsOnlyWithTheSettingOffAndSoundPlaying() {
+        #expect(MediaPause.offersPauseButton(settingIsOn: false, otherAudioPlaying: true))
+        #expect(!MediaPause.offersPauseButton(settingIsOn: true, otherAudioPlaying: true))
+        #expect(!MediaPause.offersPauseButton(settingIsOn: false, otherAudioPlaying: false))
+        #expect(!MediaPause.offersPauseButton(settingIsOn: true, otherAudioPlaying: false))
     }
 }

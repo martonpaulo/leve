@@ -2,26 +2,30 @@ import AppKit
 import SwiftUI
 
 /// The break: "Stop. Breathe. Look away." over a slowly breathing circle, with the time left. It
-/// closes by itself when the time is up, or with Skip (Esc) or Later.
+/// closes by itself when the time is up, or with Skip (Esc) or Later. When sound plays and Leve
+/// does not pause it on its own, it also offers Pause Music and Videos (#13).
 final class BreakScreen {
     var onDone: (() -> Void)?
     var onSkip: (() -> Void)?
     var onLater: (() -> Void)?
+    var onPauseMedia: (() -> Void)?
 
     private let overlay = FullScreenOverlay()
     private var endTask: Task<Void, Never>?
 
     var isVisible: Bool { overlay.isVisible }
 
-    func present(minutes: Int, laterMinutes: Int, sound: Bool) {
+    func present(minutes: Int, laterMinutes: Int, sound: Bool, offersPause: Bool = false) {
         let end = Date.now.addingTimeInterval(Double(minutes * 60))
         let skip: () -> Void = { [weak self] in self?.finish { self?.onSkip?() } }
         let view = BreakView(
             end: end,
             minutes: minutes,
             laterMinutes: laterMinutes,
+            offersPause: offersPause,
             onSkip: skip,
-            onLater: { [weak self] in self?.finish { self?.onLater?() } }
+            onLater: { [weak self] in self?.finish { self?.onLater?() } },
+            onPause: { [weak self] in self?.onPauseMedia?() }
         )
         overlay.present(view, tint: BreakView.tint, onEscape: skip)
         if sound {
@@ -58,8 +62,12 @@ private struct BreakView: View {
     let end: Date
     let minutes: Int
     let laterMinutes: Int
+    let offersPause: Bool
     let onSkip: () -> Void
     let onLater: () -> Void
+    let onPause: () -> Void
+    /// The button goes once pressed; the pause it starts reports after the break (#12).
+    @State private var paused = false
 
     var body: some View {
         VStack(spacing: 36) {
@@ -76,6 +84,16 @@ private struct BreakView: View {
                 Button(Copy.breakSkip, action: onSkip)
                     .keyboardShortcut(.cancelAction)
                 Button(Copy.breakLater(laterMinutes), action: onLater)
+                if offersPause, !paused {
+                    // Return presses it: the one action on this screen that is not leaving it.
+                    Button(Copy.pauseMediaNow) {
+                        paused = true
+                        onPause()
+                    }
+                    .keyboardShortcut(.defaultAction)
+                    .tint(Self.tint)
+                    .accessibilityHint(Copy.pauseMediaNowHint)
+                }
             }
             .controlSize(.extraLarge)
         }

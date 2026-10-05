@@ -164,20 +164,39 @@ struct BreaksPane: View {
                     Text(Copy.pauseMedia)
                     Text(Copy.pauseMediaNote)
                 }
-                if preferences.pauseMediaOnBreak {
-                    ForEach(model.javaScriptOffBrowsers, id: \.self) { browser in
-                        Label(Copy.javaScriptOffHint(browser), systemImage: "info.circle").settingsNote()
-                    }
-                }
-            } footer: {
-                Text(Copy.pauseMediaFooter).settingsNote()
             }
             .disabled(!preferences.breaks)
+            if !model.mediaFix.problems.isEmpty {
+                mediaFixSection
+            }
         }
         .settingsPane()
         // Turning it on is when macOS asks, over Settings, for the apps already running.
         .onChange(of: preferences.pauseMediaOnBreak) { _, isOn in
-            if isOn { model.askMediaPermission() }
+            if isOn {
+                model.askMediaPermission()
+            } else {
+                model.clearMediaFix()
+            }
+        }
+        // The window is kept, so check again what System Settings may have changed.
+        .onAppear { model.refreshMediaFix() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            model.refreshMediaFix()
+        }
+    }
+
+    /// The exact step for each app that kept playing, shown only while a problem exists (#12).
+    private var mediaFixSection: some View {
+        Section(Copy.mediaFixSection) {
+            ForEach(model.mediaFix.apps, id: \.self) { app in
+                if let problem = model.mediaFix.problems[app] {
+                    Label(Copy.mediaFix(app, problem), systemImage: "info.circle")
+                }
+            }
+            if model.mediaFix.problems.values.contains(.notAllowed) {
+                Button(Copy.openAutomationSettings) { SystemSettings.openAutomation() }
+            }
         }
     }
 }

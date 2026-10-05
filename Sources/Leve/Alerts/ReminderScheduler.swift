@@ -12,6 +12,8 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
     nonisolated private static let category = "leve.event"
     nonisolated private static let joinAction = "leve.join"
     nonisolated private static let linkKey = "link"
+    /// One identifier, so a new notification about media replaces the previous one (#12).
+    nonisolated private static let mediaFixID = "leve.media-fix"
 
     @ObservationIgnored private let center = UNUserNotificationCenter.current()
     @ObservationIgnored private let logger = Logger(subsystem: "com.martonpaulo.leve", category: "reminders")
@@ -22,6 +24,8 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
     /// The event's calendar color, drawn as a dot beside the text. macOS always shows the app's
     /// own icon in a notification, so an image attachment is the only place for the color.
     @ObservationIgnored var calendarColor: (String) -> NSColor = { _ in .secondaryLabelColor }
+    /// Opens the fix in Settings, Breaks, when the media notification is clicked (#12).
+    @ObservationIgnored var onOpenMediaFix: () -> Void = {}
 
     override init() {
         super.init()
@@ -86,6 +90,25 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    /// Says, after a break, which apps kept playing. It never asks for permission: when
+    /// notifications are off it posts nothing and returns false, and the fix waits in Settings.
+    func postMediaFix(_ apps: [MediaApp]) async -> Bool {
+        let status = await center.notificationSettings().authorizationStatus
+        guard status == .authorized || status == .provisional else { return false }
+        let content = UNMutableNotificationContent()
+        content.title = Copy.mediaFixTitle(apps)
+        content.body = Copy.mediaFixBody
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: Self.mediaFixID, content: content, trigger: nil)
+        do {
+            try await center.add(request)
+            return true
+        } catch {
+            logger.error("Could not post the media fix: \(error.localizedDescription, privacy: .public)")
+            return false
+        }
+    }
+
     /// One notification's content in two lines, "Standup (in 5 min)" over its time; a dot in the
     /// calendar's color; a Join button for a call link.
     private func content(for event: CalendarEvent, at date: Date, urgent: Bool) -> UNNotificationContent {
@@ -139,6 +162,11 @@ final class ReminderScheduler: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse
     ) async {
         let content = response.notification.request.content
+        if response.notification.request.identifier == Self.mediaFixID {
+            guard response.actionIdentifier == UNNotificationDefaultActionIdentifier else { return }
+            await MainActor.run { onOpenMediaFix() }
+            return
+        }
         guard
             response.actionIdentifier == Self.joinAction
                 || response.actionIdentifier == UNNotificationDefaultActionIdentifier,

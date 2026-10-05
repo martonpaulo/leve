@@ -14,9 +14,14 @@ final class SettingsWindowController {
         self.model = model
     }
 
-    func show() {
+    /// Shows the window on its saved pane, or on `pane` when one is asked for, such as Breaks from
+    /// the notification after a break (#12).
+    func show(pane: SettingsPane? = nil) {
         let window = window ?? makeWindow()
         self.window = window
+        if let pane, let tabs = window.contentViewController as? SettingsTabViewController {
+            tabs.select(pane)
+        }
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
     }
@@ -84,7 +89,7 @@ enum SettingsPane: String, CaseIterable {
 }
 
 /// Toolbar tabs with SF Symbols; the selected pane persists by its stable identifier.
-private final class SettingsTabViewController: NSTabViewController {
+final class SettingsTabViewController: NSTabViewController {
     private static let selectedPaneKey = "leve.settingsPane.v1"
 
     private let model: AppModel
@@ -142,6 +147,12 @@ private final class SettingsTabViewController: NSTabViewController {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    func select(_ pane: SettingsPane) {
+        if let index = tabViewItems.firstIndex(where: { $0.identifier as? String == pane.rawValue }) {
+            selectedTabViewItemIndex = index
+        }
+    }
 
     override func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
         super.tabView(tabView, didSelect: tabViewItem)

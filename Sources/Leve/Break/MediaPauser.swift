@@ -32,6 +32,13 @@ enum MediaPauser {
         }
     }
 
+    /// Reads the permission without a prompt, as Settings shows (#12).
+    static func checkPermission(for apps: [MediaApp]) async -> [MediaApp: MediaPauseOutcome] {
+        await run(apps) { app in
+            MediaPause.outcome(permissionStatus: permission(app, ask: false)) ?? .allowed
+        }
+    }
+
     private static func run(
         _ apps: [MediaApp], _ body: @escaping @Sendable (MediaApp) -> MediaPauseOutcome
     ) async -> [MediaApp: MediaPauseOutcome] {

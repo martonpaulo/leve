@@ -165,6 +165,10 @@ enum Copy {
         String(localized: "Later (\(minutes) min)")
     }
 
+    static let pauseMediaNow = String(localized: "Pause Music and Videos")
+    static let pauseMediaNowHint = String(
+        localized: "Pauses Music, Spotify, TV and the videos playing in Brave, Chrome and Safari.")
+
     static let breaks = String(localized: "Breaks")
     static let takeBreaks = String(localized: "Remind me to take breaks")
     static let takeBreaksNote = String(localized: "Stop, breathe and look away for a few minutes.")
@@ -178,12 +182,9 @@ enum Copy {
     static let pauseMedia = String(localized: "Pause music and videos")
     static let pauseMediaNote = String(
         localized:
-            "When a break starts, pause Music, Spotify and TV, and the videos playing in Brave, Chrome and Safari. They stay paused after the break."
+            "When a break starts, pause Music, Spotify, TV and the videos in Brave, Chrome and Safari. If one keeps playing, Leve tells you after the break."
     )
-    static let pauseMediaFooter = String(
-        localized:
-            "macOS asks once for each app whether Leve may control it. To pause browser tabs, turn on Allow JavaScript from Apple Events: in Brave and Chrome, View › Developer; in Safari, the Develop menu or Settings › Developer."
-    )
+    static let openAutomationSettings = String(localized: "Open Automation Settings…")
 
     static func mediaAppName(_ app: MediaApp) -> String {
         switch app {
@@ -196,18 +197,32 @@ enum Copy {
         }
     }
 
-    /// Shown in Settings, Breaks, after a browser refused to pause its tabs.
-    static func javaScriptOffHint(_ browser: MediaApp) -> String {
-        let name = mediaAppName(browser)
-        return browser == .safari
-            ? String(
+    /// The notification posted after a break in which these apps kept playing (#12).
+    static func mediaFixTitle(_ apps: [MediaApp]) -> String {
+        let names = apps.map(mediaAppName).formatted(.list(type: .and))
+        return String(localized: "Leve could not pause \(names)")
+    }
+
+    static let mediaFixBody = String(localized: "Click to see how to fix it.")
+
+    /// The heading of the fix in Settings, Breaks, shown while a problem exists.
+    static let mediaFixSection = String(localized: "Kept playing at the last break")
+
+    /// The exact step for one app, in Settings, Breaks (#12).
+    static func mediaFix(_ app: MediaApp, _ problem: MediaProblem) -> String {
+        let name = mediaAppName(app)
+        switch problem {
+        case .notAllowed:
+            return String(
+                localized: "Allow Leve to control \(name) in System Settings › Privacy & Security › Automation.")
+        case .javaScriptOff where app == .safari:
+            return String(
                 localized:
-                    "Leve could not pause the videos in Safari. In Safari, choose Develop › Allow JavaScript from Apple Events."
+                    "In Safari, choose Develop › Allow JavaScript from Apple Events, or turn it on in Safari › Settings › Developer."
             )
-            : String(
-                localized:
-                    "Leve could not pause the videos in \(name). In \(name), choose View › Developer › Allow JavaScript from Apple Events."
-            )
+        case .javaScriptOff:
+            return String(localized: "In \(name), choose View › Developer › Allow JavaScript from Apple Events.")
+        }
     }
 
     static let joinAction = String(localized: "Join")

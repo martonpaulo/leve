@@ -56,6 +56,86 @@ public enum MediaPauseOutcome: Equatable, Sendable {
     }
 }
 
+/// One process Core Audio knows, and whether it plays sound now (#13).
+public struct AudioProcess: Equatable, Sendable {
+    public let pid: Int32
+    public let isRunningOutput: Bool
+
+    public init(pid: Int32, isRunningOutput: Bool) {
+        self.pid = pid
+        self.isRunningOutput = isRunningOutput
+    }
+}
+
+/// Why an app kept playing after Leve asked it to pause, and the user can fix (#12).
+public enum MediaProblem: Equatable, Sendable {
+    /// The browser refused to run JavaScript from Apple Events in every tab.
+    case javaScriptOff
+    /// The user did not allow Leve to control the app.
+    case notAllowed
+}
+
+/// The media problems Leve knows of, for the fix in Settings, Breaks, and when to post the
+/// notification after a break (#12). A notification is posted when a break finds a problem and
+/// the known problems differ from the ones last notified, or `repeatAfter` has passed since.
+public struct MediaFix: Equatable, Sendable {
+    public static let repeatAfter: TimeInterval = 7 * 24 * 60 * 60
+
+    public private(set) var problems: [MediaApp: MediaProblem] = [:]
+    private var notified: [MediaApp: MediaProblem] = [:]
+    private var notifiedAt: Date?
+
+    public init() {}
+
+    /// The apps with a problem, in a fixed order.
+    public var apps: [MediaApp] { MediaApp.allCases.filter { problems[$0] != nil } }
+
+    /// Takes a break's answers and returns the apps to name in a notification, or none. An app that
+    /// was not asked, or did not answer, keeps its state.
+    public mutating func record(_ outcomes: [MediaApp: MediaPauseOutcome], now: Date) -> [MediaApp] {
+        var found: [MediaApp] = []
+        for app in MediaApp.allCases {
+            switch outcomes[app] {
+            case .javaScriptOff:
+                problems[app] = .javaScriptOff
+                found.append(app)
+            case .notAllowed:
+                problems[app] = .notAllowed
+                found.append(app)
+            case .paused, .notPlaying:
+                problems[app] = nil
+            case .allowed:
+                // Permission says nothing about a browser's JavaScript option.
+                if problems[app] == .notAllowed { problems[app] = nil }
+            case .notRunning, .needsPermission, .failed, nil:
+                break
+            }
+        }
+        // A fixed problem leaves the notified set, so it is posted again if it comes back.
+        notified = notified.filter { problems[$0.key] == $0.value }
+        guard !found.isEmpty else { return [] }
+        let changed = problems != notified
+        let due = notifiedAt.map { now.timeIntervalSince($0) >= Self.repeatAfter } ?? true
+        guard changed || due else { return [] }
+        notified = problems
+        notifiedAt = now
+        return found
+    }
+
+    /// Drops the apps the user has since allowed in System Settings, from a permission check.
+    public mutating func forgetAllowed(_ outcomes: [MediaApp: MediaPauseOutcome]) {
+        for (app, outcome) in outcomes where outcome == .allowed && problems[app] == .notAllowed {
+            problems[app] = nil
+            notified[app] = nil
+        }
+    }
+
+    /// Forgets every problem, when the setting is turned off.
+    public mutating func clear() {
+        self = MediaFix()
+    }
+}
+
 /// Which apps to ask, what to send them, and what their answers mean. The app target only sends
 /// the Apple Events; it never launches an app that is not running.
 public enum MediaPause {
@@ -106,27 +186,28 @@ public enum MediaPause {
         return .notPlaying
     }
 
-    /// The browsers to name in the Settings hint after a break: a refusal adds one, and a break in
-    /// which it answered removes it. A browser that was not asked keeps its state.
-    public static func javaScriptOff(previous: [MediaApp], outcomes: [MediaApp: MediaPauseOutcome]) -> [MediaApp] {
-        MediaApp.allCases.filter { app in
-            guard app.isBrowser else { return false }
-            switch outcomes[app] {
-            case .javaScriptOff: return true
-            case .paused, .notPlaying: return false
-            default: return previous.contains(app)
-            }
-        }
-    }
-
     /// The apps for which macOS should ask the user once the break is over.
     public static func needingPermission(_ outcomes: [MediaApp: MediaPauseOutcome]) -> [MediaApp] {
         MediaApp.allCases.filter { outcomes[$0] == .needsPermission }
     }
 
-    /// What to ask for when the break ends: nothing once the setting was turned off meanwhile.
-    public static func permissionToAsk(pending: [MediaApp], settingIsOn: Bool) -> [MediaApp] {
-        settingIsOn ? pending : []
+    /// What to ask for when the break ends: nothing once the setting was turned off meanwhile,
+    /// unless the pause was asked for from the break screen (#13).
+    public static func permissionToAsk(pending: [MediaApp], settingIsOn: Bool, pausedOnRequest: Bool = false)
+        -> [MediaApp]
+    {
+        settingIsOn || pausedOnRequest ? pending : []
+    }
+
+    /// Whether a process other than Leve plays sound: Leve's own tones never count (#13).
+    public static func isOtherAudioPlaying(_ processes: [AudioProcess], ownPID: Int32) -> Bool {
+        processes.contains { $0.isRunningOutput && $0.pid != ownPID }
+    }
+
+    /// The break screen offers "Pause Music and Videos" only when Leve would not pause on its own
+    /// and something plays (#13).
+    public static func offersPauseButton(settingIsOn: Bool, otherAudioPlaying: Bool) -> Bool {
+        !settingIsOn && otherAudioPlaying
     }
 
     /// One log line for a break: each app asked and its outcome.
