@@ -27,6 +27,7 @@
 - Release, signing, and secret-storage policy: Not applicable: no public distribution (owner, 2026-10-02). `make install` builds `build/Leve.app` with `scripts/build-app.sh`, signs it with `DEVELOPER_ID_IDENTITY` from the untracked `.env` (ad-hoc without it), with hardened runtime and `Support/Leve.entitlements` (calendar access only), and copies it to `/Applications`. No notarization, release, tag, appcast or secret.
 - Skills baseline revision: `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`
 - Skills baseline applied: `2026-10-03`
+- Skills baseline divergence `dependabot` at `ecd0609ec96b53aa6f2110ac4dea987a3f023318`: no `swift` entry in `.github/dependabot.yml`. Leve has no package dependency, and Dependabot's Swift 6.3.1 fails on `swift-tools-version:6.4` (run of 2026-10-05); add the entry with the first dependency (owner, 2026-10-02; reason updated 2026-10-05).
 - Skills baseline divergence `canonical-scripts` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: `scripts/build-app.sh` replaces the canonical `package-app.sh`, which requires Sparkle and has no entitlements option; Leve has neither updates nor distribution and needs the calendar entitlement.
 - Skills baseline divergence `layout` at `ecd0609ec96b53aa6f2110ac4dea987a3f023318`: no `docs/architecture.md` or `docs/design-system.md`. Leve is a small app; "Architecture and patterns" below describes its architecture, and the Feel rule its visual system (owner, 2026-10-05).
 
