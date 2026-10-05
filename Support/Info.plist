@@ -28,6 +28,8 @@
 	<string>27.0</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Leve pauses music and videos when a break starts, if you turn this on in Settings, Breaks. It never starts playback or opens an app.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Leve reads today’s events to show what is next, warn you before it starts and stay quiet while it happens. It never changes your calendars.</string>
 	<key>NSHumanReadableCopyright</key>

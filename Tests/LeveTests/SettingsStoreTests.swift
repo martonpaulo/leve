@@ -56,6 +56,22 @@ private func event(at start: Date) -> CalendarEvent {
         }
     }
 
+    @Test func pausingMediaIsOffUntilTurnedOnAndRestoreDefaultsTurnsItOff() {
+        withDefaults { defaults in
+            #expect(!Preferences(defaults: defaults).pauseMediaOnBreak)
+            Preferences(defaults: defaults).pauseMediaOnBreak = true
+            let preferences = Preferences(defaults: defaults)
+            #expect(preferences.pauseMediaOnBreak)
+            preferences.breakSound = false
+            preferences.debugMenu = true
+            preferences.restoreDefaults()
+            #expect(!preferences.pauseMediaOnBreak)
+            #expect(!Preferences(defaults: defaults).pauseMediaOnBreak)
+            #expect(preferences.breakSound)
+            #expect(preferences.debugMenu)
+        }
+    }
+
     @Test func restoreDefaultsKeepsThePauseAndTheDebugMenu() {
         withDefaults { defaults in
             let preferences = Preferences(defaults: defaults)

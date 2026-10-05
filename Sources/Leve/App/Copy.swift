@@ -175,6 +175,40 @@ enum Copy {
         localized:
             "Time away from the Mac counts as a break. Breaks wait during events and calls (any app using the microphone), then come right after."
     )
+    static let pauseMedia = String(localized: "Pause music and videos")
+    static let pauseMediaNote = String(
+        localized:
+            "When a break starts, pause Music, Spotify and TV, and the videos playing in Brave, Chrome and Safari. They stay paused after the break."
+    )
+    static let pauseMediaFooter = String(
+        localized:
+            "macOS asks once for each app whether Leve may control it. To pause browser tabs, turn on Allow JavaScript from Apple Events: in Brave and Chrome, View › Developer; in Safari, the Develop menu or Settings › Developer."
+    )
+
+    static func mediaAppName(_ app: MediaApp) -> String {
+        switch app {
+        case .music: String(localized: "Music")
+        case .spotify: String(localized: "Spotify")
+        case .tv: String(localized: "TV")
+        case .brave: String(localized: "Brave")
+        case .chrome: String(localized: "Google Chrome")
+        case .safari: String(localized: "Safari")
+        }
+    }
+
+    /// Shown in Settings, Breaks, after a browser refused to pause its tabs.
+    static func javaScriptOffHint(_ browser: MediaApp) -> String {
+        let name = mediaAppName(browser)
+        return browser == .safari
+            ? String(
+                localized:
+                    "Leve could not pause the videos in Safari. In Safari, choose Develop › Allow JavaScript from Apple Events."
+            )
+            : String(
+                localized:
+                    "Leve could not pause the videos in \(name). In \(name), choose View › Developer › Allow JavaScript from Apple Events."
+            )
+    }
 
     static let joinAction = String(localized: "Join")
     static let close = String(localized: "Close")

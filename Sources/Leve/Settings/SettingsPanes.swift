@@ -130,11 +130,12 @@ struct GeneralPane: View {
 
 // MARK: - Breaks
 
-/// Whether Leve asks for breaks, how often, and how long.
+/// Whether Leve asks for breaks, how often, how long, and whether media pauses during them.
 struct BreaksPane: View {
-    @Bindable var preferences: Preferences
+    @Bindable var model: AppModel
 
     var body: some View {
+        @Bindable var preferences = model.preferences
         Form {
             Section {
                 Toggle(isOn: $preferences.breaks) {
@@ -158,8 +159,26 @@ struct BreaksPane: View {
                 Text(Copy.breakFooter).settingsNote()
             }
             .disabled(!preferences.breaks)
+            Section {
+                Toggle(isOn: $preferences.pauseMediaOnBreak) {
+                    Text(Copy.pauseMedia)
+                    Text(Copy.pauseMediaNote)
+                }
+                if preferences.pauseMediaOnBreak {
+                    ForEach(model.javaScriptOffBrowsers, id: \.self) { browser in
+                        Label(Copy.javaScriptOffHint(browser), systemImage: "info.circle").settingsNote()
+                    }
+                }
+            } footer: {
+                Text(Copy.pauseMediaFooter).settingsNote()
+            }
+            .disabled(!preferences.breaks)
         }
         .settingsPane()
+        // Turning it on is when macOS asks, over Settings, for the apps already running.
+        .onChange(of: preferences.pauseMediaOnBreak) { _, isOn in
+            if isOn { model.askMediaPermission() }
+        }
     }
 }
 

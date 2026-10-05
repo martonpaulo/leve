@@ -73,6 +73,7 @@ final class AppModel {
             self?.isBreakVisible = false
             self?.breakTracker.postpone(now: .now, minutes: Self.breakLaterMinutes)
             self?.breakLog.notice("Break postponed \(Self.breakLaterMinutes, privacy: .public) min")
+            self?.askMediaPermissionAfterBreak()
         }
         alert.onJoin = { [weak self] event in self?.join(event) }
         alert.onNeverForEvent = { [weak self] event in self?.overrides.set(.noFullScreen, for: event) }
@@ -106,6 +107,10 @@ final class AppModel {
 
     /// Whether the break is on screen, for the menu; `BreakScreen` itself is not observed.
     private(set) var isBreakVisible = false
+    /// The browsers that refused to pause their tabs, for the hint in Settings, Breaks (#2).
+    private(set) var javaScriptOffBrowsers: [MediaApp] = []
+    /// Apps that needed permission during the last break; macOS asks once it is over.
+    @ObservationIgnored private var mediaNeedingPermission: [MediaApp] = []
 
     /// Listed timed events that have not ended, today's only: the first hour of tomorrow is loaded
     /// for its alerts, not for the list.
@@ -327,12 +332,48 @@ final class AppModel {
     private func presentBreak(minutes: Int) {
         isBreakVisible = true
         breakScreen.present(minutes: minutes, laterMinutes: Self.breakLaterMinutes, sound: preferences.breakSound)
+        if preferences.pauseMediaOnBreak {
+            pauseMedia()
+        }
     }
 
     private func endBreak(_ how: String) {
         isBreakVisible = false
         breakTracker.restart(now: .now)
         breakLog.notice("Break \(how, privacy: .public): count restarted")
+        askMediaPermissionAfterBreak()
+    }
+
+    /// Pauses the players and browser tabs that play; nothing is resumed after the break (#2).
+    private func pauseMedia() {
+        Task { [weak self] in
+            let outcomes = await MediaPauser.pauseAll()
+            guard let self else { return }
+            breakLog.notice("Media pause: \(MediaPause.logLine(outcomes), privacy: .public)")
+            javaScriptOffBrowsers = MediaPause.javaScriptOff(previous: javaScriptOffBrowsers, outcomes: outcomes)
+            mediaNeedingPermission = MediaPause.needingPermission(outcomes)
+        }
+    }
+
+    /// The macOS prompt could open under the break, so it waits until the break is gone.
+    private func askMediaPermissionAfterBreak() {
+        let apps = mediaNeedingPermission
+        mediaNeedingPermission = []
+        guard !apps.isEmpty else { return }
+        askMediaPermission(apps)
+    }
+
+    /// Asks macOS for permission to control the running players and browsers, when the setting is
+    /// turned on in Settings, Breaks.
+    func askMediaPermission() {
+        askMediaPermission(MediaPauser.runningTargets)
+    }
+
+    private func askMediaPermission(_ apps: [MediaApp]) {
+        Task { [weak self] in
+            let outcomes = await MediaPauser.askPermission(for: apps)
+            self?.breakLog.notice("Media permission: \(MediaPause.logLine(outcomes), privacy: .public)")
+        }
     }
 
     /// Why the break is waiting, or "counting" when nothing holds it.

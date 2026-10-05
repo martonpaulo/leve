@@ -75,7 +75,7 @@ enum SettingsPane: String, CaseIterable {
         switch self {
         case .general: GeneralPane(model: model)
         case .alerts: AlertsPane(model: model)
-        case .breaks: BreaksPane(preferences: model.preferences)
+        case .breaks: BreaksPane(model: model)
         case .calendars: CalendarsPane(model: model)
         case .debug: DebugPane(model: model)
         case .about: AboutPane(preferences: model.preferences, updates: model.updates)

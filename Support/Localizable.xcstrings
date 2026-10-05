@@ -281,6 +281,16 @@
         }
       }
     },
+    "Brave" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brave"
+          }
+        }
+      }
+    },
     "Break" : {
       "localizations" : {
         "en" : {
@@ -601,6 +611,16 @@
         }
       }
     },
+    "Google Chrome" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google Chrome"
+          }
+        }
+      }
+    },
     "Hidden" : {
       "localizations" : {
         "en" : {
@@ -741,6 +761,26 @@
         }
       }
     },
+    "Leve could not pause the videos in %@. In %@, choose View › Developer › Allow JavaScript from Apple Events." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leve could not pause the videos in %1$@. In %2$@, choose View › Developer › Allow JavaScript from Apple Events."
+          }
+        }
+      }
+    },
+    "Leve could not pause the videos in Safari. In Safari, choose Develop › Allow JavaScript from Apple Events." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leve could not pause the videos in Safari. In Safari, choose Develop › Allow JavaScript from Apple Events."
+          }
+        }
+      }
+    },
     "Leve needs access to your calendars" : {
       "localizations" : {
         "en" : {
@@ -787,6 +827,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Menu bar"
+          }
+        }
+      }
+    },
+    "Music" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Music"
           }
         }
       }
@@ -1001,6 +1051,16 @@
         }
       }
     },
+    "Pause music and videos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause music and videos"
+          }
+        }
+      }
+    },
     "Permissions" : {
       "localizations" : {
         "en" : {
@@ -1107,6 +1167,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resume Alerts"
+          }
+        }
+      }
+    },
+    "Safari" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safari"
           }
         }
       }
@@ -1331,6 +1401,16 @@
         }
       }
     },
+    "Spotify" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spotify"
+          }
+        }
+      }
+    },
     "Starting now" : {
       "localizations" : {
         "en" : {
@@ -1367,6 +1447,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stop. Breathe. Look away."
+          }
+        }
+      }
+    },
+    "TV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TV"
           }
         }
       }
@@ -1531,6 +1621,16 @@
         }
       }
     },
+    "When a break starts, pause Music, Spotify and TV, and the videos playing in Brave, Chrome and Safari. They stay paused after the break." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When a break starts, pause Music, Spotify and TV, and the videos playing in Brave, Chrome and Safari. They stay paused after the break."
+          }
+        }
+      }
+    },
     "When it starts" : {
       "localizations" : {
         "en" : {
@@ -1577,6 +1677,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "in %lld min"
+          }
+        }
+      }
+    },
+    "macOS asks once for each app whether Leve may control it. To pause browser tabs, turn on Allow JavaScript from Apple Events: in Brave and Chrome, View › Developer; in Safari, the Develop menu or Settings › Developer." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS asks once for each app whether Leve may control it. To pause browser tabs, turn on Allow JavaScript from Apple Events: in Brave and Chrome, View › Developer; in Safari, the Develop menu or Settings › Developer."
           }
         }
       }
