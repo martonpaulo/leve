@@ -10,8 +10,8 @@ deep focus never costs you a meeting.
 
 ## Who it is for
 
-The owner: a developer who hyperfocuses at the computer, loses track of time, and misses
-meetings. Leve is a personal app with no public release.
+People who hyperfocus at the computer, lose track of time, and miss meetings. The owner is the
+first of them.
 
 ## The job
 

@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an improvement
+labels: ["type: feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      description: Leve deliberately stays small (see the README's Limitations).
+      options:
+        - label: This is not tasks, notes, event editing, or anything beyond today
+          required: true

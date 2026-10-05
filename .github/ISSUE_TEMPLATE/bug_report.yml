@@ -1,0 +1,33 @@
+name: Bug report
+description: Something doesn't work the way it should
+labels: ["type: bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead? Leave out real event titles; describe the event instead.
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      placeholder: e.g. macOS 27.0
+    validations:
+      required: true
+  - type: input
+    id: leve-version
+    attributes:
+      label: Leve version
+      description: Shown in Settings › About.
+      placeholder: e.g. 0.1.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: Calendar access is granted to Leve
+        - label: The problem still happens after quitting and reopening Leve

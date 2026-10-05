@@ -7,7 +7,7 @@
 - Slug: `leve`
 - Identifier name: `leve`
 - Benefit-first description: Today's time and today's events at the edge of your attention, in the macOS menu bar, so deep focus never costs you a meeting.
-- Repository: `martonpaulo/leve` (private)
+- Repository: `martonpaulo/leve` (public since 2026-10-05, Decided on #6)
 - Public identifiers: bundle identifier `com.martonpaulo.leve`; executable `Leve`; app `Leve.app`.
 - Landing page: None. The repository README is the only project surface.
 - License: `MIT`
@@ -16,7 +16,7 @@
 - Product copy: English only (owner, 2026-10-02). Every visible word lives in `Sources/Leve/App/Copy.swift` and goes through `String(localized:)`; the String Catalog (`Support/Localizable.xcstrings`) arrives with the first second locale.
 - Branch policy: work on `main`; a branch only when the owner asks for one.
 - Commit policy: commit each coherent task automatically once it is complete and `make check` passes; commit only task files.
-- Push policy: push completed, validated commits straight to `origin/main`. Never force-push.
+- Push policy: push completed, validated commits straight to `origin/main`. Never force-push. One exception happened: on 2026-10-05 the owner had the history rewritten and force-pushed once, to drop the author e-mail and a personal detail before the repository went public (#6).
 - Product versioning: SemVer `X.Y.Z` in `CFBundleShortVersionString` (`Support/Info.plist`), starting at `0.1.0`; `CFBundleVersion` is `MAJOR*10000 + MINOR*100 + PATCH`, checked by `make validate`. Versions change only when the owner asks.
 - Merge policy: merge commits only, every commit of the branch preserved. Never squash.
 - Commit subject: a commit made for an issue ends with `(#<issue number>)`.
@@ -25,7 +25,6 @@
 - Skills baseline revision: `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`
 - Skills baseline applied: `2026-10-03`
 - Skills baseline divergence `continuous-integration` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: no Validate workflow. macOS runners spend the private repository's minutes on every push for one author; `make check` runs locally before each commit instead (owner, 2026-10-02).
-- Skills baseline divergence `dependabot` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: no `.github/dependabot.yml`. Leve has no package dependency and no workflow, so there is nothing to update; add it with the first dependency.
 - Skills baseline divergence `canonical-scripts` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: `scripts/build-app.sh` replaces the canonical `package-app.sh`, which requires Sparkle and has no entitlements option; Leve has neither updates nor distribution and needs the calendar entitlement.
 
 Change an established identifier, license, visibility, branch, versioning, localization, landing-page or release policy only through an explicit task describing the migration and its effects.
