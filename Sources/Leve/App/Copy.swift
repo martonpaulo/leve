@@ -327,7 +327,10 @@ enum Copy {
         return String(localized: "\(version) · \(released)")
     }
 
-    static let copyright = String(localized: "© 2026 Marton Paulo. MIT License.")
+    /// The credit lines, stored once as `NSHumanReadableCopyright` in Info.plist (#1).
+    static var copyright: String {
+        Bundle.main.object(forInfoDictionaryKey: "NSHumanReadableCopyright") as? String ?? ""
+    }
 
     // MARK: Formatting
 

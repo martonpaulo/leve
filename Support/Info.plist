@@ -20,6 +20,8 @@
 	<string>0.1.0</string>
 	<key>CFBundleVersion</key>
 	<string>100</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
@@ -29,7 +31,7 @@
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Leve reads today’s events to show what is next, warn you before it starts and stay quiet while it happens. It never changes your calendars.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2026 Marton Paulo. MIT License.</string>
+	<string>© 2026 Marton Paulo. Licensed under the MIT License.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>
