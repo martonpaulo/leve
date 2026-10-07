@@ -163,9 +163,10 @@ enum Copy {
 
     static let breakSkip = String(localized: "Skip")
 
-    static func breakLater(_ minutes: Int) -> String {
-        String(localized: "Later (\(minutes) min)")
-    }
+    static let breakLater = String(localized: "Later")
+    static let breakLaterHint = String(localized: "Hides the break. It waits in the menu bar until you take it.")
+    /// Beside the menu bar icon while a break waits (#19).
+    static let breakDue = String(localized: "Break due")
 
     static let pauseMediaNow = String(localized: "Pause Music and Videos")
     static let pauseMediaNowHint = String(

@@ -36,8 +36,8 @@ public struct BreakContext: Sendable, Equatable {
 /// due during it appears as soon as it ends.
 public struct BreakTracker: Sendable, Equatable {
     public private(set) var workStart: Date
-    /// "Later" holds the break until this time.
-    public private(set) var notBefore: Date?
+    /// "Later" left the break waiting in the menu bar until the owner takes it (#19).
+    public private(set) var isPending = false
     /// The previous tick. A gap at least as long as a break means the Mac slept or Leve was not
     /// running, which is time away, whatever the input idle time says.
     private var lastTick: Date?
@@ -56,19 +56,21 @@ public struct BreakTracker: Sendable, Equatable {
             return false
         }
         guard !context.isBusy, !context.eventStartsSoon, !context.isPaused else { return false }
-        if let notBefore, now < notBefore { return false }
+        if isPending { return false }
         return now.timeIntervalSince(workStart) >= Double(schedule.workMinutes * 60)
     }
 
-    /// The break was taken or skipped: the count starts again.
+    /// The break was taken or skipped, or the owner was away for one: the count starts again and
+    /// a pending break is gone.
     public mutating func restart(now: Date) {
         workStart = now
-        notBefore = nil
+        isPending = false
     }
 
-    /// "Later": asks again after `minutes`, with the worked time still counting.
-    public mutating func postpone(now: Date, minutes: Int) {
-        notBefore = now.addingTimeInterval(Double(minutes * 60))
+    /// "Later": the break never comes back on its own; it waits in the menu bar until the owner
+    /// takes it, with the worked time still counting (#19).
+    public mutating func `defer`() {
+        isPending = true
     }
 
     /// True when an alerting, timed event starts within `minutes`: a break then would collide

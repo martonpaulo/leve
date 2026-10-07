@@ -341,6 +341,16 @@
         }
       }
     },
+    "Break due" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break due"
+          }
+        }
+      }
+    },
     "Break for" : {
       "localizations" : {
         "en" : {
@@ -721,6 +731,16 @@
         }
       }
     },
+    "Hides the break. It waits in the menu bar until you take it." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hides the break. It waits in the menu bar until you take it."
+          }
+        }
+      }
+    },
     "In %@, choose View › Developer › Allow JavaScript from Apple Events." : {
       "localizations" : {
         "en" : {
@@ -831,7 +851,18 @@
         }
       }
     },
+    "Later" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        }
+      }
+    },
     "Later (%lld min)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

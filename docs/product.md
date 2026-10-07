@@ -37,7 +37,9 @@ only its event alerts.
   calendar's color with a ring that counts down to the start, until the owner joins or closes it.
 - Says the time as a clock does, "It's 10 o'clock" or "It's 10:30", with no AM or PM.
 - Asks for a break after 55 minutes of work: "Stop. Breathe. Look away." for 5 minutes over a
-  slowly breathing circle and a short music-box phrase, with Skip and Later (5 min). When sound
+  slowly breathing circle and a short music-box phrase, with Skip and Later. Later hides the
+  break and leaves "Break due" beside the menu bar icon until the owner takes it with "Take a
+  Break Now"; it never comes back full screen on its own (Decided on #19). When sound
   plays and Leve would not pause it on its own, a third button, Pause Music and Videos, pauses it
   (Decided on #13). On by default, with its
   own Settings tab. Time away from the Mac counts as a break. "Take a Break Now" in the menu starts

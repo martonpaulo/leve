@@ -16,7 +16,9 @@ struct StatusLabel: View {
             if let counter {
                 Text("\u{2002}" + Copy.allDayCounter(counter))
             }
-            if model.status.showsText(
+            if model.status.showsPendingBreak(model.isBreakPending) {
+                Text("\u{2002}" + Copy.breakDue)
+            } else if model.status.showsText(
                 freeUntil: model.preferences.showFreeUntil, nothingElse: model.preferences.showNothingElse)
             {
                 Text("\u{2002}" + text)
@@ -29,6 +31,9 @@ struct StatusLabel: View {
     private func accessibilityText(_ text: String, counter: Int?) -> String {
         var parts = counter.map { [Copy.allDayCounterSpoken($0)] } ?? []
         parts.append(text)
+        if model.isBreakPending {
+            parts.append(Copy.breakDue)
+        }
         if model.isPaused, let until = model.preferences.pausedUntil {
             parts.append(Copy.pausedUntil(until))
         }

@@ -24,6 +24,15 @@ public enum MenuBarStatus: Sendable, Equatable {
         }
     }
 
+    /// Whether "Break due" shows beside the icon, in place of "Free until …" or "Nothing else
+    /// today" (#19). An event's countdown keeps the text: a break waits during events anyway.
+    public func showsPendingBreak(_ isPending: Bool) -> Bool {
+        switch self {
+        case .clear, .freeUntil: isPending
+        case .upcoming, .ongoing: false
+        }
+    }
+
     /// How many all-day events are still pending today, for the optional counter beside the icon
     /// (#14). A dismissed event is hidden, so it is not listed and stops counting at once.
     public static func pendingAllDayCount(events: [AttendedEvent], now: Date) -> Int {

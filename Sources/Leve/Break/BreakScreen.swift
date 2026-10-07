@@ -2,7 +2,8 @@ import AppKit
 import SwiftUI
 
 /// The break: "Stop. Breathe. Look away." over a slowly breathing circle, with the time left. It
-/// closes by itself when the time is up, or with Skip (Esc) or Later. When sound plays and Leve
+/// closes by itself when the time is up, or with Skip (Esc) or Later, which leaves it waiting in the
+/// menu bar (#19). When sound plays and Leve
 /// does not pause it on its own, it also offers Pause Music and Videos (#13).
 final class BreakScreen {
     var onDone: (() -> Void)?
@@ -15,13 +16,12 @@ final class BreakScreen {
 
     var isVisible: Bool { overlay.isVisible }
 
-    func present(minutes: Int, laterMinutes: Int, sound: Bool, offersPause: Bool = false) {
+    func present(minutes: Int, sound: Bool, offersPause: Bool = false) {
         let end = Date.now.addingTimeInterval(Double(minutes * 60))
         let skip: () -> Void = { [weak self] in self?.finish { self?.onSkip?() } }
         let view = BreakView(
             end: end,
             minutes: minutes,
-            laterMinutes: laterMinutes,
             offersPause: offersPause,
             onSkip: skip,
             onLater: { [weak self] in self?.finish { self?.onLater?() } },
@@ -61,7 +61,6 @@ private struct BreakView: View {
 
     let end: Date
     let minutes: Int
-    let laterMinutes: Int
     let offersPause: Bool
     let onSkip: () -> Void
     let onLater: () -> Void
@@ -83,7 +82,8 @@ private struct BreakView: View {
             HStack(spacing: 14) {
                 Button(Copy.breakSkip, action: onSkip)
                     .keyboardShortcut(.cancelAction)
-                Button(Copy.breakLater(laterMinutes), action: onLater)
+                Button(Copy.breakLater, action: onLater)
+                    .accessibilityHint(Copy.breakLaterHint)
                 if offersPause, !paused {
                     // Return presses it: the one action on this screen that is not leaving it.
                     Button(Copy.pauseMediaNow) {

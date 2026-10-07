@@ -20,8 +20,8 @@ final class AppModel {
     @ObservationIgnored let breakScreen = BreakScreen()
     /// Sparkle's updater; the app delegate starts it at launch (#7).
     @ObservationIgnored let updates = UpdateManager()
-    @ObservationIgnored private var breakTracker = BreakTracker(now: .now)
-    static let breakLaterMinutes = 5
+    /// Observed: the menu bar shows "Break due" while a break waits (#19).
+    private var breakTracker = BreakTracker(now: .now)
     /// The Debug menu's events take the next of Calendar's colors each time, to compare them.
     @ObservationIgnored private var debugColorIndex = 0
     private static let debugColors: [NSColor] = [
@@ -73,8 +73,8 @@ final class AppModel {
         breakScreen.onSkip = { [weak self] in self?.endBreak("skipped") }
         breakScreen.onLater = { [weak self] in
             self?.isBreakVisible = false
-            self?.breakTracker.postpone(now: .now, minutes: Self.breakLaterMinutes)
-            self?.breakLog.notice("Break postponed \(Self.breakLaterMinutes, privacy: .public) min")
+            self?.breakTracker.defer()
+            self?.breakLog.notice("Break postponed to the menu bar")
             self?.afterBreakMedia()
         }
         breakScreen.onPauseMedia = { [weak self] in self?.pauseMediaOnRequest() }
@@ -108,6 +108,9 @@ final class AppModel {
     }
 
     var isPaused: Bool { preferences.isPaused(at: now) }
+
+    /// A break the owner put off with Later, waiting in the menu bar until it is taken (#19).
+    var isBreakPending: Bool { breakTracker.isPending }
 
     /// Whether the break is on screen, for the menu; `BreakScreen` itself is not observed.
     private(set) var isBreakVisible = false
@@ -335,7 +338,7 @@ final class AppModel {
         logBreakState(
             Self.breakState(
                 context: context, inEvent: inEvent, inCall: inCall, fullScreen: alert.isVisible,
-                notBefore: breakTracker.notBefore, now: now))
+                isPending: breakTracker.isPending))
         guard due else { return }
         breakLog.notice("Break shown after \(worked, privacy: .public) min of work")
         presentBreak(minutes: schedule.breakMinutes)
@@ -359,8 +362,7 @@ final class AppModel {
             "Pause button \(offersPause ? "shown" : settingIsOn ? "not shown: setting on" : "not shown: no sound", privacy: .public)"
         )
         breakScreen.present(
-            minutes: minutes, laterMinutes: Self.breakLaterMinutes, sound: preferences.breakSound,
-            offersPause: offersPause)
+            minutes: minutes, sound: preferences.breakSound, offersPause: offersPause)
         if settingIsOn {
             pauseMedia(source: "setting")
         }
@@ -451,14 +453,14 @@ final class AppModel {
 
     /// Why the break is waiting, or "counting" when nothing holds it.
     private static func breakState(
-        context: BreakContext, inEvent: Bool, inCall: Bool, fullScreen: Bool, notBefore: Date?, now: Date
+        context: BreakContext, inEvent: Bool, inCall: Bool, fullScreen: Bool, isPending: Bool
     ) -> String {
         if fullScreen { return "waiting: event full screen" }
         if inEvent { return "waiting: in an event" }
         if inCall { return "waiting: call (microphone in use)" }
         if context.eventStartsSoon { return "waiting: an event starts soon" }
         if context.isPaused { return "waiting: alerts paused" }
-        if let notBefore, now < notBefore { return "waiting: later" }
+        if isPending { return "waiting: pending in the menu bar" }
         return "counting"
     }
 
@@ -564,9 +566,7 @@ extension AppModel {
 
     func showBreakNow() {
         isBreakVisible = true
-        breakScreen.present(
-            minutes: preferences.breakLengthMinutes, laterMinutes: Self.breakLaterMinutes,
-            sound: preferences.breakSound)
+        breakScreen.present(minutes: preferences.breakLengthMinutes, sound: preferences.breakSound)
     }
 
     func sendTestNotification() {

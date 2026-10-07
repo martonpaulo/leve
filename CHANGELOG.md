@@ -11,6 +11,8 @@ and Leve uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Later on the break screen no longer brings the break back after 5 minutes: "Break due" waits
+  beside the menu bar icon until you choose Take a Break Now.
 - When an app kept playing during a break, a notification after the break names it and opens the
   fix in Settings, Breaks. The fix shows there only while the problem exists.
 

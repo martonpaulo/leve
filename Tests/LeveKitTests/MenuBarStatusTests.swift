@@ -90,4 +90,14 @@ import Testing
         #expect(MenuBarStatus.pendingAllDayCount(events: dismissed, now: Fixture.at(9)) == 1)
         #expect(MenuBarStatus.pendingAllDayCount(events: [Fixture.attended(standup)], now: Fixture.at(9)) == 0)
     }
+
+    /// "Break due" takes the place of the quiet text, never of an event's countdown (#19).
+    @Test func aPendingBreakShowsUnlessAnEventIsClose() {
+        #expect(MenuBarStatus.clear.showsPendingBreak(true))
+        #expect(MenuBarStatus.freeUntil(Fixture.at(10)).showsPendingBreak(true))
+        #expect(!MenuBarStatus.upcoming(title: "Standup", minutes: 3).showsPendingBreak(true))
+        #expect(
+            !MenuBarStatus.ongoing(title: "Standup", minutesLeft: 20, end: Fixture.at(10, 30)).showsPendingBreak(true))
+        #expect(!MenuBarStatus.clear.showsPendingBreak(false))
+    }
 }

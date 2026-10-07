@@ -53,7 +53,8 @@ Click the leaf in the menu bar:
   its full screen, or hide it.
 - **Pause Alerts** stops notifications, the full screen and the spoken time for 30 minutes, an hour,
   or until tomorrow.
-- **Take a Break Now** starts a break at once, when breaks are on.
+- **Take a Break Now** starts a break at once, when breaks are on. After **Later** on the break
+  screen, "Break due" stays beside the icon until you take it.
 - **Check for Updates…**, **Settings…** (<kbd>⌘</kbd> <kbd>,</kbd>) and **Quit Leve**
   (<kbd>⌘</kbd> <kbd>Q</kbd>).
 

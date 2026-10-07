@@ -45,13 +45,30 @@ import Testing
         #expect(!due(&tracker, now: Fixture.at(10), context: context(paused: true)))
     }
 
-    @Test func laterAsksAgainAndRestartResets() {
+    /// Later never brings the full screen back on its own; taking or skipping the break clears it (#19).
+    @Test func laterWaitsInTheMenuBarUntilTheBreakIsTaken() {
         var tracker = BreakTracker(now: Fixture.at(9))
-        tracker.postpone(now: Fixture.at(10), minutes: 5)
-        #expect(!due(&tracker, now: Fixture.at(10, 4), context: context()))
-        #expect(due(&tracker, now: Fixture.at(10, 5), context: context()))
-        tracker.restart(now: Fixture.at(10, 10))
-        #expect(!due(&tracker, now: Fixture.at(10, 20), context: context()))
+        #expect(due(&tracker, now: Fixture.at(9, 55), context: context()))
+        tracker.defer()
+        // Ticks come every minute; a longer gap would count as time away.
+        for minute in 56...90 {
+            #expect(!due(&tracker, now: Fixture.at(9, minute), context: context()))
+        }
+        #expect(tracker.isPending)
+        tracker.restart(now: Fixture.at(10, 31))
+        #expect(!tracker.isPending)
+        for minute in 31...85 {
+            #expect(!due(&tracker, now: Fixture.at(10, minute), context: context()))
+        }
+        #expect(due(&tracker, now: Fixture.at(10, 86), context: context()))
+    }
+
+    @Test func timeAwayClearsAPendingBreak() {
+        var tracker = BreakTracker(now: Fixture.at(9))
+        tracker.defer()
+        #expect(!due(&tracker, now: Fixture.at(10), context: context(idle: 5 * 60)))
+        #expect(!tracker.isPending)
+        #expect(tracker.workStart == Fixture.at(10))
     }
 
     /// A Mac asleep overnight sends no ticks; the gap is a break, not 8 hours of work.
