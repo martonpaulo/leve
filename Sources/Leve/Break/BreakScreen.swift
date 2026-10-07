@@ -2,9 +2,9 @@ import AppKit
 import SwiftUI
 
 /// The break: "Stop. Breathe. Look away." over a slowly breathing circle, with the time left. It
-/// closes by itself when the time is up, or with Skip (Esc) or Later, which leaves it waiting in the
-/// menu bar (#19). When sound plays and Leve
-/// does not pause it on its own, it also offers Pause Music and Videos (#13).
+/// closes by itself when the time is up, or with Skip This Break (Esc) or Take It Later, which
+/// leaves it waiting in the menu bar (#19). When sound plays, it also offers Pause Music and
+/// Videos on a line of its own; a break never pauses on its own (#13, #20).
 final class BreakScreen {
     var onDone: (() -> Void)?
     var onSkip: (() -> Void)?
@@ -79,11 +79,15 @@ private struct BreakView: View {
                     .font(.title2)
                     .foregroundStyle(.secondary)
             }
-            HStack(spacing: 14) {
-                Button(Copy.breakSkip, action: onSkip)
-                    .keyboardShortcut(.cancelAction)
-                Button(Copy.breakLater, action: onLater)
-                    .accessibilityHint(Copy.breakLaterHint)
+            VStack(spacing: 14) {
+                HStack(spacing: 14) {
+                    Button(Copy.breakSkip, action: onSkip)
+                        .keyboardShortcut(.cancelAction)
+                        .accessibilityHint(Copy.breakSkipHint)
+                    Button(Copy.breakLater, action: onLater)
+                        .accessibilityHint(Copy.breakLaterHint)
+                }
+                // On its own line: it does not leave the break, unlike the two above.
                 if offersPause, !paused {
                     // Return presses it: the one action on this screen that is not leaving it.
                     Button(Copy.pauseMediaNow) {

@@ -161,9 +161,11 @@ enum Copy {
         return String(localized: "\(minutes) min of break left")
     }
 
-    static let breakSkip = String(localized: "Skip")
+    /// Skip and Later read alike; the names say what each does to the break (owner, 2026-10-07).
+    static let breakSkip = String(localized: "Skip This Break")
+    static let breakSkipHint = String(localized: "Ends the break. The next one comes after a full work period.")
 
-    static let breakLater = String(localized: "Later")
+    static let breakLater = String(localized: "Take It Later")
     static let breakLaterHint = String(localized: "Hides the break. It waits in the menu bar until you take it.")
     /// Beside the menu bar icon while a break waits (#19).
     static let breakDue = String(localized: "Break due")

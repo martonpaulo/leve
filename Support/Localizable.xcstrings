@@ -541,6 +541,16 @@
         }
       }
     },
+    "Ends the break. The next one comes after a full work period." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ends the break. The next one comes after a full work period."
+          }
+        }
+      }
+    },
     "Event in 2 minutes" : {
       "localizations" : {
         "en" : {
@@ -852,6 +862,7 @@
       }
     },
     "Later" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1564,11 +1575,22 @@
       }
     },
     "Skip" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Skip"
+          }
+        }
+      }
+    },
+    "Skip This Break" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip This Break"
           }
         }
       }
@@ -1639,6 +1661,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TV"
+          }
+        }
+      }
+    },
+    "Take It Later" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take It Later"
           }
         }
       }
