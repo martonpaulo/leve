@@ -29,7 +29,7 @@ final class FullScreenOverlay {
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.relayout() }
         }
-        layOut(fades: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+        layOut(fades: true)
     }
 
     /// Replaces the windows at once with one per current display, the content where it was.
@@ -64,19 +64,20 @@ final class FullScreenOverlay {
             window.contentView = blur
             windows.append(window)
         }
-        // The blur and the glow fade in together, so the screen never changes all at once.
-        // Reduce Motion shows it at once.
+        // The blur and the glow fade in together over seconds, so the screen never changes all at
+        // once (#21). Reduce Motion shows it at once.
+        let fadeIn = fades ? Self.entrance.fade : 0
         // No NSApp.activate(): macOS 14+ refuses activation the owner did not ask for. A
         // non-activating panel takes the keyboard anyway, and the owner's app stays in front.
         for window in windows {
-            window.alphaValue = fades ? 0 : 1
+            window.alphaValue = fadeIn > 0 ? 0 : 1
             window.orderFrontRegardless()
         }
         let key = windows.first { $0.screen == primary } ?? windows.first
         key?.makeKeyAndOrderFront(nil)
-        guard fades else { return }
+        guard fadeIn > 0 else { return }
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = Self.fadeIn
+            context.duration = fadeIn
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             for window in windows {
                 window.animator().alphaValue = 1
@@ -121,7 +122,9 @@ final class FullScreenOverlay {
         }
     }
 
-    private static let fadeIn = 0.9
+    static var entrance: OverlayDisplay.Entrance {
+        OverlayDisplay.entrance(reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+    }
     private static let fadeOut = 0.35
 
     private func makeWindow(on screen: NSScreen) -> OverlayWindow {
@@ -178,7 +181,7 @@ private final class OverlayWindow: NSPanel {
     }
 }
 
-/// The soft glow behind the content, which settles gently while the window fades in. Reduce
+/// The soft glow behind the content, which settles gently while the window fades in (#21). Reduce
 /// Motion keeps it still.
 private struct OverlayBackdrop<Content: View>: View {
     let tint: Color
@@ -202,7 +205,7 @@ private struct OverlayBackdrop<Content: View>: View {
         }
         .ignoresSafeArea()
         .onAppear {
-            withAnimation(.easeOut(duration: 0.9)) { shown = true }
+            withAnimation(.easeOut(duration: FullScreenOverlay.entrance.fade)) { shown = true }
         }
     }
 }

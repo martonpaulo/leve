@@ -29,7 +29,7 @@ final class BreakScreen {
         )
         overlay.present(view, tint: BreakView.tint, onEscape: skip)
         if sound {
-            SoftSound.melody.play(volume: 0.3)
+            SoftSound.melody.play(volume: 0.3, rise: FullScreenOverlay.entrance.soundRise)
         }
         endTask?.cancel()
         endTask = Task { [weak self] in

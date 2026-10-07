@@ -1,24 +1,29 @@
-import AppKit
+import AVFAudio
 
 /// Leve's two quiet sounds, made in code so it ships no audio file. Each is rendered once, on first
-/// use, into a small WAV in memory (under 600 KB) and played by NSSound, which costs nothing between
-/// plays.
+/// use, into a small WAV in memory (under 600 KB) and played by AVAudioPlayer, which costs nothing
+/// between plays and can let the volume rise from silence (#21).
 enum SoftSound {
     /// A singing-bowl tone that fades over six seconds: the event's full screen.
     case bowl
     /// A short music-box phrase of seven notes: the break.
     case melody
 
-    private static let bowlSound = NSSound(data: wav(bowlSamples()))
-    private static let melodySound = NSSound(data: wav(melodySamples()))
+    private static let bowlSound = try? AVAudioPlayer(data: wav(bowlSamples()))
+    private static let melodySound = try? AVAudioPlayer(data: wav(melodySamples()))
 
-    /// `volume` keeps it in the background, well under the system volume.
-    func play(volume: Float) {
+    /// `volume` keeps it in the background, well under the system volume. With a `rise`, it starts
+    /// silent and reaches `volume` after that many seconds, so it never starts out of nowhere.
+    func play(volume: Float, rise: Double = 0) {
         let sound = self == .bowl ? Self.bowlSound : Self.melodySound
         guard let sound else { return }
         sound.stop()
-        sound.volume = volume
+        sound.currentTime = 0
+        sound.volume = rise > 0 ? 0 : volume
         sound.play()
+        if rise > 0 {
+            sound.setVolume(volume, fadeDuration: rise)
+        }
     }
 
     private static let rate = 44_100

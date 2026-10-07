@@ -11,6 +11,8 @@ and Leve uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The full screen and the break come in slowly, over about 2.5 seconds, and their sound rises
+  from silence instead of starting at full volume.
 - A break never pauses music or videos on its own; the "Pause music and videos" setting is gone,
   and only the break screen's button pauses them.
 - Later on the break screen no longer brings the break back after 5 minutes: "Break due" waits

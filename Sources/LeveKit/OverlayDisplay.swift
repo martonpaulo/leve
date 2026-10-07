@@ -9,4 +9,16 @@ public enum OverlayDisplay {
         if let pointer, connected.contains(pointer) { return pointer }
         return connected.first
     }
+
+    /// How a full screen comes in, in seconds: the picture fades in slowly and the sound rises
+    /// from silence alongside it, so the change from work never startles (#21). Reduce Motion
+    /// shows the picture at once; the sound still rises, as it involves no motion.
+    public struct Entrance: Equatable, Sendable {
+        public let fade: Double
+        public let soundRise: Double
+    }
+
+    public static func entrance(reduceMotion: Bool) -> Entrance {
+        Entrance(fade: reduceMotion ? 0 : 2.5, soundRise: 2.5)
+    }
 }
