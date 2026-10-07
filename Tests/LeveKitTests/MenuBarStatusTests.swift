@@ -71,4 +71,23 @@ import Testing
                     .showsText(freeUntil: kept, nothingElse: kept))
         }
     }
+
+    /// Listed all-day events that have not ended; a dismissed one stops counting at once (#14).
+    @Test func pendingAllDayCountSkipsDismissedTimedAndEndedEvents() {
+        let holiday = Fixture.event("Holiday", from: Fixture.at(0), minutes: 24 * 60, allDay: true)
+        let birthday = Fixture.event("Birthday", from: Fixture.at(0), minutes: 24 * 60, allDay: true)
+        let yesterday = Fixture.event(
+            "Trip", from: Fixture.at(0).addingTimeInterval(-86400), minutes: 24 * 60, allDay: true)
+        let standup = Fixture.event("Standup", from: Fixture.at(10))
+        let events = [
+            Fixture.attended(holiday),
+            Fixture.attended(birthday),
+            Fixture.attended(yesterday),
+            Fixture.attended(standup),
+        ]
+        #expect(MenuBarStatus.pendingAllDayCount(events: events, now: Fixture.at(9)) == 2)
+        let dismissed = [Fixture.attended(holiday, override: .hidden), Fixture.attended(birthday)]
+        #expect(MenuBarStatus.pendingAllDayCount(events: dismissed, now: Fixture.at(9)) == 1)
+        #expect(MenuBarStatus.pendingAllDayCount(events: [Fixture.attended(standup)], now: Fixture.at(9)) == 0)
+    }
 }

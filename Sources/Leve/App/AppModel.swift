@@ -133,6 +133,14 @@ final class AppModel {
         return attendedEvents.filter { $0.attention.isListed && $0.event.isAllDay && !$0.event.hasEnded(at: now) }
     }
 
+    /// Pending all-day events for the menu bar counter, or nil when the counter is off or none is
+    /// left. It does not depend on the all-day section being shown (#14).
+    var allDayCounter: Int? {
+        guard preferences.showAllDayCounter else { return nil }
+        let count = MenuBarStatus.pendingAllDayCount(events: attendedEvents, now: now)
+        return count > 0 ? count : nil
+    }
+
     var hiddenCount: Int {
         overrides.hiddenCount(among: events)
     }

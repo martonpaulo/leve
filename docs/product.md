@@ -30,7 +30,8 @@ only its event alerts.
 - Lists today's remaining events in the menu, with a Join button for Google Meet, Teams, Zoom and
   Webex links.
 - Lists all-day events in their own section below, without alerts; Dismiss hides one for the day,
-  and a General setting turns the section off.
+  and a General setting turns the section off. An opt-in General setting counts the ones still
+  pending, as "(2)", beside the menu bar icon (#14).
 - Sends a notification a few minutes before each event.
 - Covers every display with a calm full-screen alert just before an event, washed in its
   calendar's color with a ring that counts down to the start, until the owner joins or closes it.

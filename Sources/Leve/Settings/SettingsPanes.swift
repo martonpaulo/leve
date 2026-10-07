@@ -45,6 +45,10 @@ struct GeneralPane: View {
                     Text(Copy.showAllDay)
                     Text(Copy.showAllDayNote)
                 }
+                Toggle(isOn: $preferences.showAllDayCounter) {
+                    Text(Copy.showAllDayCounter)
+                    Text(Copy.showAllDayCounterNote)
+                }
             }
 
             permissionsSection

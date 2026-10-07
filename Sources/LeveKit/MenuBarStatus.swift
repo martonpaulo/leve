@@ -24,6 +24,12 @@ public enum MenuBarStatus: Sendable, Equatable {
         }
     }
 
+    /// How many all-day events are still pending today, for the optional counter beside the icon
+    /// (#14). A dismissed event is hidden, so it is not listed and stops counting at once.
+    public static func pendingAllDayCount(events: [AttendedEvent], now: Date) -> Int {
+        events.filter { $0.attention.isListed && $0.event.isAllDay && !$0.event.hasEnded(at: now) }.count
+    }
+
     /// - Parameters:
     ///   - events: today's events with their attention; only alerting, timed events count.
     ///   - countdownMinutes: how close an event must be before its countdown replaces "free until".

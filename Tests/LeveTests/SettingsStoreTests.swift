@@ -45,6 +45,14 @@ private func event(at start: Date) -> CalendarEvent {
         }
     }
 
+    @Test func theAllDayCounterIsOffUntilTurnedOnAndSurvivesARelaunch() {
+        withDefaults { defaults in
+            #expect(!Preferences(defaults: defaults).showAllDayCounter)
+            Preferences(defaults: defaults).showAllDayCounter = true
+            #expect(Preferences(defaults: defaults).showAllDayCounter)
+        }
+    }
+
     @Test func offSurvivesARelaunch() {
         withDefaults { defaults in
             Preferences(defaults: defaults).reminderLeadMinutes = nil
@@ -86,6 +94,7 @@ private func event(at start: Date) -> CalendarEvent {
             preferences.countdownMinutes = 60
             preferences.showFreeUntil = false
             preferences.showNothingElse = true
+            preferences.showAllDayCounter = true
             preferences.setRule(.ignore, for: "work")
             preferences.debugMenu = true
             let until = Date.now.addingTimeInterval(600)
@@ -94,6 +103,7 @@ private func event(at start: Date) -> CalendarEvent {
             #expect(preferences.countdownMinutes == 30)
             #expect(preferences.showFreeUntil)
             #expect(!preferences.showNothingElse)
+            #expect(!preferences.showAllDayCounter)
             #expect(preferences.rule(for: "work") == .everything)
             #expect(preferences.debugMenu)
             #expect(preferences.pausedUntil == until)

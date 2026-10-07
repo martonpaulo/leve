@@ -267,6 +267,17 @@ enum Copy {
     static let showAllDay = String(localized: "Show all-day events")
     static let dismissAllDay = String(localized: "Dismiss")
     static let showAllDayNote = String(localized: "Listed in their own section, without alerts.")
+    static let showAllDayCounter = String(localized: "Show all-day event counter")
+    static let showAllDayCounterNote = String(
+        localized: "Shows how many all-day events are left today, such as (2), beside the leaf.")
+
+    static func allDayCounter(_ count: Int) -> String {
+        String(localized: "(\(count))")
+    }
+
+    static func allDayCounterSpoken(_ count: Int) -> String {
+        count == 1 ? String(localized: "One all-day event") : String(localized: "\(count) all-day events")
+    }
 
     static func minutes(_ minutes: Int) -> String {
         String(localized: "\(minutes) min")

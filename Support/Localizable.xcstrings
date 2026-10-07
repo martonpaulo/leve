@@ -71,6 +71,16 @@
         }
       }
     },
+    "%lld all-day events" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld all-day events"
+          }
+        }
+      }
+    },
     "%lld min" : {
       "localizations" : {
         "en" : {
@@ -117,6 +127,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld now"
+          }
+        }
+      }
+    },
+    "(%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(%lld)"
           }
         }
       }
@@ -1021,6 +1041,16 @@
         }
       }
     },
+    "One all-day event" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One all-day event"
+          }
+        }
+      }
+    },
     "One now" : {
       "localizations" : {
         "en" : {
@@ -1381,6 +1411,16 @@
         }
       }
     },
+    "Show all-day event counter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show all-day event counter"
+          }
+        }
+      }
+    },
     "Show all-day events" : {
       "localizations" : {
         "en" : {
@@ -1427,6 +1467,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show “Nothing else today”"
+          }
+        }
+      }
+    },
+    "Shows how many all-day events are left today, such as (2), beside the leaf." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows how many all-day events are left today, such as (2), beside the leaf."
           }
         }
       }

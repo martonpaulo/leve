@@ -23,6 +23,8 @@ final class Preferences {
         static let speechStart = 8
         static let speechEnd = 20
         static let showAllDay = true
+        /// Opt-in, to keep the menu bar light (#14).
+        static let showAllDayCounter = false
         static let showFreeUntil = true
         /// Opt-in: by default the leaf stands alone once the day is done (#10, #16).
         static let showNothingElse = false
@@ -48,6 +50,7 @@ final class Preferences {
         static let speechStart = "leve.speechStartHour.v1"
         static let speechEnd = "leve.speechEndHour.v1"
         static let showAllDay = "leve.showAllDayEvents.v1"
+        static let showAllDayCounter = "leve.showAllDayCounter.v1"
         static let showFreeUntil = "leve.showFreeUntil.v1"
         static let showNothingElse = "leve.showNothingElse.v1"
         static let breaks = "leve.breaks.v1"
@@ -103,6 +106,10 @@ final class Preferences {
     /// Lists all-day events in their own section of the menu. They never alert.
     var showAllDayEvents: Bool {
         didSet { defaults.set(showAllDayEvents, forKey: Key.showAllDay) }
+    }
+    /// Writes how many all-day events are still pending, as "(2)", beside the menu bar icon.
+    var showAllDayCounter: Bool {
+        didSet { defaults.set(showAllDayCounter, forKey: Key.showAllDayCounter) }
     }
     /// Asks for a break after `breakWorkMinutes` of work.
     var breaks: Bool {
@@ -164,6 +171,7 @@ final class Preferences {
         speechStartHour = Self.hour(defaults, Key.speechStart, fallback: Default.speechStart)
         speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: Default.speechEnd)
         showAllDayEvents = defaults.object(forKey: Key.showAllDay) as? Bool ?? Default.showAllDay
+        showAllDayCounter = defaults.object(forKey: Key.showAllDayCounter) as? Bool ?? Default.showAllDayCounter
         showFreeUntil = defaults.object(forKey: Key.showFreeUntil) as? Bool ?? Default.showFreeUntil
         showNothingElse = defaults.object(forKey: Key.showNothingElse) as? Bool ?? Default.showNothingElse
         breaks = defaults.object(forKey: Key.breaks) as? Bool ?? Default.breaks
@@ -188,6 +196,7 @@ final class Preferences {
         speechStartHour = Default.speechStart
         speechEndHour = Default.speechEnd
         showAllDayEvents = Default.showAllDay
+        showAllDayCounter = Default.showAllDayCounter
         showFreeUntil = Default.showFreeUntil
         showNothingElse = Default.showNothingElse
         breaks = Default.breaks

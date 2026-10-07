@@ -8,23 +8,31 @@ struct StatusLabel: View {
 
     var body: some View {
         let text = Copy.menuBarStatus(model.status)
+        let counter = model.allDayCounter
         // The status item draws the image and the text with no gap of its own and ignores the
-        // stack's spacing, so an en space opens the room.
+        // stack's spacing, so an en space opens the room. The counter sits right after the icon.
         HStack {
             Image(systemName: model.isPaused ? "bell.slash" : "leaf")
+            if let counter {
+                Text("\u{2002}" + Copy.allDayCounter(counter))
+            }
             if model.status.showsText(
                 freeUntil: model.preferences.showFreeUntil, nothingElse: model.preferences.showNothingElse)
             {
                 Text("\u{2002}" + text)
             }
         }
-        .accessibilityLabel(accessibilityText(text))
+        .accessibilityLabel(accessibilityText(text, counter: counter))
     }
 
-    /// The visible status first, then the pause, so the spoken label never hides what is shown.
-    private func accessibilityText(_ text: String) -> String {
-        guard model.isPaused, let until = model.preferences.pausedUntil else { return text }
-        return "\(text). \(Copy.pausedUntil(until))"
+    /// What is shown, in its order, then the pause, so the spoken label never hides what is shown.
+    private func accessibilityText(_ text: String, counter: Int?) -> String {
+        var parts = counter.map { [Copy.allDayCounterSpoken($0)] } ?? []
+        parts.append(text)
+        if model.isPaused, let until = model.preferences.pausedUntil {
+            parts.append(Copy.pausedUntil(until))
+        }
+        return parts.joined(separator: ". ")
     }
 }
 
