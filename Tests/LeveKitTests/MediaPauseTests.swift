@@ -70,16 +70,6 @@ import Testing
         #expect(MediaPause.needingPermission(outcomes) == [.spotify])
     }
 
-    @Test func nothingIsAskedOnceTheSettingIsTurnedOffDuringTheBreak() {
-        #expect(MediaPause.permissionToAsk(pending: [.spotify, .safari], settingIsOn: true) == [.spotify, .safari])
-        #expect(MediaPause.permissionToAsk(pending: [.spotify, .safari], settingIsOn: false).isEmpty)
-    }
-
-    @Test func thePauseButtonStillAsksForPermissionWithTheSettingOff() {
-        #expect(
-            MediaPause.permissionToAsk(pending: [.brave], settingIsOn: false, pausedOnRequest: true) == [.brave])
-    }
-
     @Test func theLogLineNamesAppsAndOutcomesOnly() {
         #expect(MediaPause.logLine([:]) == "no player running")
         #expect(
@@ -147,7 +137,7 @@ import Testing
         #expect(fix.record([.brave: .javaScriptOff], now: week.addingTimeInterval(60)).isEmpty)
     }
 
-    @Test func anAllowedAppOrTheSettingTurnedOffClearsTheFix() {
+    @Test func anAllowedAppClearsItsFix() {
         var fix = MediaFix()
         _ = fix.record([.music: .notAllowed, .safari: .javaScriptOff], now: start)
         fix.forgetAllowed([.music: .allowed, .safari: .allowed])
@@ -155,9 +145,6 @@ import Testing
         #expect(fix.apps == [.safari])
         _ = fix.record([.safari: .allowed], now: start)
         #expect(fix.apps == [.safari])
-        fix.clear()
-        #expect(fix.problems.isEmpty)
-        #expect(fix.record([.safari: .javaScriptOff], now: start.addingTimeInterval(60)) == [.safari])
     }
 }
 
@@ -172,12 +159,5 @@ import Testing
             MediaPause.isOtherAudioPlaying(
                 [AudioProcess(pid: own, isRunningOutput: true), AudioProcess(pid: 7, isRunningOutput: true)],
                 ownPID: own))
-    }
-
-    @Test func theButtonShowsOnlyWithTheSettingOffAndSoundPlaying() {
-        #expect(MediaPause.offersPauseButton(settingIsOn: false, otherAudioPlaying: true))
-        #expect(!MediaPause.offersPauseButton(settingIsOn: true, otherAudioPlaying: true))
-        #expect(!MediaPause.offersPauseButton(settingIsOn: false, otherAudioPlaying: false))
-        #expect(!MediaPause.offersPauseButton(settingIsOn: true, otherAudioPlaying: false))
     }
 }

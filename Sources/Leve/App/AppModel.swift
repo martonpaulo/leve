@@ -116,10 +116,9 @@ final class AppModel {
     private(set) var isBreakVisible = false
     /// The apps that kept playing, for the fix in Settings, Breaks, and the notification (#12).
     private(set) var mediaFix = MediaFix()
-    /// The pause asked for during the break on screen, by the setting or the button (#13); its
-    /// answers are read once the break is over.
+    /// The pause asked for with the break screen's button (#13); its answers are read once the
+    /// break is over. A break never pauses on its own (#20).
     @ObservationIgnored private var mediaPause: Task<[MediaApp: MediaPauseOutcome], Never>?
-    @ObservationIgnored private var pausedOnRequest = false
 
     /// Listed timed events that have not ended, today's only: the first hour of tomorrow is loaded
     /// for its alerts, not for the list.
@@ -305,7 +304,6 @@ final class AppModel {
         isBreakVisible = false
         // The pause of that break is not reported: no prompt or notification over the event.
         mediaPause = nil
-        pausedOnRequest = false
         alert.present(event)
     }
 
@@ -354,18 +352,11 @@ final class AppModel {
 
     private func presentBreak(minutes: Int) {
         isBreakVisible = true
-        // Read before the break's own tone; Leve's own sound never counts anyway (#13).
-        let settingIsOn = preferences.pauseMediaOnBreak
-        let playing = !settingIsOn && AudioActivity.isOtherAudioPlaying
-        let offersPause = MediaPause.offersPauseButton(settingIsOn: settingIsOn, otherAudioPlaying: playing)
-        breakLog.notice(
-            "Pause button \(offersPause ? "shown" : settingIsOn ? "not shown: setting on" : "not shown: no sound", privacy: .public)"
-        )
-        breakScreen.present(
-            minutes: minutes, sound: preferences.breakSound, offersPause: offersPause)
-        if settingIsOn {
-            pauseMedia(source: "setting")
-        }
+        // Read before the break's own tone; Leve's own sound never counts anyway (#13). Nothing is
+        // paused unless the owner presses the button (#20).
+        let offersPause = AudioActivity.isOtherAudioPlaying
+        breakLog.notice("Pause button \(offersPause ? "shown" : "not shown: no sound", privacy: .public)")
+        breakScreen.present(minutes: minutes, sound: preferences.breakSound, offersPause: offersPause)
     }
 
     private func endBreak(_ how: String) {
@@ -375,45 +366,32 @@ final class AppModel {
         afterBreakMedia()
     }
 
-    /// Pauses the players and browser tabs that play; nothing is resumed after the break (#2).
-    /// Permission is never asked here: the macOS prompt could open under the break.
-    private func pauseMedia(source: String) {
+    /// Pause Music and Videos on the break screen (#13): pauses the players and browser tabs that
+    /// play; nothing is resumed after the break (#2). Permission is never asked here: the macOS
+    /// prompt could open under the break.
+    private func pauseMediaOnRequest() {
         guard mediaPause == nil else { return }
         mediaPause = Task { [breakLog] in
             let outcomes = await MediaPauser.pauseAll()
-            breakLog.notice(
-                "Media pause (\(source, privacy: .public)): \(MediaPause.logLine(outcomes), privacy: .public)")
+            breakLog.notice("Media pause (button): \(MediaPause.logLine(outcomes), privacy: .public)")
             return outcomes
         }
-    }
-
-    /// Pause Music and Videos on the break screen, with the setting off (#13).
-    private func pauseMediaOnRequest() {
-        pausedOnRequest = true
-        pauseMedia(source: "button")
     }
 
     /// Once the break is gone: lets macOS ask for the apps that needed permission, then says which
     /// apps kept playing, with a notification that opens the fix in Settings, Breaks (#12).
     private func afterBreakMedia() {
         guard let pause = mediaPause else { return }
-        let onRequest = pausedOnRequest
         mediaPause = nil
-        pausedOnRequest = false
         Task { [weak self] in
             var outcomes = await pause.value
             guard let self else { return }
-            // Turning the setting off during the break cancels what it would still ask.
-            let wanted = preferences.pauseMediaOnBreak || onRequest
-            let ask = MediaPause.permissionToAsk(
-                pending: MediaPause.needingPermission(outcomes), settingIsOn: preferences.pauseMediaOnBreak,
-                pausedOnRequest: onRequest)
+            let ask = MediaPause.needingPermission(outcomes)
             if !ask.isEmpty {
                 let answers = await MediaPauser.askPermission(for: ask)
                 breakLog.notice("Media permission: \(MediaPause.logLine(answers), privacy: .public)")
                 outcomes.merge(answers) { _, answer in answer }
             }
-            guard wanted else { return }
             let apps = mediaFix.record(outcomes, now: .now)
             guard !apps.isEmpty else { return }
             let names = apps.map(\.rawValue).joined(separator: ", ")
@@ -425,17 +403,6 @@ final class AppModel {
         }
     }
 
-    /// Asks macOS for permission to control the running players and browsers, when the setting is
-    /// turned on in Settings, Breaks.
-    func askMediaPermission() {
-        let apps = MediaPauser.runningTargets
-        Task { [weak self] in
-            let outcomes = await MediaPauser.askPermission(for: apps)
-            self?.breakLog.notice("Media permission: \(MediaPause.logLine(outcomes), privacy: .public)")
-            self?.mediaFix.forgetAllowed(outcomes)
-        }
-    }
-
     /// Checks again, without a prompt, the apps the user had not allowed, when Settings shows.
     func refreshMediaFix() {
         let refused = mediaFix.apps.filter { mediaFix.problems[$0] == .notAllowed }
@@ -444,11 +411,6 @@ final class AppModel {
             let outcomes = await MediaPauser.checkPermission(for: refused)
             self?.mediaFix.forgetAllowed(outcomes)
         }
-    }
-
-    /// Turning the setting off drops the fix from Settings.
-    func clearMediaFix() {
-        mediaFix.clear()
     }
 
     /// Why the break is waiting, or "counting" when nothing holds it.

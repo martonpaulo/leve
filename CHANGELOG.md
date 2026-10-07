@@ -7,10 +7,12 @@ and Leve uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- The break screen offers Pause Music and Videos when sound plays and pausing at breaks is off.
+- The break screen offers Pause Music and Videos whenever sound plays.
 
 ### Changed
 
+- A break never pauses music or videos on its own; the "Pause music and videos" setting is gone,
+  and only the break screen's button pauses them.
 - Later on the break screen no longer brings the break back after 5 minutes: "Break due" waits
   beside the menu bar icon until you choose Take a Break Now.
 - When an app kept playing during a break, a notification after the break names it and opens the

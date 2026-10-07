@@ -1,6 +1,6 @@
 import Foundation
 
-/// An app whose playback Leve pauses when a break starts (#2).
+/// An app whose playback Leve pauses when the break screen's button is pressed (#2, #20).
 public enum MediaApp: String, CaseIterable, Sendable {
     case music, spotify, tv, brave, chrome, safari
 
@@ -129,11 +129,6 @@ public struct MediaFix: Equatable, Sendable {
             notified[app] = nil
         }
     }
-
-    /// Forgets every problem, when the setting is turned off.
-    public mutating func clear() {
-        self = MediaFix()
-    }
 }
 
 /// Which apps to ask, what to send them, and what their answers mean. The app target only sends
@@ -191,23 +186,10 @@ public enum MediaPause {
         MediaApp.allCases.filter { outcomes[$0] == .needsPermission }
     }
 
-    /// What to ask for when the break ends: nothing once the setting was turned off meanwhile,
-    /// unless the pause was asked for from the break screen (#13).
-    public static func permissionToAsk(pending: [MediaApp], settingIsOn: Bool, pausedOnRequest: Bool = false)
-        -> [MediaApp]
-    {
-        settingIsOn || pausedOnRequest ? pending : []
-    }
-
-    /// Whether a process other than Leve plays sound: Leve's own tones never count (#13).
+    /// Whether a process other than Leve plays sound, so the break screen offers Pause Music and
+    /// Videos; Leve's own tones never count (#13). A break never pauses on its own (#20).
     public static func isOtherAudioPlaying(_ processes: [AudioProcess], ownPID: Int32) -> Bool {
         processes.contains { $0.isRunningOutput && $0.pid != ownPID }
-    }
-
-    /// The break screen offers "Pause Music and Videos" only when Leve would not pause on its own
-    /// and something plays (#13).
-    public static func offersPauseButton(settingIsOn: Bool, otherAudioPlaying: Bool) -> Bool {
-        !settingIsOn && otherAudioPlaying
     }
 
     /// One log line for a break: each app asked and its outcome.

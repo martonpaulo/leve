@@ -1203,6 +1203,7 @@
       }
     },
     "Pause music and videos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1803,6 +1804,7 @@
       }
     },
     "When a break starts, pause Music, Spotify, TV and the videos in Brave, Chrome and Safari. If one keeps playing, Leve tells you after the break." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

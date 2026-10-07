@@ -32,8 +32,6 @@ final class Preferences {
         static let breakWork = 55
         static let breakLength = 5
         static let breakSound = true
-        /// Opt-in: macOS asks once for each app Leve controls (#2).
-        static let pauseMediaOnBreak = false
     }
 
     private enum Key {
@@ -57,7 +55,6 @@ final class Preferences {
         static let breakWork = "leve.breakWorkMinutes.v1"
         static let breakLength = "leve.breakLengthMinutes.v1"
         static let breakSound = "leve.breakSound.v1"
-        static let pauseMediaOnBreak = "leve.pauseMediaOnBreak.v1"
     }
 
     /// `-1` is stored for "off", so a missing key can still mean the default.
@@ -125,10 +122,6 @@ final class Preferences {
     var breakSound: Bool {
         didSet { defaults.set(breakSound, forKey: Key.breakSound) }
     }
-    /// Pauses Music, Spotify, TV and the browsers' media when a break starts; never resumes them.
-    var pauseMediaOnBreak: Bool {
-        didSet { defaults.set(pauseMediaOnBreak, forKey: Key.pauseMediaOnBreak) }
-    }
     var breakSchedule: BreakSchedule? {
         breaks ? BreakSchedule(workMinutes: breakWorkMinutes, breakMinutes: breakLengthMinutes) : nil
     }
@@ -182,7 +175,6 @@ final class Preferences {
             Self.read(defaults, Key.breakLength, options: Self.breakLengthOptions, fallback: Default.breakLength)
             ?? Default.breakLength
         breakSound = defaults.object(forKey: Key.breakSound) as? Bool ?? Default.breakSound
-        pauseMediaOnBreak = defaults.object(forKey: Key.pauseMediaOnBreak) as? Bool ?? Default.pauseMediaOnBreak
     }
 
     /// Returns every setting to its default. The pause, the debug menu, macOS permissions and launch
@@ -203,7 +195,6 @@ final class Preferences {
         breakWorkMinutes = Default.breakWork
         breakLengthMinutes = Default.breakLength
         breakSound = Default.breakSound
-        pauseMediaOnBreak = Default.pauseMediaOnBreak
         voiceIdentifier = nil
         urgentDelivery = false
         calendarRules = [:]

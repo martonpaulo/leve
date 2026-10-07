@@ -167,26 +167,11 @@ struct BreaksPane: View {
                 Text(Copy.breakFooter).settingsNote()
             }
             .disabled(!preferences.breaks)
-            Section {
-                Toggle(isOn: $preferences.pauseMediaOnBreak) {
-                    Text(Copy.pauseMedia)
-                    Text(Copy.pauseMediaNote)
-                }
-            }
-            .disabled(!preferences.breaks)
             if !model.mediaFix.problems.isEmpty {
                 mediaFixSection
             }
         }
         .settingsPane()
-        // Turning it on is when macOS asks, over Settings, for the apps already running.
-        .onChange(of: preferences.pauseMediaOnBreak) { _, isOn in
-            if isOn {
-                model.askMediaPermission()
-            } else {
-                model.clearMediaFix()
-            }
-        }
         // The window is kept, so check again what System Settings may have changed.
         .onAppear { model.refreshMediaFix() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in

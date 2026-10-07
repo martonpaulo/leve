@@ -182,11 +182,6 @@ enum Copy {
         localized:
             "Time away from the Mac counts as a break. Breaks wait during events and calls (any app using the microphone), then come right after."
     )
-    static let pauseMedia = String(localized: "Pause music and videos")
-    static let pauseMediaNote = String(
-        localized:
-            "When a break starts, pause Music, Spotify, TV and the videos in Brave, Chrome and Safari. If one keeps playing, Leve tells you after the break."
-    )
     static let openAutomationSettings = String(localized: "Open Automation Settings…")
 
     static func mediaAppName(_ app: MediaApp) -> String {

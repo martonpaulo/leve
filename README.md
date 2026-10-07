@@ -66,10 +66,10 @@ In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> cl
   until", and the Calendar and Notifications permissions.
 - **Alerts:** when the notification and the full screen arrive; how often, between which hours and
   in which voice Leve says the time; whether it says upcoming events.
-- **Breaks:** whether Leve asks for breaks, after how much work and for how long, the soft sound,
-  and whether a break pauses Music, Spotify, TV and the videos in Brave, Chrome and Safari. With it
-  off, a break that starts while sound plays offers Pause Music and Videos. When an app kept
-  playing, a notification after the break opens the fix here.
+- **Breaks:** whether Leve asks for breaks, after how much work and for how long, and the soft
+  sound. A break never pauses your music on its own: when sound plays, the break screen offers
+  Pause Music and Videos for Music, Spotify, TV and the videos in Brave, Chrome and Safari. When
+  an app kept playing, a notification after the break opens the fix here.
 - **Calendars:** for each calendar, All alerts, No full screen, No alerts, or Hidden.
 - **About:** the version, and whether Leve checks for updates automatically.
 
@@ -78,10 +78,9 @@ In the full-screen alert, <kbd>Return</kbd> joins the call and <kbd>Esc</kbd> cl
 Leve reads today's events from the calendars on this Mac and keeps its settings on this Mac. The
 only thing it sends over the network is the update check: it reads Leve's update feed on GitHub,
 once a day or when you choose Check for Updates…. Nothing about you, your Mac or your calendars
-leaves it. Turn automatic checks off in Settings ▸ About. If you turn on pausing music and videos in
-Settings ▸ Breaks, or press Pause Music and Videos in a break, Leve asks those apps on this Mac to
-pause, after macOS asks you once for each. To offer that button, Leve checks whether any app plays
-sound, without listening to it.
+leaves it. Turn automatic checks off in Settings ▸ About. If you press Pause Music and Videos in a
+break, Leve asks those apps on this Mac to pause, after macOS asks you once for each. To offer that
+button, Leve checks whether any app plays sound, without listening to it.
 
 ## Limitations
 

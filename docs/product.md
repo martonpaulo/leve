@@ -39,16 +39,16 @@ only its event alerts.
 - Asks for a break after 55 minutes of work: "Stop. Breathe. Look away." for 5 minutes over a
   slowly breathing circle and a short music-box phrase, with Skip and Later. Later hides the
   break and leaves "Break due" beside the menu bar icon until the owner takes it with "Take a
-  Break Now"; it never comes back full screen on its own (Decided on #19). When sound
-  plays and Leve would not pause it on its own, a third button, Pause Music and Videos, pauses it
-  (Decided on #13). On by default, with its
+  Break Now"; it never comes back full screen on its own (Decided on #19). When sound plays as
+  the break starts, a third button, Pause Music and Videos, pauses it (Decided on #13). On by
+  default, with its
   own Settings tab. Time away from the Mac counts as a break. "Take a Break Now" in the menu starts
   one at once, and it counts like the others (Decided on #9).
   Breaks never cover an event or a call (a microphone in use), but that time counts as work, so a
   break that falls due during it appears right after.
-  A Breaks setting, off by default, pauses Music, Spotify and TV and the playing videos of every
-  Brave, Chrome and Safari tab when a break starts, with Apple Events; it never resumes them and
-  never opens an app (Decided on #2). Nothing about it shows during the break. When an app kept
+  A break never pauses sound on its own: only that button pauses Music, Spotify and TV and the
+  playing videos of every Brave, Chrome and Safari tab, with Apple Events; it never resumes them
+  and never opens an app (Decided on #2, #20). When an app kept
   playing, a notification after the break names it, and clicking it opens Settings › Breaks at
   the fix: the browser's "Allow JavaScript from Apple Events", or Leve allowed in System Settings ›
   Automation. That fix shows in Settings only while the problem exists, and the same unchanged
