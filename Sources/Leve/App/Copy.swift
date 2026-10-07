@@ -261,6 +261,9 @@ enum Copy {
     static let countdown = String(localized: "Show countdown")
     static let showFreeUntil = String(localized: "Show \u{201C}Free until\u{201D}")
     static let showFreeUntilNote = String(localized: "When no event is close, the menu bar shows only the leaf.")
+    static let showNothingElse = String(localized: "Show \u{201C}Nothing else today\u{201D}")
+    static let showNothingElseNote = String(
+        localized: "When today has no more events, the menu bar shows only the leaf.")
     static let showAllDay = String(localized: "Show all-day events")
     static let dismissAllDay = String(localized: "Dismiss")
     static let showAllDayNote = String(localized: "Listed in their own section, without alerts.")

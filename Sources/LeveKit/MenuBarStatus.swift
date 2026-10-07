@@ -13,12 +13,12 @@ public enum MenuBarStatus: Sendable, Equatable {
     /// counting hundreds of minutes.
     case ongoing(title: String, minutesLeft: Int, end: Date)
 
-    /// Whether the menu bar item writes this status next to its icon. "Nothing else today" never
-    /// does, and "Free until …" only when the owner keeps it on (#10). The accessibility label
-    /// always carries the text.
-    public func showsText(freeUntil: Bool) -> Bool {
+    /// Whether the menu bar item writes this status next to its icon. "Free until …" (#10) and
+    /// "Nothing else today" (#16) each have their own setting; an event always shows. The
+    /// accessibility label always carries the text.
+    public func showsText(freeUntil: Bool, nothingElse: Bool) -> Bool {
         switch self {
-        case .clear: false
+        case .clear: nothingElse
         case .freeUntil: freeUntil
         case .upcoming, .ongoing: true
         }

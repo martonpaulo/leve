@@ -24,6 +24,8 @@ final class Preferences {
         static let speechEnd = 20
         static let showAllDay = true
         static let showFreeUntil = true
+        /// Opt-in: by default the leaf stands alone once the day is done (#10, #16).
+        static let showNothingElse = false
         static let breaks = true
         static let breakWork = 55
         static let breakLength = 5
@@ -47,6 +49,7 @@ final class Preferences {
         static let speechEnd = "leve.speechEndHour.v1"
         static let showAllDay = "leve.showAllDayEvents.v1"
         static let showFreeUntil = "leve.showFreeUntil.v1"
+        static let showNothingElse = "leve.showNothingElse.v1"
         static let breaks = "leve.breaks.v1"
         static let breakWork = "leve.breakWorkMinutes.v1"
         static let breakLength = "leve.breakLengthMinutes.v1"
@@ -91,6 +94,11 @@ final class Preferences {
     /// Writes "Free until …" in the menu bar when no event is close; off, the leaf stands alone.
     var showFreeUntil: Bool {
         didSet { defaults.set(showFreeUntil, forKey: Key.showFreeUntil) }
+    }
+    /// Writes "Nothing else today" in the menu bar once no alerting event is left; off, the leaf
+    /// stands alone.
+    var showNothingElse: Bool {
+        didSet { defaults.set(showNothingElse, forKey: Key.showNothingElse) }
     }
     /// Lists all-day events in their own section of the menu. They never alert.
     var showAllDayEvents: Bool {
@@ -157,6 +165,7 @@ final class Preferences {
         speechEndHour = Self.hour(defaults, Key.speechEnd, fallback: Default.speechEnd)
         showAllDayEvents = defaults.object(forKey: Key.showAllDay) as? Bool ?? Default.showAllDay
         showFreeUntil = defaults.object(forKey: Key.showFreeUntil) as? Bool ?? Default.showFreeUntil
+        showNothingElse = defaults.object(forKey: Key.showNothingElse) as? Bool ?? Default.showNothingElse
         breaks = defaults.object(forKey: Key.breaks) as? Bool ?? Default.breaks
         breakWorkMinutes =
             Self.read(defaults, Key.breakWork, options: Self.breakWorkOptions, fallback: Default.breakWork)
@@ -180,6 +189,7 @@ final class Preferences {
         speechEndHour = Default.speechEnd
         showAllDayEvents = Default.showAllDay
         showFreeUntil = Default.showFreeUntil
+        showNothingElse = Default.showNothingElse
         breaks = Default.breaks
         breakWorkMinutes = Default.breakWork
         breakLengthMinutes = Default.breakLength

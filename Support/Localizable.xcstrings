@@ -1421,6 +1421,16 @@
         }
       }
     },
+    "Show “Nothing else today”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show “Nothing else today”"
+          }
+        }
+      }
+    },
     "Simulate Event in 2 Minutes" : {
       "localizations" : {
         "en" : {
@@ -1717,6 +1727,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "When no event is close, the menu bar shows only the leaf."
+          }
+        }
+      }
+    },
+    "When today has no more events, the menu bar shows only the leaf." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When today has no more events, the menu bar shows only the leaf."
           }
         }
       }

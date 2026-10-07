@@ -12,7 +12,9 @@ struct StatusLabel: View {
         // stack's spacing, so an en space opens the room.
         HStack {
             Image(systemName: model.isPaused ? "bell.slash" : "leaf")
-            if model.status.showsText(freeUntil: model.preferences.showFreeUntil) {
+            if model.status.showsText(
+                freeUntil: model.preferences.showFreeUntil, nothingElse: model.preferences.showNothingElse)
+            {
                 Text("\u{2002}" + text)
             }
         }

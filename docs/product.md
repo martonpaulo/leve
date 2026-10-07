@@ -24,7 +24,9 @@ only its event alerts.
 
 - Shows one short line in the menu bar: "Free until 2:00 PM", "in 12 min", or "20 min left". It
   never names the event there, so a shared screen does not show it (Decided on #4); the menu does.
-  A General setting leaves only the leaf when nothing is close (Decided on #10).
+  A General setting leaves only the leaf when nothing is close (Decided on #10). Once no event is
+  left today the leaf stands alone, unless a separate General setting writes "Nothing else today"
+  beside it (Decided on #16).
 - Lists today's remaining events in the menu, with a Join button for Google Meet, Teams, Zoom and
   Webex links.
 - Lists all-day events in their own section below, without alerts; Dismiss hides one for the day,
