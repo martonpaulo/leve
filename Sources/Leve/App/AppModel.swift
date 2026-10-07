@@ -141,8 +141,11 @@ final class AppModel {
         return count > 0 ? count : nil
     }
 
-    var hiddenCount: Int {
-        overrides.hiddenCount(among: events)
+    /// Today's events hidden one by one that have not ended, for the menu to show each again. An
+    /// ended event shown again would appear nowhere.
+    var hiddenEvents: [CalendarEvent] {
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: currentDay) ?? .distantFuture
+        return overrides.hiddenEvents(among: events).filter { !$0.hasEnded(at: now) && $0.start < tomorrow }
     }
 
     // MARK: Lifecycle
@@ -516,6 +519,10 @@ final class AppModel {
 
     func hide(_ event: CalendarEvent) {
         overrides.set(.hidden, for: event)
+    }
+
+    func unhide(_ event: CalendarEvent) {
+        overrides.set(nil, for: event)
     }
 
     func hideSeries(_ event: CalendarEvent) {

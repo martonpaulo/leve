@@ -159,14 +159,15 @@ private func event(at start: Date) -> CalendarEvent {
             store.hideSeries(of: today)
             let reopened = OverrideStore(defaults: defaults, calendar: utc, now: nextWeek.start)
             #expect(reopened.override(for: nextWeek) == .hidden)
-            // Shown again from Settings, not from the menu's "Show Hidden".
-            #expect(reopened.hiddenCount(among: [nextWeek]) == 0)
+            // Shown again from Settings, not from the menu's Hidden events section.
+            #expect(reopened.hiddenEvents(among: [nextWeek]).isEmpty)
             reopened.showSeries(nextWeek.seriesID)
             #expect(reopened.override(for: nextWeek) == nil)
         }
     }
 
-    @Test func unhideAllKeepsTheOtherChoices() {
+    /// Only events hidden one by one are listed, and showing one again leaves the others (#15).
+    @Test func showingOneHiddenEventKeepsTheOtherChoices() {
         withDefaults { defaults in
             let store = OverrideStore(defaults: defaults, calendar: utc, now: .distantPast)
             let first = event(at: Date(timeIntervalSince1970: 1_790_000_000))
@@ -174,10 +175,16 @@ private func event(at start: Date) -> CalendarEvent {
                 id: CalendarEvent.occurrenceID(eventIdentifier: "review", start: first.start), title: "Review",
                 start: first.start, end: first.end, isAllDay: false, calendarID: "work", calendarTitle: "Work",
                 link: nil)
+            let third = CalendarEvent(
+                id: CalendarEvent.occurrenceID(eventIdentifier: "retro", start: first.start), title: "Retro",
+                start: first.start, end: first.end, isAllDay: false, calendarID: "work", calendarTitle: "Work",
+                link: nil)
             store.set(.hidden, for: first)
             store.set(.silenced, for: second)
-            store.unhideAll()
-            #expect(store.override(for: first) == nil)
+            store.set(.hidden, for: third)
+            #expect(store.hiddenEvents(among: [first, second, third]) == [first, third])
+            store.set(nil, for: first)
+            #expect(store.hiddenEvents(among: [first, second, third]) == [third])
             #expect(store.override(for: second) == .silenced)
         }
     }

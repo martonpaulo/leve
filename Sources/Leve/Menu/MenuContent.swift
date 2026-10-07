@@ -46,6 +46,7 @@ struct MenuContent: View {
         stateSection
         eventsSection
         allDaySection
+        hiddenSection
         pauseSection
         Divider()
         // An unbundled build has no updater: the command is absent rather than doing nothing.
@@ -90,9 +91,25 @@ struct MenuContent: View {
             ForEach(events, id: \.event.id) { item in
                 eventMenu(item.event)
             }
-            let hidden = model.hiddenCount
-            if hidden > 0 {
-                Button(Copy.showHidden(hidden)) { model.overrides.unhideAll() }
+        }
+    }
+
+    /// The events hidden today, in their own section with one entry whose submenu lists each; a
+    /// click shows that event again (#15). Absent when none is hidden.
+    @ViewBuilder private var hiddenSection: some View {
+        let hidden = model.hiddenEvents
+        if !hidden.isEmpty {
+            Section(Copy.hiddenEvents) {
+                Menu(Copy.hiddenEventCount(hidden.count)) {
+                    ForEach(hidden, id: \.id) { event in
+                        Button {
+                            model.unhide(event)
+                        } label: {
+                            CalendarDot.image(model.calendar.color(for: event.calendarID))
+                            Text(Copy.eventRow(event, override: nil))
+                        }
+                    }
+                }
             }
         }
     }
@@ -117,7 +134,7 @@ struct MenuContent: View {
                 Button(Copy.join(link.provider)) { model.join(event) }
             }
             Divider()
-            // Dismiss hides it until the day ends, like Hide; "Show Hidden" brings it back. One word that
+            // Dismiss hides it until the day ends, like Hide; the Hidden events section brings it back. One word that
             // fits a task, a holiday or a birthday alike.
             Button(Copy.dismissAllDay) { model.hide(event) }
             if event.isRecurring {

@@ -95,8 +95,10 @@ enum Copy {
     static let hiddenSeriesSection = String(localized: "Hidden repeating events")
     static let showSeries = String(localized: "Show")
 
-    static func showHidden(_ count: Int) -> String {
-        String(localized: "Show Hidden Events (\(count))")
+    static let hiddenEvents = String(localized: "Hidden events")
+
+    static func hiddenEventCount(_ count: Int) -> String {
+        count == 1 ? String(localized: "One event") : String(localized: "\(count) events")
     }
 
     static let debug = String(localized: "Debug")

@@ -65,15 +65,10 @@ final class OverrideStore {
         save()
     }
 
-    /// How many of `events` were hidden one by one: the menu offers to show them again. A hidden
-    /// series comes back from Settings instead, so it is not counted.
-    func hiddenCount(among events: [CalendarEvent]) -> Int {
-        events.filter { entries[$0.choiceKey(calendar: calendar)]?.override == .hidden }.count
-    }
-
-    func unhideAll() {
-        entries = entries.filter { $0.value.override != .hidden }
-        save()
+    /// Those of `events` hidden one by one: the menu lists them in their own section to show each again (#15). A hidden
+    /// series comes back from Settings instead, so it is not listed.
+    func hiddenEvents(among events: [CalendarEvent]) -> [CalendarEvent] {
+        events.filter { entries[$0.choiceKey(calendar: calendar)]?.override == .hidden }
     }
 
     /// Drops the choices of events that have ended; a long-running Leve calls it at each new day.

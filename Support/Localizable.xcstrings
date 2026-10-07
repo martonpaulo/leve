@@ -81,6 +81,16 @@
         }
       }
     },
+    "%lld events" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld events"
+          }
+        }
+      }
+    },
     "%lld min" : {
       "localizations" : {
         "en" : {
@@ -671,6 +681,16 @@
         }
       }
     },
+    "Hidden events" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hidden events"
+          }
+        }
+      }
+    },
     "Hidden repeating events" : {
       "localizations" : {
         "en" : {
@@ -1051,6 +1071,16 @@
         }
       }
     },
+    "One event" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One event"
+          }
+        }
+      }
+    },
     "One now" : {
       "localizations" : {
         "en" : {
@@ -1397,16 +1427,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show Full Screen Now"
-          }
-        }
-      }
-    },
-    "Show Hidden Events (%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Hidden Events (%lld)"
           }
         }
       }
