@@ -160,6 +160,8 @@ as `skd-github-publishing-conventions` section 15 defines.
 
 Shape every message and ask the owner as Skill Deck's global rules define (`global/AGENTS.md`, which `skd sync` links into every agent); the four kinds of request are in the `skd-grilling` skill's `references/attention-cards.md`.
 
+After processing the owner's answers on the owner page, remove the handled cards, then rebuild and republish the page at once.
+
 ## Configuration and repository hygiene
 
 - Ignore secrets, local environments, logs, caches, and build output. Keep `.env.example` with every variable and a safe placeholder, and secrets only in the platform's secure store. Nothing new in `~` (`project-layout.md`).
