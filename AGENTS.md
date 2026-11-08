@@ -66,6 +66,8 @@ Long-running work follows the `project-setup` skill's `references/long-running-o
 - Product definition: `docs/product.md`
 - Research notes: `docs/research/`; handoffs: `.scratch/handoffs/`; prototypes: `.scratch/prototypes/`.
   A path exists only once a workflow writes a real artifact there.
+- Inbox: `https://internal.martonpaulo.com/inbox/leve/`, data in `~/proj/inbox/leve/` (`martonpaulo/inbox`),
+  published with `owner-page.mjs publish` ([skill-deck#949](https://github.com/martonpaulo/skill-deck/issues/949)).
 
 ## Build and validate
 
