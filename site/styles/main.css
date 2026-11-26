@@ -23,9 +23,6 @@
   --weight-body: 400;
   --weight-strong: 600;
   --weight-display: 700;
-  --measure: 68ch;
-  --measure-narrow: 44ch;
-  --measure-title: 16ch;
 }
 
 /* ==========================================================================
@@ -101,12 +98,12 @@
 
   /* Sizes */
   --page-width: min(73.75rem, 100% - 2.5rem);   /* 1180px, 20px gutters */
-  --width-hero-copy: 51.25rem;                  /* 820px */
   --width-demo: 65rem;                          /* 1040px */
-  /* Running text stops at 80 characters, the upper end of a comfortable line;
-     the full 1180px page would carry about 140. Headings have no cap: they are
-     short, and balanced wrapping already evens their lines. */
-  --measure-prose: 80ch;
+  /* Text fills its column, the page width: no paragraph, list or heading takes
+     a width of its own (workbench#2124). The one exception is the centred
+     subtitle under the hero title, .hero-summary, kept short for the title's
+     sake; text_width_check.py holds both. */
+  --width-subtitle: 44ch;
   --control-height: 3rem;
   --control-height-s: 2.25rem;
   --keycap-height: 3rem;
@@ -189,9 +186,19 @@
   box-sizing: border-box;
 }
 
+/* The scrollbar's space is always reserved, so a short page and a long page
+   keep one content left edge and nothing shifts sideways between them
+   (workbench#2124); a browser without scrollbar-gutter always shows the bar. */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: var(--header-height);
+  scrollbar-gutter: stable;
+}
+
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
 }
 
 /* The footer sits at the bottom of the viewport on a short page (the 404 above
@@ -384,7 +391,6 @@ main {
 .section > p:not(.eyebrow),
 .showcase-copy > p:not(.eyebrow),
 .lead {
-  max-width: var(--measure-prose);
   margin: var(--space-m) 0 0;
   color: var(--secondary);
   font-size: var(--text-md);
@@ -611,7 +617,7 @@ main {
   font-size: var(--text-sm);
 }
 
-/* The command is a <p>, so the section's paragraph rule (80ch, larger text)
+/* The command is a <p>, so the section's paragraph rule (larger text)
    would otherwise win and let it grow past a phone's width. */
 .section > p.command {
   max-width: 100%;
@@ -929,12 +935,10 @@ figcaption {
 }
 
 .hero-copy {
-  max-width: var(--width-hero-copy);
   margin: 0 auto;
 }
 
 h1 {
-  max-width: var(--measure-title);
   margin: 0 auto;
   font-size: var(--text-3xl);
   font-weight: var(--weight-display);
@@ -950,7 +954,7 @@ h1 {
 }
 
 .hero-summary {
-  max-width: var(--measure-narrow);
+  max-width: var(--width-subtitle);
   margin: var(--space-m) auto var(--space-l);
   color: var(--secondary);
   font-size: var(--text-lg);
@@ -1341,7 +1345,7 @@ h1 {
 }
 
 .page-hero .hero-summary {
-  max-width: var(--measure-prose);
+  max-width: none;
   margin: var(--space-m) 0 0;
 }
 

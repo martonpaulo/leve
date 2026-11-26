@@ -37,6 +37,9 @@ fi
 
 # The public page (#28): scripts/validate-site.sh is skill-deck's canonical copy; never edit it here.
 scripts/validate-site.sh >/dev/null || fail "site/ fails scripts/validate-site.sh"
+# Text fills its column and the scrollbar's space is reserved (martonpaulo/workbench#2124):
+# scripts/text_width_check.py is skill-deck's canonical copy; never edit it here.
+python3 scripts/text_width_check.py site || fail "site/ fails scripts/text_width_check.py"
 
 if (( failures > 0 )); then
   echo "validate: $failures failure(s)" >&2
