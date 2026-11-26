@@ -145,7 +145,9 @@ def is_text(selector: str) -> bool:
     if re.search(r"::?(?:before|after|marker|placeholder|backdrop)\b", selector):
         return False
     tag, classes = compound_parts(selector)
-    words = [set(re.split(r"[-_]", name.lower())) for name in classes]
+    # A plural names the same thing: `.notes` is text as `.note` is, `.icons` a control as `.icon` is.
+    words = [{w for part in re.split(r"[-_]", name.lower()) for w in (part, part.removesuffix("s"))}
+             for name in classes]
     if any(word & CONTROL_WORDS for word in words):
         return False
     return tag in TEXT_TAGS or any(word & TEXT_WORDS for word in words)
