@@ -3,6 +3,8 @@
 Today's time and today's events at the edge of your attention, in the macOS menu bar, so deep focus
 never costs you a meeting.
 
+Website: <https://leve.martonpaulo.com/>
+
 ## Why Leve
 
 When you hyperfocus, time disappears. Leve keeps it in view without asking for attention:

@@ -35,6 +35,9 @@ else
   [[ $unreleased == 1 ]] || fail "CHANGELOG.md needs exactly one ## [Unreleased] heading, found $unreleased"
 fi
 
+# The public page (#28): scripts/validate-site.sh is skill-deck's canonical copy; never edit it here.
+scripts/validate-site.sh >/dev/null || fail "site/ fails scripts/validate-site.sh"
+
 if (( failures > 0 )); then
   echo "validate: $failures failure(s)" >&2
   exit 1

@@ -1,0 +1,73 @@
+{
+  "product": {
+    "name": "Leve",
+    "host": "leve.martonpaulo.com",
+    "icon": "/assets/app-icon.png",
+    "version": "0.2.0",
+    "downloadUrl": "https://github.com/martonpaulo/leve/releases",
+    "category": "UtilitiesApplication",
+    "operatingSystem": "macOS 27 or later",
+    "license": { "name": "MIT", "url": "https://github.com/martonpaulo/leve/blob/main/LICENSE" },
+    "author": { "name": "Marton Paulo", "url": "https://martonpaulo.com", "id": "https://martonpaulo.com/#person" }
+  },
+  "theme": {
+    "background": { "light": "#f5f5f7", "dark": "#08090b" },
+    "accent": {
+      "light": { "accent": "#0b6f7a", "accent-hover": "#086a75", "button-primary-bg": "#0b6f7a", "button-primary-bg-hover": "#086a75" },
+      "dark": { "accent": "#8ad6db", "accent-hover": "#a4e2e6", "button-primary-bg": "#8ad6db", "button-primary-bg-hover": "#a4e2e6" }
+    }
+  },
+  "icons": [
+    { "rel": "icon", "href": "/favicon.ico", "sizes": "16x16 32x32 48x48" },
+    { "rel": "icon", "type": "image/png", "href": "/favicon-192.png", "sizes": "192x192" },
+    { "rel": "apple-touch-icon", "href": "/apple-touch-icon.png" }
+  ],
+  "nav": [
+    { "label": "Features", "href": "#features" },
+    { "label": "Privacy", "href": "#privacy" },
+    { "label": "Get Leve", "href": "#get" }
+  ],
+  "footer": {
+    "html": "Developed by Marton Paulo · MIT licensed · © <span data-site-year>2026</span> Leve contributors.",
+    "links": [
+      { "label": "Report an Issue…", "href": "https://github.com/martonpaulo/leve/issues/new" },
+      { "label": "GitHub", "href": "https://github.com/martonpaulo/leve" },
+      { "label": "martonpaulo.com", "href": "https://martonpaulo.com" }
+    ]
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "title": "Leve · Today’s time and events in the Mac menu bar",
+      "description": "Leve keeps today’s time and today’s events at the edge of your attention, in the macOS menu bar, so deep focus never costs you a meeting. Free and open source.",
+      "sections": [
+        { "type": "fragment", "name": "hero" },
+        { "type": "features", "id": "features", "eyebrow": "What it does", "title": "Time stays in view, quietly.", "lead": "When you hyperfocus, time disappears. Leve keeps it in view without asking for attention. It has no window to manage.", "cards": [
+          { "title": "One short line in the menu bar", "text": "It says “Free until 2:00 PM”, “in 12 min” or “20 min left”, never the event’s name, so it is safe on a shared screen.", "glyph": "glyph-menubar", "visual": "visual-menubar", "wide": true },
+          { "title": "A notification first", "text": "A notification arrives a few minutes before each event.", "glyph": "glyph-bell" },
+          { "title": "A calm full screen", "text": "Just before an event, a calm alert covers every display, with a Join button, until you join or close it.", "glyph": "glyph-display" },
+          { "title": "It says the time", "text": "Leve says the time on the half hour during the day, says the next event two minutes before it starts, and stays quiet during events.", "glyph": "glyph-voice", "visual": "visual-voice", "wide": true },
+          { "title": "Breaks, when you want them", "text": "Leve can ask for a break after a stretch of work. Take It Later leaves “Break due” beside the icon until you take it. A break never pauses your music on its own.", "glyph": "glyph-break", "visual": "visual-break", "wide": true },
+          { "title": "Each calendar its own level", "text": "All alerts, No full screen, No alerts, or Hidden, for each calendar. Pause everything for 30 minutes, an hour, or until tomorrow.", "glyph": "glyph-calendar" }
+        ] },
+        { "type": "prose", "id": "privacy", "eyebrow": "Privacy", "title": "Your calendars stay on your Mac.", "paragraphs": [
+          { "text": "Leve reads today’s events from the calendars on this Mac and keeps its settings on this Mac. It never changes your calendars." },
+          { "text": "The only thing it sends over the network is the update check: it reads Leve’s update feed on GitHub, once a day or when you choose Check for Updates… in the menu. Nothing about you, your Mac or your calendars leaves it. You can turn automatic checks off in Settings." },
+          { "text": "Today only, by design: no tasks, no notes, no event editing, nothing about tomorrow until midnight." }
+        ] },
+        { "type": "fragment", "name": "get" },
+        { "type": "prose", "class": "open-source", "eyebrow": "Open source", "title": "Built in public.", "paragraphs": [
+          { "html": "Leve is <a target=\"_blank\" href=\"https://github.com/martonpaulo/leve/blob/main/LICENSE\" rel=\"noopener\">MIT</a> licensed software developed by Marton Paulo." },
+          { "text": "No telemetry. No account. Update checks are Leve’s only network activity." }
+        ] }
+      ]
+    },
+    {
+      "path": "404.html",
+      "title": "Page not found · Leve",
+      "description": "The page you asked for does not exist on the Leve website.",
+      "noindex": true,
+      "sections": [{ "type": "fragment", "name": "not-found" }]
+    }
+  ]
+}
