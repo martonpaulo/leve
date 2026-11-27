@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical version bump for the owner's macOS apps (#484). Copy it unchanged to
-# scripts/bump-version.sh in each app, beside release-notes.sh; project-setup alignment reports a
+# scripts/bump-version.sh in each app, beside release-notes.sh; bench-setup alignment reports a
 # drifted copy.
 #
 # `scripts/bump-version.sh X.Y.Z` moves the app to version X.Y.Z in one step:
@@ -20,10 +20,9 @@
 #
 # Exit 0 = bumped and checked; 1 = refused or the final check failed; 2 = usage error.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
-PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}
-PLIST=Support/Info.plist
 
 usage() {
   cat <<'USAGE'
@@ -35,9 +34,6 @@ usage: scripts/bump-version.sh <X.Y.Z> [--date <YYYY-MM-DD>] [--changelog <path>
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
-die() { echo "error: $1" >&2; exit 1; }
 
 version=''
 date=''
@@ -61,7 +57,7 @@ date=${date:-$(date +%Y-%m-%d)}
 [[ -f $PLIST ]] || die "$PLIST not found; run this from an app repository"
 [[ -f $changelog ]] || die "$changelog not found"
 [[ -x scripts/release-notes.sh ]] \
-  || die "scripts/release-notes.sh not found; copy it from project-release/assets beside this script"
+  || die "scripts/release-notes.sh not found; copy it from bench-release/assets beside this script"
 current=$("$PLIST_BUDDY" -c 'Print :CFBundleShortVersionString' "$PLIST" 2>/dev/null) \
   || die "$PLIST has no CFBundleShortVersionString"
 "$PLIST_BUDDY" -c 'Print :CFBundleVersion' "$PLIST" >/dev/null 2>&1 || die "$PLIST has no CFBundleVersion"

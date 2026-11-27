@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Canonical Sparkle key script for the owner's macOS apps. Copy it unchanged to
-# scripts/make-keys.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/make-keys.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # One-time setup per machine: makes sure the login Keychain holds a Sparkle EdDSA key, using
-# Sparkle's generate_keys from .build/artifacts, and records its public half as SUPublicEDKey in
-# Support/Info.plist. The private key never leaves the Keychain and is never committed.
+# Sparkle's generate_keys from $SWIFT_SCRATCH/artifacts (default .build), and records its public
+# half as SUPublicEDKey in Support/Info.plist. The private key never leaves the Keychain and is never committed.
 #
 # A committed SUPublicEDKey that differs from the Keychain's is refused unless --force is given:
 # every installed copy checks updates against the committed key, so replacing it by accident
@@ -12,10 +12,9 @@
 #
 # Prints the public key alone on stdout and everything else on stderr.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
-PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}
-PLIST=Support/Info.plist
 
 usage() {
   cat <<'USAGE'
@@ -35,17 +34,21 @@ while [[ $# -gt 0 ]]; do
 done
 [[ -f $PLIST ]] || { echo "error: $PLIST not found; run this from an app repository" >&2; exit 1; }
 
+# SWIFT_SCRATCH, when set, is SwiftPM's scratch path, as in package-app.sh (#1517).
+scratch=()
+[[ -z ${SWIFT_SCRATCH:-} ]] || scratch=(--scratch-path "$SWIFT_SCRATCH")
+artifacts=${SWIFT_SCRATCH:-.build}/artifacts
 find_generate_keys() {
-  [[ -d .build/artifacts ]] || return 0
-  find .build/artifacts -path '*/bin/generate_keys' -type f -print -quit
+  [[ -d $artifacts ]] || return 0
+  find "$artifacts" -path '*/bin/generate_keys' -type f -print -quit
 }
 generate_keys=$(find_generate_keys)
 if [[ -z $generate_keys ]]; then
-  echo "generate_keys not found under .build/artifacts; running swift build once." >&2
-  swift build >&2 || { echo "error: swift build failed" >&2; exit 1; }
+  echo "generate_keys not found under $artifacts; running swift build once." >&2
+  swift build ${scratch[@]+"${scratch[@]}"} >&2 || { echo "error: swift build failed" >&2; exit 1; }
   generate_keys=$(find_generate_keys)
 fi
-[[ -n $generate_keys ]] || { echo "error: generate_keys not found under .build/artifacts" >&2; exit 1; }
+[[ -n $generate_keys ]] || { echo "error: generate_keys not found under $artifacts" >&2; exit 1; }
 
 # Creates a key only when the Keychain has none; its own message says which happened.
 "$generate_keys" >&2 || true

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical Sparkle appcast script for the owner's macOS apps. Copy it unchanged to
-# scripts/make-appcast.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/make-appcast.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # Adds one release entry, newest first, to appcast.xml at the repository root, creating the feed
 # when it does not exist. The feed title and the GitHub repository come from CFBundleName and
@@ -19,6 +19,7 @@
 #
 # Writes only appcast.xml; progress goes to stderr and stdout stays empty.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
 usage() {
@@ -37,8 +38,6 @@ usage: scripts/make-appcast.sh --version <X.Y.Z> --build-number <N> --archive <p
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
 
 version=''
 build_number=''

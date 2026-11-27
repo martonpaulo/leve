@@ -3,7 +3,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build test lint format validate check app dmg icon keys appcast strings install uninstall run clean
+.PHONY: help build test lint format validate check app dmg icon keys appcast strings signing-identity install uninstall run clean
 
 # Any compiler warning fails `build` and `test`: Package.swift turns warnings into errors, and
 # scripts/fail-on-warnings.sh fails on any `warning:` line that still points into a project file.
@@ -14,9 +14,13 @@ ICTOOL ?= $(shell xcode-select -p)/../Applications/Icon Composer.app/Contents/Ex
 
 # A stable signature keeps the calendar, notification and login-item permissions across rebuilds:
 # scripts/package-app.sh signs with LOCAL_SIGNING_IDENTITY, else DEVELOPER_ID_IDENTITY, from the
-# untracked .env (project-setup swift-apps.md, Local signing). Make keeps the quotes of a quoted
-# .env value, which codesign would read as part of the name, so they are removed.
+# untracked .env (bench-project-standards swift-apps.md, Local signing); a worktree without an
+# identity reads the main checkout's .env. Make keeps the quotes of a quoted .env value, which
+# codesign would read as part of the name, so they are removed.
 -include .env
+ifeq ($(LOCAL_SIGNING_IDENTITY)$(DEVELOPER_ID_IDENTITY),)
+-include $(shell git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)/../.env
+endif
 export
 LOCAL_SIGNING_IDENTITY := $(subst ",,$(LOCAL_SIGNING_IDENTITY))
 DEVELOPER_ID_IDENTITY := $(subst ",,$(DEVELOPER_ID_IDENTITY))
@@ -108,8 +112,12 @@ clean: ## Remove the SwiftPM build and build/
 # Notifications, calendar access and launch at login reach only a real bundle.
 # `quit` returns before Leve exits; opening the new copy while the old one is still closing fails
 # with LaunchServices error -600, so wait for the process to end (at most 5 seconds).
+# An ad-hoc install gives the app a new designated requirement, so macOS asks for its calendar,
+# notification and Keychain access again: install refuses to run without a stable identity.
+signing-identity: ; @test -n "$(or $(LOCAL_SIGNING_IDENTITY),$(DEVELOPER_ID_IDENTITY))" || { echo "error: no signing identity in .env; an ad-hoc install makes macOS ask for its permissions again" >&2; exit 1; }
+
 install: FORCE = 1
-install: app ## Quit a running Leve, copy build/Leve.app into /Applications and open it
+install: signing-identity app ## Quit a running Leve, copy build/Leve.app into /Applications and open it
 	@-osascript -e 'quit app "Leve"' >/dev/null 2>&1
 	@for i in $$(seq 1 25); do pgrep -x Leve >/dev/null || break; sleep 0.2; done
 	@rm -rf $(APP_BUNDLE)

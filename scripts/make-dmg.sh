@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical installer-DMG script for the owner's macOS apps. Copy it unchanged to
-# scripts/make-dmg.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/make-dmg.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # Builds a drag-to-Applications disk image with appdmg (pinned), which writes the Finder layout
 # without scripting Finder, so it works headless. The spec is written with absolute paths into a
@@ -13,10 +13,9 @@
 #
 # Prints the DMG path on stdout and everything else on stderr.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
-PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}
-PLIST=Support/Info.plist
 APPDMG_VERSION=0.6.6
 # The newest Node major verified with that appdmg: under Node 26 its native macos-alias module is
 # never built (#343). Raise it only after a verified run.
@@ -39,8 +38,6 @@ Needs Node $APPDMG_NODE_MAX or older for appdmg $APPDMG_VERSION.
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
 need_match() { # $1 option, $2 value, $3 pattern, $4 shape
   [[ $2 =~ $3 ]] || fail_usage "$1 must look like $4, not $2"
 }

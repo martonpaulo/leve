@@ -1,37 +1,48 @@
 #!/usr/bin/env bash
 # Canonical packaging script for the owner's macOS apps. Copy it unchanged to
-# scripts/package-app.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/package-app.sh in each app; bench-setup alignment reports a drifted copy.
 #
-# Builds the release binary, assembles <Name>.app with Sparkle.framework embedded, checks that the
-# packaged bundle identifier is the one in Support/Info.plist, signs nested code, then the
-# framework, then the app, and archives the bundle with the only Sparkle-safe ZIP tool, ditto.
+# Builds the release binary, assembles <Name>.app with every dynamic framework the build put beside
+# the executable embedded (Sparkle and any binary framework target, #648), checks that the packaged
+# bundle identifier is the one in Support/Info.plist, signs nested code, then each framework, then
+# the app, and archives the bundle with the only Sparkle-safe ZIP tool, ditto.
+# An app without updates (no SUFeedURL in Support/Info.plist and no Sparkle.framework in the build)
+# and without other frameworks is packaged without a Frameworks folder, and only the app is signed
+# (#644); an app that sets SUFeedURL and has no Sparkle.framework fails before anything is signed.
+# So does an executable that links an @rpath framework the build did not produce, or one that embeds
+# a framework without an rpath to Contents/Frameworks: its Package.swift target sets linkerSettings:
+# [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])].
 # Every app value comes from Support/Info.plist; nothing here names a product. A String Catalog at
 # Support/Localizable.xcstrings is compiled into the bundle; a compiled Localizable table committed
 # under Support/*.lproj is refused. The app icon is the Icon Composer file Support/AppIcon.icon,
 # compiled with actool into Assets.car and an AppIcon.icns fallback; its two Info.plist keys come
-# from actool, so a Support/Info.plist that already sets them is refused.
-#
-# Leve's copy differs from the canonical script in two places (AGENTS.md, divergence
-# `canonical-scripts`; martonpaulo/skill-deck#518): Support/<Executable>.entitlements, when it
-# exists, signs the app (never the nested Sparkle code), and Support/PrivacyInfo.xcprivacy, when it
-# exists, is copied into Contents/Resources.
+# from actool, so a Support/Info.plist that already sets them is refused. A privacy manifest at
+# Support/PrivacyInfo.xcprivacy is copied to Contents/Resources before anything is signed (#641).
 #
 # Signing: the identity is --identity, else LOCAL_SIGNING_IDENTITY (an Apple Development
 # certificate, for local builds), else DEVELOPER_ID_IDENTITY, else "-" (ad-hoc). A stable identity
 # keeps the designated requirement, and with it Keychain access and privacy grants, across builds;
-# an ad-hoc signature changes with every build. An identity named "Developer ID Application" always
-# adds --timestamp --options runtime, which notarization requires; --hardened adds them to any
-# other identity too.
+# an ad-hoc signature changes with every build. Every stable identity signs with the hardened
+# runtime (--options runtime), so dyld ignores DYLD_INSERT_LIBRARIES and no debugger attaches to an
+# app that something trusts by its signature (#668). An identity named "Developer ID Application"
+# also adds --timestamp, which notarization requires and which calls Apple's timestamp server;
+# --hardened adds the timestamp and the runtime to any other identity, ad-hoc included. A project
+# script that re-signs the app after packaging must keep the flags
+# (--preserve-metadata=entitlements,flags); with entitlements alone it drops the runtime. When Support/<CFBundleExecutable>.entitlements exists, it signs the app's
+# main executable, never the nested Sparkle code or the framework (#518); without it the app is
+# signed with no entitlements, the stable empty set verify-release-identity.sh expects then.
 #
-# Stamps AppReleaseDate, the release date skd-macos-app-shell's version-and-release-date.md
+# Stamps AppReleaseDate, the release date bench-apple-app-shell's version-and-release-date.md
 # requires: the packaged commit's date, or --release-date.
+#
+# SWIFT_SCRATCH, when set, is SwiftPM's scratch path (--scratch-path); the Makefile sets it to
+# .build.noindex, a folder Spotlight does not index (#1517). Unset, SwiftPM uses .build.
 #
 # Prints the app path and the archive path on stdout, one per line, and everything else on stderr.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
-PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}
-PLIST=Support/Info.plist
 
 usage() {
   cat <<USAGE
@@ -44,15 +55,15 @@ usage: scripts/package-app.sh [options]
   --build-number <N>      build number to stamp (requires --version)
   --release-date <date>   release date to stamp, YYYY-MM-DD (default: the commit date)
   --arch <arch>           build architecture (default arm64)
-  --hardened              hardened runtime and timestamp for an identity that is not a
-                          "Developer ID Application" one, which always gets them
+  --hardened              secure timestamp, and hardened runtime, for an identity that is
+                          not a "Developer ID Application" one, which always gets them; any
+                          other stable identity gets the hardened runtime without it
+                          (Support/<Executable>.entitlements, when present, signs the app)
   --force                 replace an existing bundle or archive
   --help                  show this help
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
 
 app=''
 archive=''
@@ -113,7 +124,7 @@ fi
 # The icon's Info.plist keys come from actool. PlistBuddy Merge keeps a key that already exists, so a
 # stale CFBundleIconFile or CFBundleIconName in the source plist would win silently.
 icon=Support/AppIcon.icon
-[[ -d $icon ]] || { echo "error: $icon not found; author the app icon in Icon Composer and commit it there" >&2; exit 1; }
+[[ -d $icon ]] || { echo "error: $icon not found; write icon.json and its Assets/ layers there, check them with ictool and commit them (swift-apps.md, App icon)" >&2; exit 1; }
 for key in CFBundleIconFile CFBundleIconName; do
   if "$PLIST_BUDDY" -c "Print :$key" "$PLIST" >/dev/null 2>&1; then
     echo "error: $PLIST sets $key; delete it, actool writes the icon keys from $icon" >&2
@@ -130,14 +141,18 @@ for existing in "$app" "$archive"; do
 done
 
 echo "Building $executable $version ($build_number) for $arch." >&2
-swift build -c release --arch "$arch" --product "$executable" >&2
-bin_path=$(swift build -c release --arch "$arch" --product "$executable" --show-bin-path)
+scratch=()
+[[ -z ${SWIFT_SCRATCH:-} ]] || scratch=(--scratch-path "$SWIFT_SCRATCH")
+swift build -c release --arch "$arch" --product "$executable" ${scratch[@]+"${scratch[@]}"} >&2
+bin_path=$(swift build -c release --arch "$arch" --product "$executable" ${scratch[@]+"${scratch[@]}"} --show-bin-path)
 
-mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources" "$app/Contents/Frameworks"
+mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin_path/$executable" "$app/Contents/MacOS/$executable"
 cp "$PLIST" "$app/Contents/Info.plist"
-if [[ -f Support/PrivacyInfo.xcprivacy ]]; then
-  cp Support/PrivacyInfo.xcprivacy "$app/Contents/Resources/PrivacyInfo.xcprivacy"
+# The privacy manifest is optional; the metadata check reads it from Contents/Resources (#641).
+privacy=Support/PrivacyInfo.xcprivacy
+if [[ -f $privacy ]]; then
+  cp "$privacy" "$app/Contents/Resources/PrivacyInfo.xcprivacy"
 fi
 for lproj in Support/*.lproj; do
   if [[ -d $lproj ]]; then
@@ -178,11 +193,45 @@ fi
 "$PLIST_BUDDY" -c "Merge $icon_plist" "$app/Contents/Info.plist"
 rm -f "$icon_plist"
 
-# ditto keeps the framework's symlinks; cp -R flattens them and breaks Sparkle's signature.
+# Every dynamic framework the build put beside the executable is embedded: Sparkle and any binary
+# framework target, such as an XCFramework (#648). ditto keeps a framework's symlinks; cp -R flattens
+# them and breaks its signature. An app without updates has neither SUFeedURL nor Sparkle (#644).
+# shortcut: a framework another product's build left in the shared bin path is embedded too; embed
+# what the executable and each embedded framework load (otool -L) if that ever ships one.
+frameworks=()
+for built in "$bin_path"/*.framework; do
+  if [[ -d $built ]]; then
+    mkdir -p "$app/Contents/Frameworks"
+    ditto "$built" "$app/Contents/Frameworks/$(basename "$built")"
+    frameworks+=("$app/Contents/Frameworks/$(basename "$built")")
+  fi
+done
 sparkle=$bin_path/Sparkle.framework
-[[ -d $sparkle ]] || { echo "error: Sparkle.framework not found at $sparkle" >&2; exit 1; }
-framework=$app/Contents/Frameworks/Sparkle.framework
-ditto "$sparkle" "$framework"
+if [[ ! -d $sparkle ]] && "$PLIST_BUDDY" -c "Print :SUFeedURL" "$PLIST" >/dev/null 2>&1; then
+  echo "error: Sparkle.framework not found at $sparkle, but $PLIST sets SUFeedURL" >&2
+  exit 1
+fi
+# The executable loads each framework through an @rpath install name, so every one it links must be
+# in the bundle, and the bundle needs an LC_RPATH that reaches Contents/Frameworks. SwiftPM gives an
+# executable only @loader_path, which is Contents/MacOS here; the app's Package.swift adds the rest.
+binary=$app/Contents/MacOS/$executable
+# A string regular expression: macOS awk refuses `[^/]` inside a /.../ literal.
+linked_frameworks=$(xcrun otool -L "$binary" | awk 'NR > 1 && $1 ~ "^@rpath/[^/]+[.]framework/" {print $1}')
+while IFS= read -r linked; do
+  linked=${linked#@rpath/}
+  linked=${linked%%/*}
+  if [[ -n $linked && ! -d $app/Contents/Frameworks/$linked ]]; then
+    echo "error: $executable links $linked, but the build put none in $bin_path" >&2
+    exit 1
+  fi
+done <<<"$linked_frameworks"
+rpaths=$(xcrun otool -l "$binary" | awk '$1 == "cmd" {rpath = ($2 == "LC_RPATH")} rpath && $1 == "path" {print $2}')
+if [[ -d $app/Contents/Frameworks ]] && ! grep -qxE '@(executable|loader)_path/\.\./Frameworks/?' <<<"$rpaths"; then
+  echo "error: $executable has no rpath to Contents/Frameworks, so it cannot load the embedded frameworks;" \
+    'add linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]' \
+    "to its target in Package.swift" >&2
+  exit 1
+fi
 
 "$PLIST_BUDDY" -c "Set :CFBundleShortVersionString $version" "$app/Contents/Info.plist"
 "$PLIST_BUDDY" -c "Set :CFBundleVersion $build_number" "$app/Contents/Info.plist"
@@ -210,20 +259,27 @@ fi
 sign=(codesign --force --sign "$identity")
 if (( hardened )) || [[ $identity == 'Developer ID Application:'* ]]; then
   sign+=(--timestamp --options runtime)
+elif [[ $identity != - ]]; then
+  # A local build gets the runtime without the timestamp, so it needs no network (#668).
+  sign+=(--options runtime)
 fi
-# Nested code first, then the framework, then the app. The version directories are discovered,
-# because the letter is Sparkle's to choose.
-for version_dir in "$framework"/Versions/*; do
-  if [[ -L $version_dir || ! -d $version_dir ]]; then
-    continue
-  fi
-  for nested in "$version_dir"/XPCServices/*.xpc "$version_dir/Autoupdate" "$version_dir/Updater.app"; do
-    if [[ -e $nested ]]; then
-      "${sign[@]}" "$nested" >&2
+# Nested code first, then each framework, then the app. The version directories are discovered,
+# because the letter is each framework's to choose. The nested code is what Sparkle ships (its XPC
+# services, Autoupdate and Updater.app); a framework with nested code elsewhere fails the strict
+# verification below, which names it.
+for framework in ${frameworks[@]+"${frameworks[@]}"}; do
+  for version_dir in "$framework"/Versions/*; do
+    if [[ -L $version_dir || ! -d $version_dir ]]; then
+      continue
     fi
+    for nested in "$version_dir"/XPCServices/*.xpc "$version_dir/Autoupdate" "$version_dir/Updater.app"; do
+      if [[ -e $nested ]]; then
+        "${sign[@]}" "$nested" >&2
+      fi
+    done
   done
+  "${sign[@]}" "$framework" >&2
 done
-"${sign[@]}" "$framework" >&2
 app_entitlements=()
 if [[ -f Support/$executable.entitlements ]]; then
   app_entitlements=(--entitlements "Support/$executable.entitlements")

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical release-identity check for the owner's macOS apps. Copy it unchanged to
-# scripts/verify-release-identity.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/verify-release-identity.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # Rejects a signed app whose effective macOS identity would differ from the released one. macOS
 # keys the Accessibility grant, the Keychain and UserDefaults to that identity, so a change here
@@ -17,10 +17,14 @@
 # The identifier and executable are CFBundleIdentifier and CFBundleExecutable in Support/Info.plist.
 #
 # Checks, in order, for each app: arm64 only; a strict deep verification; the identifier, team,
-# authority, hardened runtime and secure timestamp; the stable empty entitlement set; the
-# designated requirement; the leaf certificate's issuer; the leaf byte for byte; and every nested
+# authority, hardened runtime and secure timestamp; the entitlements; the designated requirement; the leaf certificate's issuer; the leaf byte for byte; and every nested
 # Mach-O verified and signed by the same team. The candidate's certificate must not have expired,
 # and one expiring within --warn-days prints a renewal warning.
+#
+# Entitlements (#518). When Support/<CFBundleExecutable>.entitlements exists, the app's signed
+# entitlements must equal that file, which package-app.sh signs it with; otherwise they must be the
+# stable empty set. Both sides pass through plutil and `jq -S -c .`, so neither the XML layout nor
+# the key order matters: codesign returns the keys sorted, the file keeps the order it was written in.
 #
 # Certificate rotation (#462). Apple renews a Developer ID leaf certificate on its own schedule, and
 # from 2026-10-01 a replacement comes from the Developer ID G2 Sub-CA, whose display name is the
@@ -37,16 +41,11 @@
 # candidate satisfies the previous release's requirement under `codesign --verify -R`. The
 # previous certificate may have expired: a timestamped, notarized release keeps working.
 #
-# Leve's copy differs from the canonical script in one place (AGENTS.md, divergence
-# `canonical-scripts`; martonpaulo/skill-deck#518): when Support/<Executable>.entitlements exists,
-# the app's entitlements must equal that file instead of the empty set.
-#
 # Prints one `release identity: ok` line on stdout and everything else on stderr.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
-PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}
-PLIST=Support/Info.plist
 CERTIFICATE_NAME=ReleaseCertificate.cer
 REQUIREMENT_NAME=ExpectedDesignatedRequirement.txt
 
@@ -72,8 +71,6 @@ On a certificate renewal, first move both files to Support/ReleaseIdentity/<last
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
 role=''
 fail() { echo "Identity validation failed: ${role:+$role: }$1" >&2; exit 1; }
 
@@ -107,7 +104,7 @@ name=$(read_key CFBundleName)
 identifier=$(read_key CFBundleIdentifier)
 executable=$(read_key CFBundleExecutable)
 app=${app:-build/$name.app}
-ENTITLEMENTS=Support/$executable.entitlements
+entitlements_file=Support/$executable.entitlements
 
 # Reads an expectation directory into expected_* variables, before any codesign call.
 read_expectation() { # $1 app, $2 expectation directory
@@ -140,7 +137,7 @@ read_expectation() { # $1 app, $2 expectation directory
 # Checks one signed app against the expected_* values; sets actual_requirement and leaf_issuer.
 verify_app() { # $1 app
   local target=$1 archs signature runtime=0 line entitlements requirement_output description \
-    nested nested_signature certificates
+    actual_entitlements wanted_entitlements nested nested_signature certificates
   # Apple silicon only: the main executable carries exactly one arm64 slice.
   archs=$(lipo -archs "$target/Contents/MacOS/$executable") || fail "lipo could not read the main executable"
   [[ $archs == arm64 ]] || fail "the main executable must be arm64 only, found: $archs"
@@ -158,14 +155,15 @@ verify_app() { # $1 app
   # `Signed Time` instead of `Timestamp` is a signature without a secure timestamp.
   grep -q '^Timestamp=' <<<"$signature" || fail "the signature has no secure timestamp"
 
-  if [[ -f $ENTITLEMENTS ]]; then
-    # Both sides through plutil and `jq -S`, so the comparison ignores the XML layout and the key
-    # order: codesign returns the keys sorted, the file keeps the order it was written in.
-    entitlements=$(codesign -d --entitlements - --xml "$target" 2>/dev/null) || fail "codesign could not read the entitlements"
+  if [[ -f $entitlements_file ]]; then
+    entitlements=$(codesign -d --entitlements - --xml "$target" 2>/dev/null) \
+      || fail "codesign could not read the entitlements"
+    [[ -n ${entitlements//[[:space:]]/} ]] || fail "the app is signed without the entitlements in $entitlements_file"
     actual_entitlements=$(plutil -convert json -o - - <<<"$entitlements" 2>/dev/null | jq -S -c .) \
-      || fail "the entitlements are not a property list"
-    wanted_entitlements=$(plutil -convert json -o - "$ENTITLEMENTS" | jq -S -c .) || fail "$ENTITLEMENTS is not a property list"
-    [[ $actual_entitlements == "$wanted_entitlements" ]] || fail "the entitlements differ from $ENTITLEMENTS"
+      || fail "the signed entitlements are not a property list"
+    wanted_entitlements=$(plutil -convert json -o - "$entitlements_file" 2>/dev/null | jq -S -c .) \
+      || fail "$entitlements_file is not a property list"
+    [[ $actual_entitlements == "$wanted_entitlements" ]] || fail "the entitlements differ from $entitlements_file"
   else
     entitlements=$(codesign -d --entitlements - "$target" 2>/dev/null) || fail "codesign could not read the entitlements"
     [[ -z ${entitlements//[[:space:]]/} ]] || fail "the entitlements changed from the stable empty set"
@@ -199,7 +197,7 @@ verify_app() { # $1 app
     codesign --verify --strict "$nested" >&2 || fail "nested code fails verification: $nested"
     nested_signature=$(codesign -dvvv "$nested" 2>&1) || fail "codesign could not display $nested"
     grep -Fqx "TeamIdentifier=$expected_team" <<<"$nested_signature" || fail "nested code uses another team: $nested"
-  done < <(find "$target/Contents" -type f -perm -111 -print)
+  done < <(find "$target/Contents" -type f \( -perm -100 -o -perm -010 -o -perm -001 \) -print)
 }
 
 scratch=$(mktemp -d)

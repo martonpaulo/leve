@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical Keep a Changelog release-notes script for the owner's macOS apps. Copy it unchanged to
-# scripts/release-notes.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/release-notes.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # --version X.Y.Z prints that version's notes on stdout, for publish-release.sh --notes-file. A
 # version section starts at `## [X.Y.Z]`, found by exact string equality so 1.1.1 never matches
@@ -18,6 +18,7 @@
 # Exit 0 = notes printed or the changelog passed; 1 = missing or empty notes, or a failed check;
 # 2 = usage error.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
 usage() {
@@ -31,8 +32,6 @@ usage: scripts/release-notes.sh (--version <X.Y.Z> | --check | --json) [--change
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
 
 mode=''
 version=''

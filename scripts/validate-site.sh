@@ -17,7 +17,7 @@
 #     and srcset candidate resolves to a file (/x from the site root, anything else from the page's
 #     folder); a local href's #fragment names an id, or a legacy <a name>, in the page it reaches,
 #     the same page for a bare #fragment (#499); the header's link labels and the footer's links equal index.html's; every JSON-LD
-#     block parses.
+#     block parses; each [data-copy] command holds an [aria-live] status for its «Copied» (#2161).
 #   - Breadcrumb: index.html and 404.html have none. Every other page has one
 #     <nav aria-label="Breadcrumb"><ol>, whose first crumb is the product (og:site_name) linking to
 #     the home page and whose last crumb is the current page, not a link, with aria-current="page";
@@ -147,6 +147,10 @@ class Page(HTMLParser):
         self.crumb_navs = []  # each a list of <ol>, each a list of <li> dicts
         self.pre_paint = []  # text of each inline <script> in <head> before the first stylesheet
         self.theme_switches = []  # each the radio values of a role="radiogroup" with a name, in the header
+        self.copies = []  # each [data-copy] element: {"text": [...], "live": bool}
+        self._copy = None
+        self._copy_tag = None
+        self._copy_depth = 0
         self._title = None
         self._in_head = False
         self._stylesheet_seen = False
@@ -168,6 +172,16 @@ class Page(HTMLParser):
             a.setdefault(key, "" if value is None else value)
         if a.get("id"):
             self.ids.add(a["id"])
+        if self._copy is not None:
+            if tag == self._copy_tag:
+                self._copy_depth += 1
+            if "aria-live" in a:
+                self._copy["live"] = True
+        elif "data-copy" in a:
+            self._copy = {"text": [], "live": False}
+            self._copy_tag = tag
+            self._copy_depth = 1
+            self.copies.append(self._copy)
         if tag == "a" and a.get("name"):
             self.ids.add(a["name"])
         if tag == "title" and self.title is None:
@@ -247,6 +261,10 @@ class Page(HTMLParser):
             self._anchor["alt"].append(a["alt"])
 
     def handle_endtag(self, tag):
+        if self._copy is not None and tag == self._copy_tag:
+            self._copy_depth -= 1
+            if not self._copy_depth:
+                self._copy = None
         if self._group is not None and tag == self._group_tag:
             self._group_depth -= 1
             if not self._group_depth:
@@ -283,6 +301,8 @@ class Page(HTMLParser):
                 self._nav = None
 
     def handle_data(self, data):
+        if self._copy is not None:
+            self._copy["text"].append(data)
         if self._title is not None:
             self._title.append(data)
         if self._script is not None:
@@ -453,6 +473,11 @@ for rel in rels:
                 fail(rel, 'external link without target="_blank": %s' % href)
             if "noopener" not in anchor["rel"].lower().split():
                 fail(rel, 'external link without rel="noopener": %s' % href)
+
+    for copy in page.copies:
+        if not copy["live"]:
+            fail(rel, 'data-copy command without an [aria-live] status for its "Copied": %s'
+                 % collapse("".join(copy["text"])))
 
     for attribute, value in page.refs:
         value = value.strip()

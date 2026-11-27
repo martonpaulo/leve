@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical publication script for the owner's macOS apps. Copy it unchanged to
-# scripts/publish-release.sh in each app; project-setup alignment reports a drifted copy. It is the
+# scripts/publish-release.sh in each app; bench-setup alignment reports a drifted copy. It is the
 # only script in the set that publishes anything, and it runs only from the release workflow.
 #
 # The update feed may only advertise files that already exist, so this is the verified step before
@@ -18,10 +18,9 @@
 #
 # The release title is "<CFBundleName> <tag without its leading v>". stdout stays empty.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
-PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}
-PLIST=Support/Info.plist
 
 usage() {
   cat <<'USAGE'
@@ -33,9 +32,6 @@ usage: scripts/publish-release.sh --tag <vX.Y.Z> --notes-file <file> --artifact 
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
-die() { echo "error: $1" >&2; exit 1; }
 
 tag=''
 notes=''

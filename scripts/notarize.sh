@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical notarization script for the owner's macOS apps. Copy it unchanged to
-# scripts/notarize.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/notarize.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # Submits one artifact to the Apple notary service, waits, prints the notary log
 # on any result other than Accepted, and staples a disk image or installer
@@ -13,6 +13,7 @@
 # Usage: scripts/notarize.sh --artifact <artifact.dmg|artifact.pkg|artifact.zip>
 # The artifact is resolved against the caller's directory before the cd into the repository.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 
 usage() {
   cat <<USAGE
@@ -25,8 +26,6 @@ Credentials, chosen by environment and never printed:
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
-need_value() { [[ $# -ge 2 && -n $2 && $2 != --* ]] || fail_usage "$1 needs a value"; }
 
 artifact=''
 while [[ $# -gt 0 ]]; do

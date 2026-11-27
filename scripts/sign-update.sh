@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # Canonical Sparkle signing script for the owner's macOS apps. Copy it unchanged to
-# scripts/sign-update.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/sign-update.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # Signs a release archive with Sparkle's sign_update, taken from the Sparkle version SwiftPM
-# resolved into .build/artifacts, and prints the appcast attributes make-appcast.sh expects:
+# resolved into $SWIFT_SCRATCH/artifacts (default .build, #1517), and prints the appcast attributes make-appcast.sh expects:
 #   sparkle:edSignature="..." length="..."
 # Without options sign_update reads the key from the login Keychain. Everything after -- goes to
 # sign_update unchanged, so CI passes the key on standard input:
 #   printf '%s\n' "$SPARKLE_PRIVATE_KEY" | scripts/sign-update.sh --archive <zip> -- --ed-key-file -
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
 usage() {
@@ -20,7 +21,6 @@ Options after -- are passed to sign_update unchanged, for example -- --ed-key-fi
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
 
 archive=''
 passthrough=()
@@ -38,10 +38,11 @@ done
 [[ -f $archive ]] || { echo "error: $archive not found" >&2; exit 1; }
 
 # A find that fails inside a pipeline under pipefail exits silently, so check the directory first.
-[[ -d .build/artifacts ]] || { echo "error: .build/artifacts not found; run 'swift build' first" >&2; exit 1; }
+artifacts=${SWIFT_SCRATCH:-.build}/artifacts
+[[ -d $artifacts ]] || { echo "error: $artifacts not found; run 'swift build' first" >&2; exit 1; }
 # The path, not the name: Sparkle also ships bin/old_dsa_scripts/sign_update, which is not the tool.
-sign_update=$(find .build/artifacts -path '*/bin/sign_update' -type f -print -quit)
-[[ -n $sign_update ]] || { echo "error: sign_update not found under .build/artifacts; run 'swift build' first" >&2; exit 1; }
+sign_update=$(find "$artifacts" -path '*/bin/sign_update' -type f -print -quit)
+[[ -n $sign_update ]] || { echo "error: sign_update not found under $artifacts; run 'swift build' first" >&2; exit 1; }
 
 "$sign_update" ${passthrough[@]+"${passthrough[@]}"} "$archive" \
   || { echo "error: sign_update failed for $archive" >&2; exit 1; }

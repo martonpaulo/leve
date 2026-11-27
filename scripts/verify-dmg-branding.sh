@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Canonical installer-DMG check for the owner's macOS apps. Copy it unchanged to
-# scripts/verify-dmg-branding.sh in each app; project-setup alignment reports a drifted copy.
+# scripts/verify-dmg-branding.sh in each app; bench-setup alignment reports a drifted copy.
 #
 # Verifies what make-dmg.sh promises: the image passes hdiutil verify; the .dmg file carries the
 # Finder custom-icon flag and its icns resource; and, mounted read-only, the volume has the
@@ -10,10 +10,9 @@
 #
 # Prints one `DMG branding: ok` line on stdout and everything else on stderr.
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
-PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}
-PLIST=Support/Info.plist
 ICON=Support/AppInstallerIcon.icns
 
 usage() {
@@ -24,7 +23,6 @@ usage: scripts/verify-dmg-branding.sh --dmg <path.dmg>
 USAGE
 }
 
-fail_usage() { echo "error: $1" >&2; usage >&2; exit 2; }
 fail() { echo "DMG branding validation failed: $1" >&2; exit 1; }
 
 dmg=''
