@@ -9,7 +9,7 @@
 - Benefit-first description: Today's time and today's events at the edge of your attention, in the macOS menu bar, so deep focus never costs you a meeting.
 - Repository: `martonpaulo/leve` (public since 2026-10-05, Decided on #6)
 - Public identifiers: bundle identifier `com.martonpaulo.leve`; executable `Leve`; app `Leve.app`.
-- Landing page: None. The repository README is the only project surface.
+- Landing page: <https://leve.martonpaulo.com/> (`site/CNAME`), published from `site/` by `.github/workflows/deploy.yml` after `Validate` passes on `main` (#28). `site-source/` holds its content; Workbench's `bench-setup/scripts/site.mjs build` writes `site/`, and `scripts/validate-site.sh` checks it. Until the first published release the page says so and has no download button.
 - License: `MIT`
 - Copyright: 2026 Marton Paulo
 - Development language: English.
@@ -168,7 +168,7 @@ After processing the owner's answers on the owner page, remove the handled cards
 
 - Ignore secrets, local environments, logs, caches, and build output. Keep `.env.example` with every variable and a safe placeholder, and secrets only in the platform's secure store. Nothing new in `~` (`project-layout.md`).
 - Add CI, dependency updates, release workflows, and signing only when distribution or risk requires them.
-- Workflows: `validate.yml` (`Validate`, `make check` on the `xcode-27` runner, #7), `release.yml` (`Release`, #7) and `notary-check.yml` (`Notary credentials check`, run by hand, a recognised exception, #7); the deploy workflow arrives with #8. A workflow added outside the `project-setup` skill's `references/ci-pipelines.md` is a recorded exception. A Node repository's `validate` script runs exactly what CI runs. Do not add an image-optimisation bot.
+- Workflows: `validate.yml` (`Validate`, `make check` on the `xcode-27` runner, #7), `release.yml` (`Release`, #7), `notary-check.yml` (`Notary credentials check`, run by hand, a recognised exception, #7), and `deploy.yml` (`Deploy`, the GitHub Pages site, #28). A workflow added outside the `project-setup` skill's `references/ci-pipelines.md` is a recorded exception. A Node repository's `validate` script runs exactly what CI runs. Do not add an image-optimisation bot.
 - The agent rules live in `AGENTS.md`, the one real file; `CLAUDE.md` is a symlink to it. Do not create `GEMINI.md`, `.gemini/rules/agents.md`, or any other alias, and never commit `.claude/settings.local.json`.
 - Change the repository `homepage` only as the `project-setup` skill's `references/github-settings.md` describes.
 

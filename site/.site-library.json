@@ -1,0 +1,11 @@
+{
+  "generator": "skill-deck skills/bench-setup/scripts/site.mjs",
+  "revision": "c82c4213c2cf1ae72be104b6f9821cf68b35fb92",
+  "files": {
+    "404.html": "b7e386f99ff6bc05b3e85bebdd6d4eb1118c552f88ace8b4e1a42518e682ac73",
+    "index.html": "00ac56c4d3142438f7ba753b6f49a03e72a3c1ca9446bcab2b0c5a07e53313be",
+    "scripts/main.js": "d9e66a564399829a15dc9214956aa9ede40ada8fc55a1ec597ad61a79cde288e",
+    "styles/accent.css": "7f5f179a2287626beb067b435f39c001e548c5538a1af78cbf9b1ba87fef4763",
+    "styles/main.css": "c32ff6d15bbe4810ddb20c7c425c86409107dac7438a068ec9b382617d27cc7e"
+  }
+}

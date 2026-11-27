@@ -1,0 +1,43 @@
+/* The site's accent and dark tokens, written by site.mjs from site-source/site.json (theme)
+   and the library's dark palette in main.css. Edit those, never this file. Dark applies under the
+   system preference unless the visitor chose Light, and whenever the visitor chose Dark. */
+:root {
+  --accent: #0b6f7a;
+  --accent-hover: #086a75;
+  --button-primary-bg: #0b6f7a;
+  --button-primary-bg-hover: #086a75;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #08090b;
+    --surface: rgba(255, 255, 255, 0.055);
+    --surface-strong: #1b1d21;
+    --text: #f5f5f7;
+    --secondary: #a1a1a6;
+    --line: rgba(255, 255, 255, 0.11);
+    --accent: #8ad6db;
+    --accent-hover: #a4e2e6;
+    --button-primary-fg: #07111f;
+    --button-primary-bg: #8ad6db;
+    --button-primary-bg-hover: #a4e2e6;
+    --shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+    --icon-shadow: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55));
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #08090b;
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-strong: #1b1d21;
+  --text: #f5f5f7;
+  --secondary: #a1a1a6;
+  --line: rgba(255, 255, 255, 0.11);
+  --accent: #8ad6db;
+  --accent-hover: #a4e2e6;
+  --button-primary-fg: #07111f;
+  --button-primary-bg: #8ad6db;
+  --button-primary-bg-hover: #a4e2e6;
+  --shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+  --icon-shadow: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.55));
+}

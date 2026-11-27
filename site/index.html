@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Leve · Today’s time and events in the Mac menu bar</title>
+  <meta name="description" content="Leve keeps today’s time and today’s events at the edge of your attention, in the macOS menu bar, so deep focus never costs you a meeting. Free and open source.">
+  <link rel="canonical" href="https://leve.martonpaulo.com/">
+  <meta name="theme-color" content="#08090b" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Leve">
+  <meta property="og:title" content="Leve · Today’s time and events in the Mac menu bar">
+  <meta property="og:description" content="Leve keeps today’s time and today’s events at the edge of your attention, in the macOS menu bar, so deep focus never costs you a meeting. Free and open source.">
+  <meta property="og:url" content="https://leve.martonpaulo.com/">
+  <!-- Before the first paint and the stylesheets: the scroll-in motion hides sections only when
+       this ran, and a stored appearance choice applies without a flash (#420). -->
+  <script>(function () { var root = document.documentElement; root.classList.add("js"); try { var theme = localStorage.getItem("theme"); if (theme === "light" || theme === "dark") { root.setAttribute("data-theme", theme); var scheme = document.querySelector('meta[name="color-scheme"]'); if (scheme) scheme.setAttribute("content", theme); } } catch (error) {} })();</script>
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/accent.css">
+  <script src="/scripts/main.js" defer></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Leve",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "macOS 27 or later",
+    "url": "https://leve.martonpaulo.com/",
+    "downloadUrl": "https://github.com/martonpaulo/leve/releases",
+    "softwareVersion": "0.2.0",
+    "description": "Leve keeps today’s time and today’s events at the edge of your attention, in the macOS menu bar, so deep focus never costs you a meeting. Free and open source.",
+    "license": "https://github.com/martonpaulo/leve/blob/main/LICENSE",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "@id": "https://martonpaulo.com/#person",
+      "name": "Marton Paulo",
+      "url": "https://martonpaulo.com"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebSite","name":"Leve","url":"https://leve.martonpaulo.com/"}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" aria-label="Primary navigation">
+    <div class="site-header-inner">
+      <a class="brand" href="/" aria-label="Leve home">
+        <img src="/assets/app-icon.png" width="36" height="36" alt="">
+        <span>Leve</span>
+      </a>
+      <nav aria-label="Page sections">
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#get">Get Leve</a>
+      </nav>
+      <div class="theme-switch" role="radiogroup" aria-label="Appearance" data-theme-switch hidden>
+        <label><input type="radio" name="site-theme" value="system" checked><span>System</span></label>
+        <label><input type="radio" name="site-theme" value="light"><span>Light</span></label>
+        <label><input type="radio" name="site-theme" value="dark"><span>Dark</span></label>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <img class="hero-icon" src="/assets/app-icon.png" width="128" height="128" alt="Leve application icon">
+        <p class="eyebrow">A calm menu bar app for macOS</p>
+        <h1 id="hero-title">Deep focus never costs you a meeting.</h1>
+        <p class="hero-summary">Today’s time and today’s events at the edge of your attention, in the macOS menu bar. Free and open source, with no telemetry, for Apple silicon Macs with macOS 27 or later.</p>
+        <p class="pill">Not released yet</p>
+        <div class="actions">
+          <a class="button secondary" href="#get">How to get it</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="features section" id="features" aria-labelledby="features-title">
+      <p class="eyebrow">What it does</p>
+      <h2 id="features-title">Time stays in view, quietly.</h2>
+      <p>When you hyperfocus, time disappears. Leve keeps it in view without asking for attention. It has no window to manage.</p>
+      <div class="grid grid-3 bento">
+        <article class="card feature span-2 reveal">
+          <span class="glyph-tile" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M2.5 8h19M14 6h5"/></svg></span>
+          <h3>One short line in the menu bar</h3>
+          <p>It says “Free until 2:00 PM”, “in 12 min” or “20 min left”, never the event’s name, so it is safe on a shared screen.</p>
+          <ul class="feature-visual badge-row" aria-label="What the menu bar says">
+            <li class="pill">Free until 2:00 PM</li><li class="pill">in 12 min</li><li class="pill">20 min left</li>
+          </ul>
+        </article>
+        <article class="card feature reveal">
+          <span class="glyph-tile" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></span>
+          <h3>A notification first</h3>
+          <p>A notification arrives a few minutes before each event.</p>
+        </article>
+        <article class="card feature reveal">
+          <span class="glyph-tile" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M9 21h6M12 17v4"/><circle cx="12" cy="10.5" r="3"/></svg></span>
+          <h3>A calm full screen</h3>
+          <p>Just before an event, a calm alert covers every display, with a Join button, until you join or close it.</p>
+        </article>
+        <article class="card feature span-2 reveal">
+          <span class="glyph-tile" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 9.5h3l4.5-4v13L7 14.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg></span>
+          <h3>It says the time</h3>
+          <p>Leve says the time on the half hour during the day, says the next event two minutes before it starts, and stays quiet during events.</p>
+          <ul class="feature-visual badge-row" aria-label="What Leve says">
+            <li class="pill">It’s 10 o’clock</li><li class="pill">It’s 10:30</li><li class="pill">Standup in 2 minutes</li>
+          </ul>
+        </article>
+        <article class="card feature span-2 reveal">
+          <span class="glyph-tile" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/></svg></span>
+          <h3>Breaks, when you want them</h3>
+          <p>Leve can ask for a break after a stretch of work. Take It Later leaves “Break due” beside the icon until you take it. A break never pauses your music on its own.</p>
+          <ul class="feature-visual badge-row" aria-label="The break screen’s buttons">
+            <li class="pill">Skip This Break</li><li class="pill">Take It Later</li><li class="pill">Pause Music and Videos</li>
+          </ul>
+        </article>
+        <article class="card feature reveal">
+          <span class="glyph-tile" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
+          <h3>Each calendar its own level</h3>
+          <p>All alerts, No full screen, No alerts, or Hidden, for each calendar. Pause everything for 30 minutes, an hour, or until tomorrow.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section reveal" id="privacy" aria-labelledby="privacy-title">
+      <p class="eyebrow">Privacy</p>
+      <h2 id="privacy-title">Your calendars stay on your Mac.</h2>
+      <p>Leve reads today’s events from the calendars on this Mac and keeps its settings on this Mac. It never changes your calendars.</p>
+      <p>The only thing it sends over the network is the update check: it reads Leve’s update feed on GitHub, once a day or when you choose Check for Updates… in the menu. Nothing about you, your Mac or your calendars leaves it. You can turn automatic checks off in Settings.</p>
+      <p>Today only, by design: no tasks, no notes, no event editing, nothing about tomorrow until midnight.</p>
+    </section>
+
+    <section class="download section reveal" id="get" aria-labelledby="get-title">
+      <img src="/assets/app-icon.png" alt="" width="96" height="96" loading="lazy">
+      <p class="eyebrow">Not released yet</p>
+      <h2 id="get-title">There is no download yet.</h2>
+      <p>Leve has no published release, so there is no disk image to download. The first release will be a signed and notarized disk image on GitHub, with a Homebrew cask, and Leve will update itself. It needs macOS 27 or later on a Mac with Apple silicon.</p>
+      <p class="command-label">Until then, build it from source with Xcode 27:</p>
+      <p class="command" data-copy><span class="command-prompt" aria-hidden="true">$</span><code>git clone https://github.com/martonpaulo/leve.git &amp;&amp; cd leve &amp;&amp; make install</code></p>
+    </section>
+
+    <section class="section reveal open-source" aria-labelledby="prose-title">
+      <p class="eyebrow">Open source</p>
+      <h2 id="prose-title">Built in public.</h2>
+      <p>Leve is <a target="_blank" href="https://github.com/martonpaulo/leve/blob/main/LICENSE" rel="noopener">MIT</a> licensed software developed by Marton Paulo.</p>
+      <p>No telemetry. No account. Update checks are Leve’s only network activity.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p>Developed by Marton Paulo · MIT licensed · © <span data-site-year>2026</span> Leve contributors.</p>
+      <nav aria-label="Site links">
+        <a target="_blank" href="https://github.com/martonpaulo/leve/issues/new" rel="noopener">Report an Issue…</a>
+        <a target="_blank" href="https://github.com/martonpaulo/leve" rel="noopener">GitHub</a>
+        <a target="_blank" href="https://martonpaulo.com" rel="noopener">martonpaulo.com</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

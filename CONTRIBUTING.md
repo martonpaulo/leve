@@ -27,6 +27,7 @@ Leve opens in the menu bar and asks for calendar and notification access once.
 | `make install` | Builds Leve, replaces `/Applications/Leve.app` and opens it. |
 | `make uninstall` | Quits Leve and removes it from `/Applications`. |
 | `make icon` | Renders the four appearances of `Support/AppIcon.icon` into `artifacts/icon/`, and regenerates the disk image's icon and background in `Support/`. |
+| `scripts/validate-site.sh` | Checks the public page in `site/`: links, metadata, sitemap and the shared site library's files. |
 | `make strings` | Refreshes `Support/Localizable.xcstrings` from the `String(localized:)` calls. |
 
 ## Secrets and variables
