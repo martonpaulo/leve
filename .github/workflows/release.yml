@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 # The same Xcode pin as validate.yml; change both together.
 env:
@@ -20,6 +20,9 @@ env:
 jobs:
   release:
     runs-on: xcode-27
+    # Publishing the release and its appcast commit needs write access, for this job alone.
+    permissions:
+      contents: write
     # Optional: a fine-grained token with Contents read and write on martonpaulo/homebrew-tap.
     # A secret cannot appear in a step's `if:`, so it is exposed here and tested as env.
     env:

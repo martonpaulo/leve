@@ -6,17 +6,18 @@
 - Code name: `Leve`
 - Slug: `leve`
 - Identifier name: `leve`
+- Icon: `site/apple-touch-icon.png`
 - Benefit-first description: Today's time and today's events at the edge of your attention, in the macOS menu bar, so deep focus never costs you a meeting.
-- Repository: `martonpaulo/leve` (public since 2026-10-05, Decided on #6)
+- Repository: `martonpaulo/leve` (public since 2026-10-05, Decided on [#6](https://github.com/martonpaulo/leve/issues/6))
 - Public identifiers: bundle identifier `com.martonpaulo.leve`; executable `Leve`; app `Leve.app`.
-- Landing page: <https://leve.martonpaulo.com/> (`site/CNAME`), published from `site/` by `.github/workflows/deploy.yml` after `Validate` passes on `main` (#28). `site-source/` holds its content; Workbench's `bench-setup/scripts/site.mjs build` writes `site/`, and `scripts/validate-site.sh` checks it. Until the first published release the page says so and has no download button.
+- Landing page: <https://leve.martonpaulo.com/> (`site/CNAME`), published from `site/` by `.github/workflows/deploy.yml` after `Validate` passes on `main` ([#28](https://github.com/martonpaulo/leve/issues/28)). `site-source/` holds its content; Workbench's `bench-setup/scripts/site.mjs build` writes `site/`, and `scripts/validate-site.sh` checks it. Until the first published release the page says so and has no download button.
 - License: `MIT`
 - Copyright: 2026 Marton Paulo
 - Development language: English.
 - Product copy: English only (owner, 2026-10-02). Every visible word lives in `Sources/Leve/App/Copy.swift` and goes through `String(localized:)`; the String Catalog `Support/Localizable.xcstrings` holds the English source strings, refreshed with `make strings` after a copy change (owner, 2026-10-05).
 - Branch policy: work on `main`; a branch only when the owner asks for one.
 - Commit policy: commit each coherent task automatically once it is complete and `make check` passes; commit only task files.
-- Push policy: push completed, validated commits straight to `origin/main`. Never force-push. One exception happened: on 2026-10-05 the owner had the history rewritten and force-pushed once, to drop the author e-mail and a personal detail before the repository went public (#6).
+- Push policy: push completed, validated commits straight to `origin/main`. Never force-push. One exception happened: on 2026-10-05 the owner had the history rewritten and force-pushed once, to drop the author e-mail and a personal detail before the repository went public ([#6](https://github.com/martonpaulo/leve/issues/6)).
 - Product versioning: SemVer `X.Y.Z` in `CFBundleShortVersionString` (`Support/Info.plist`), starting at `0.1.0`; `CFBundleVersion` is `MAJOR*10000 + MINOR*100 + PATCH`, checked by `make validate`. Versions change only when the owner asks.
 - Merge policy: merge commits only, every commit of the branch preserved. Never squash.
 - Commit subject: a commit made for an issue ends with `(#<issue number>)`, never the pull request's.
@@ -24,27 +25,36 @@
 - Default-branch approving review: not required under the direct-to-`main` policy. Do not add a pull-request-only protection rule without reopening that policy.
 - Default-branch required status check: none. `main` has no branch protection and no ruleset, because its one author commits to it directly; `make check` gates each commit, and the `Validate` result is read after each push (owner, 2026-10-05).
 - Secret protection: GitHub secret scanning and push protection enabled (owner, 2026-10-05), and private vulnerability reporting enabled for `SECURITY.md`. These are backstops, not substitutes for inspecting the exact publication payload.
-- Release, signing, and secret-storage policy: direct download, outside the Mac App Store, the same pattern as WindowHop (owner, 2026-10-05, #7). No field below is secret.
+- Release, signing, and secret-storage policy: direct download, outside the Mac App Store, the same pattern as WindowHop (owner, 2026-10-05, [#7](https://github.com/martonpaulo/leve/issues/7)). No field below is secret.
   - Channel and artifacts: GitHub Releases. Each release publishes `Leve-<version>.dmg` (canonical; the README and the cask link it), `Leve-<version>-Installer.zip` (the disk image with its Finder icon kept), and `Leve-<version>.zip` (Sparkle's signed update archive).
   - Signing identity: `Developer ID Application: Marton Paulo (TBN79KU9ML)`, selected in CI by the fingerprint of `Support/ReleaseCertificate.cer`.
   - Signing certificate: the leaf in `Support/ReleaseCertificate.cer`, SHA-1 `860B2EA63CC5069C777D1F549BAEF683DBD1914F`, expiring 2027-02-01; WindowHop pins the same leaf.
   - Team ID: `TBN79KU9ML`.
   - Bundle identifier: `com.martonpaulo.leve`; the embedded Sparkle code is verified to be signed by the same team.
   - Build and package command: `make dmg` (`scripts/package-app.sh`, then `scripts/make-dmg.sh`); `scripts/verify-release-identity.sh` and `scripts/verify-dmg-branding.sh` check the result. `make install` packages with the local identity of the untracked `.env` (`LOCAL_SIGNING_IDENTITY`, else `DEVELOPER_ID_IDENTITY`, else ad-hoc) and copies the app to `/Applications`.
-  - Entitlements and hardened runtime: `Support/Leve.entitlements` (calendar access, and Apple Events to pause media, #2) on the app, never on the nested Sparkle code; hardened runtime on for every Developer ID signature.
+  - Entitlements and hardened runtime: `Support/Leve.entitlements` (calendar access, and Apple Events to pause media, [#2](https://github.com/martonpaulo/leve/issues/2)) on the app, never on the nested Sparkle code; hardened runtime on for every Developer ID signature.
   - Keychain profile: `skd-notary`, for local rehearsals only; CI notarizes with the team API key from the `NOTARY_API_KEY*` secrets.
   - Release workflow: `.github/workflows/release.yml`, run by a `vX.Y.Z` tag on the current `main` commit, pushed or dispatched by hand on that tag. It is the only thing that publishes; the local scripts rehearse and diagnose.
   - Update feed: Sparkle, from `appcast.xml` on `raw.githubusercontent.com` (`main`), written by `release.yml` only after the update ZIP is downloadable; each entry's notes are its GitHub release page. Leve shares WindowHop's EdDSA key pair (`SUPublicEDKey`).
   - Homebrew: the cask `martonpaulo/tap/leve` in the public `martonpaulo/homebrew-tap` (`brew install --cask martonpaulo/tap/leve`). `release.yml` bumps its version and sha256, from the published disk image's digest, when the optional `HOMEBREW_TAP_TOKEN` secret exists; otherwise bump it by hand after the release. The cask is `auto_updates`, so Sparkle updates an install from an older cask.
   - Publishing authority: the owner, by pushing the tag through `project-release`; only artifacts that passed verification in that run are published.
   - Secrets: `DEVELOPER_ID_CERT_P12`, `DEVELOPER_ID_CERT_PASSWORD`, `NOTARY_API_KEY`, `NOTARY_API_KEY_ID`, `NOTARY_API_ISSUER_ID`, `SPARKLE_PRIVATE_KEY` and the optional `HOMEBREW_TAP_TOKEN`, in the GitHub secret store only. No key material, certificate password or signing log enters the repository.
-- Skills baseline revision: `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`
-- Skills baseline applied: `2026-10-03`
-- Skills baseline divergence `dependabot` at `ecd0609ec96b53aa6f2110ac4dea987a3f023318`: no `swift` entry in `.github/dependabot.yml`. Dependabot's Swift 6.3.1 fails on `swift-tools-version:6.4` (run of 2026-10-05), so Sparkle, Leve's one package dependency since #7, is updated by hand; add the entry once Dependabot reads tools 6.4 (owner, 2026-10-02; reason updated 2026-10-05).
-- Skills baseline divergence `canonical-scripts` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: two copies differ from `project-release/assets/`, because Leve needs the calendar entitlement under the hardened runtime and the canonical scripts have no entitlements option (martonpaulo/skill-deck#518). `scripts/package-app.sh` signs the app with `Support/Leve.entitlements` and copies `Support/PrivacyInfo.xcprivacy` into the bundle; `scripts/verify-release-identity.sh` expects those entitlements instead of the empty set. Every other release script is an unchanged copy; replace both with the canonical ones once #518 lands.
+- Skills baseline revision: `52a750a90f2a761592388dba46b50b0238e3964d`
+- Skills baseline applied: `2026-11-27`
+- Skills baseline divergence `dependabot` at `ecd0609ec96b53aa6f2110ac4dea987a3f023318`: no `swift` entry in `.github/dependabot.yml`. Dependabot's Swift 6.3.1 fails on `swift-tools-version:6.4` (run of 2026-10-05), so Sparkle, Leve's one package dependency since [#7](https://github.com/martonpaulo/leve/issues/7), is updated by hand; add the entry once Dependabot reads tools 6.4 (owner, 2026-10-02; reason updated 2026-10-05).
+- Skills baseline divergence `canonical-scripts` at `ad4d6dc1fcc8a6d5c43a8c5a435dee50ab93f46b`: two copies differ from `project-release/assets/`, because Leve needs the calendar entitlement under the hardened runtime and the canonical scripts have no entitlements option ([martonpaulo/skill-deck#518](https://github.com/martonpaulo/skill-deck/issues/518)). `scripts/package-app.sh` signs the app with `Support/Leve.entitlements` and copies `Support/PrivacyInfo.xcprivacy` into the bundle; `scripts/verify-release-identity.sh` expects those entitlements instead of the empty set. Every other release script is an unchanged copy; replace both with the canonical ones once [#518](https://github.com/martonpaulo/leve/issues/518) lands.
 - Skills baseline divergence `layout` at `ecd0609ec96b53aa6f2110ac4dea987a3f023318`: no `docs/architecture.md` or `docs/design-system.md`. Leve is a small app; "Architecture and patterns" below describes its architecture, and the Feel rule its visual system (owner, 2026-10-05).
 
 Change an identifier or policy recorded above only through an explicit task describing the migration and its effects.
+
+## Route map
+
+Before editing under a path, read the file its row names. A module with rules of its own keeps them in its own `AGENTS.md` of at most 150 lines, beside a `CLAUDE.md` symlink, and has a row here; this file stays at most 200 lines.
+
+| Path | Read first |
+| :--- | :--- |
+| `Sources/`, `Tests/` | `docs/architecture.md`, then [Build and validate](#build-and-validate) below |
+| `site/`, `site-source/` | `docs/product.md` |
 
 ## Instruction hierarchy and sources of truth
 
@@ -79,30 +89,6 @@ read the menu bar item and menu through System Events, and capture Settings with
 decision is logged once per change in the `breaks` category of the decision log (Tests and
 validation).
 
-## Architecture and patterns
-
-- **`LeveKit`** holds every rule as pure value types and imports only Foundation:
-  `MenuBarStatus`, `AlertPlanner`, `EventAttention`, `SpokenTime`, `MeetingLink`, `BreakTracker`, `OverlayDisplay`, `MediaPause`. A new rule goes
-  there with a Swift Testing test; the app target only reads the system and draws.
-- **`AppModel`** is the one coordinator: a minute tick drives the menu bar text, the full-screen
-  alert and the spoken time; notifications are scheduled ahead and replanned when a setting, an
-  override, the pause or the calendar changes.
-- **Today only.** `CalendarStore` fetches the current day, plus the timed events of tomorrow's
-  first hour for their alerts only; `AppModel` reloads it on the first tick of a new day, on wake
-  and on a time-zone change. The menu lists today alone.
-- **Settings** have one owner, `Preferences`, with `leve.<name>.v1` keys; per-event choices live in
-  `OverrideStore` and expire with their event.
-- **Copy** lives only in `Copy.swift`. **Shell** surfaces follow the `skd-macos-app-shell` standard
-  (menu-style `MenuBarExtra`, `SMAppService` login item).
-- **Settings follow WindowHop's pattern** (`martonpaulo/windowhop`, `SettingsWindow.swift`): an
-  AppKit toolbar `NSTabViewController` that activates and becomes key, panes as tall as their
-  content (`settingsPane()`), notes in `settingsNote()`, a status row first, a Permissions section
-  with Allowed / Not allowed, and Restore Defaults… / Quit Leve… last. A new pane or row matches it.
-- **Feel:** light. Native controls, soft colors, no badges or red, one question per surface
-  (`docs/product.md`, Feel).
-- Smart Desk (`martonpaulo/smart-desk`) is the reference project for event logic only, never for
-  its interface.
-
 ## Before editing
 
 1. Check Git status and the current branch.
@@ -135,7 +121,7 @@ validation).
 - Prefer native platform components and established patterns; custom UI must provide clear product value.
 - Before changing an interface, a style, or a visual asset, name what the product should communicate and how it should feel, from the product definition and brand decisions, and judge visual and copy choices by that intent. When none is recorded, state the one you infer and ask before a consequential visual change.
 - Define the layout and the loading, empty, error, disabled, and destructive states that apply. Include keyboard navigation, focus, screen-reader labels, scalable text, contrast, reduced motion, and non-color status cues in the same change.
-- Accessibility evidence: the view code, reviewed in each change; `docs/product.md` records the accepted gap under `## Accepted evidence gaps`. Manual screen-reader passes are not run and never block completion, as the `issue-capture` skill defines (martonpaulo/skill-deck#266).
+- Accessibility evidence: the view code, reviewed in each change; `docs/product.md` records the accepted gap under `## Accepted evidence gaps`. Manual screen-reader passes are not run and never block completion, as the `issue-capture` skill defines ([martonpaulo/skill-deck#266](https://github.com/martonpaulo/skill-deck/issues/266)).
 - Keep visible copy centralized and localized. Keep expensive work out of render paths and hot loops. Measure before claiming a performance problem.
 
 ## Code, comments, and documentation
@@ -168,7 +154,7 @@ After processing the owner's answers on the owner page, remove the handled cards
 
 - Ignore secrets, local environments, logs, caches, and build output. Keep `.env.example` with every variable and a safe placeholder, and secrets only in the platform's secure store. Nothing new in `~` (`project-layout.md`).
 - Add CI, dependency updates, release workflows, and signing only when distribution or risk requires them.
-- Workflows: `validate.yml` (`Validate`, `make check` on the `xcode-27` runner, #7), `release.yml` (`Release`, #7), `notary-check.yml` (`Notary credentials check`, run by hand, a recognised exception, #7), and `deploy.yml` (`Deploy`, the GitHub Pages site, #28). A workflow added outside the `project-setup` skill's `references/ci-pipelines.md` is a recorded exception. A Node repository's `validate` script runs exactly what CI runs. Do not add an image-optimisation bot.
+- Workflows: `validate.yml` (`Validate`, `make check` on the `xcode-27` runner, [#7](https://github.com/martonpaulo/leve/issues/7)), `release.yml` (`Release`, [#7](https://github.com/martonpaulo/leve/issues/7)), `notary-check.yml` (`Notary credentials check`, run by hand, a recognised exception, [#7](https://github.com/martonpaulo/leve/issues/7)), and `deploy.yml` (`Deploy`, the GitHub Pages site, [#28](https://github.com/martonpaulo/leve/issues/28)). A workflow added outside the `project-setup` skill's `references/ci-pipelines.md` is a recorded exception. A Node repository's `validate` script runs exactly what CI runs. Do not add an image-optimisation bot.
 - The agent rules live in `AGENTS.md`, the one real file; `CLAUDE.md` is a symlink to it. Do not create `GEMINI.md`, `.gemini/rules/agents.md`, or any other alias, and never commit `.claude/settings.local.json`.
 - Change the repository `homepage` only as the `project-setup` skill's `references/github-settings.md` describes.
 

@@ -10,15 +10,11 @@
 #
 # Usage: scripts/fail-on-warnings.sh -- <command> [argument...]
 set -euo pipefail
+. "$(dirname "${BASH_SOURCE[0]}")/lib/cli.sh"
 cd "$(dirname "$0")/.."
 
 usage() {
   echo "usage: scripts/fail-on-warnings.sh -- <command> [argument...]"
-}
-usage_error() {
-  echo "fail-on-warnings: $1" >&2
-  usage >&2
-  exit 2
 }
 
 separated=0
@@ -26,11 +22,11 @@ while (( $# )); do
   case $1 in
     --help) usage; exit 0 ;;
     --) shift; separated=1; break ;;
-    *) usage_error "unknown option '$1'" ;;
+    *) fail_usage "unknown option '$1'" ;;
   esac
 done
-(( separated )) || usage_error "missing '--' before the command"
-(( $# )) || usage_error "no command after '--'"
+(( separated )) || fail_usage "missing '--' before the command"
+(( $# )) || fail_usage "no command after '--'"
 
 root=$(pwd -P)
 logical=$PWD

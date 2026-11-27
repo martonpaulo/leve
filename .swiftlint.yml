@@ -109,5 +109,5 @@ custom_rules:
   # destructive_label:
   #   name: "Destructive Label"
   #   regex: "role:\\s*\\.destructive[^{}]*\\)\\s*(\\{[^{}]*\\}\\s*label:\\s*)?\\{(\\s*//[^\\n]*)*\\s*Label\\b"
-  #   message: "Draw a destructive action's label with the app's shared view (for example DestructiveLabel), so its icon and title share the system red."
+  #   message: "Draw a destructive action's label with the app's shared view (for example DestructiveLabel), so its icon and title share one red, the app's destructive colour."
   #   severity: error

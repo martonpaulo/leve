@@ -15,3 +15,23 @@ updates:
     cooldown:
       default-days: 3
     open-pull-requests-limit: 5
+
+  - package-ecosystem: swift
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:17"
+      timezone: UTC
+    cooldown:
+      default-days: 3
+      semver-major-days: 30
+      semver-minor-days: 3
+      semver-patch-days: 3
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
+    groups:
+      swift-dependencies:
+        update-types: [minor, patch]

@@ -49,8 +49,14 @@ lint: ## SwiftLint, then swift-format lint; read-only, fails on any finding
 format: ## Rewrite the sources with swift-format (the only target that edits sources)
 	@swift format format --in-place --recursive $(SWIFT_SOURCES)
 
-validate: ## Repository invariants (scripts/validate.sh); no compiler, seconds
+validate: ## Repository invariants (scripts/validate.sh) and the fleet's text, link, DRY, sleep, shortcut and text-width checks; no compiler, seconds
 	@scripts/validate.sh
+	@python3 scripts/text_check.py .
+	@python3 scripts/issue_links.py .
+	@python3 scripts/dry_check.py >/dev/null
+	@python3 scripts/sleep_guard.py .
+	@python3 scripts/shortcut_check.py .
+	@python3 scripts/text_width_check.py site
 
 check: build lint test validate ## Everything a commit needs, stopping at the first failure
 
