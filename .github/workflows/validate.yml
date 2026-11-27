@@ -13,7 +13,7 @@ permissions:
 # got rather than a path, because the preview image's install path is not documented yet. Change
 # XCODE_VERSION here, in release.yml and in notary-check.yml together.
 env:
-  XCODE_VERSION: "27.0"
+  XCODE_VERSION: "27.1"
   # The SwiftLint pin: a release binary with a verified checksum, so CI lints with the same
   # version as a local `brew install swiftlint` of that release. swift-format comes from Xcode.
   SWIFTLINT_VERSION: "0.65.1"

@@ -11,7 +11,7 @@ permissions:
 
 # The same Xcode pin as validate.yml and release.yml; change them together.
 env:
-  XCODE_VERSION: "27.0"
+  XCODE_VERSION: "27.1"
 
 jobs:
   check:

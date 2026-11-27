@@ -13,7 +13,7 @@ permissions:
 
 # The same Xcode pin as validate.yml; change both together.
 env:
-  XCODE_VERSION: "27.0"
+  XCODE_VERSION: "27.1"
   # appdmg 0.6.6, which make-dmg.sh runs, needs Node 24 or older.
   NODE_VERSION: "24"
 
