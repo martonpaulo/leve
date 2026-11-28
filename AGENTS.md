@@ -18,6 +18,7 @@
 - Branch policy: work on `main`; a branch only when the owner asks for one.
 - Commit policy: commit each coherent task automatically once it is complete and `make check` passes; commit only task files.
 - Push policy: push completed, validated commits straight to `origin/main`. Never force-push. One exception happened: on 2026-10-05 the owner had the history rewritten and force-pushed once, to drop the author e-mail and a personal detail before the repository went public ([#6](https://github.com/martonpaulo/leve/issues/6)). A cloud session pushes `main` too, only for a `runs: cloud` issue whose gates all ran there, and never for a change under a `mac_paths` entry of `.github/cloud.json`, which needs the Mac's Swift and Xcode toolchain and is handed off (owner, 2026-11-27). Cloud setup command: `bash scripts/cloud-setup.sh`.
+- Cloud hand-off: on (owner, 2026-11-28): a cloud session also delivers the `[cloud]` Tasks of a split issue, on `cloud/<issue>` when it cannot push `main`.
 - Product versioning: SemVer `X.Y.Z` in `CFBundleShortVersionString` (`Support/Info.plist`), starting at `0.1.0`; `CFBundleVersion` is `MAJOR*10000 + MINOR*100 + PATCH`, checked by `make validate`. Versions change only when the owner asks.
 - Merge policy: merge commits only, every commit of the branch preserved. Never squash.
 - Commit subject: a commit made for an issue ends with `(#<issue number>)`, never the pull request's.
